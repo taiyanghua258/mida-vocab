@@ -105,7 +105,6 @@ exports.getDueWords = async (req, res) => {
     }
 
     // 推迟的只是"配额之外"的词
-    const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
     await Word.updateMany({
       userId: req.userId,
       state: 0,
