@@ -1847,7 +1847,13 @@ async function handleBatchImport() {
 
     // 稍微等待 300 毫秒让用户看清 100% 满状态的动画
     await new Promise(r => setTimeout(r, 300));
-    showToast(`成功导入 ${successCount} 个新单词`, 'success');
+    const userSettings = await api('/auth/settings');
+    const limit = userSettings.dailyNewLimit || 20;
+    if (successCount > limit) {
+        showToast(`导入 ${successCount} 词。超出今日上限的部分已自动加入明日计划`, 'info');
+    } else {
+        showToast(`成功导入 ${successCount} 个新单词`, 'success');
+    }
     resetImport();
     closeModal('importModal');
     loadWords(1); loadStats();

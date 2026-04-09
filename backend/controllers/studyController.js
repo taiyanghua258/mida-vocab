@@ -98,8 +98,8 @@ exports.getDueWords = async (req, res) => {
 
     const quotaIds = quotaNewWords.map(w => w._id);
 
-    // 只有旧词复习量不大时，才把配额词塞入返回列表
-    if (reviewWords.length < 50 && remainingNew > 0) {
+    // 完全遵从用户设置的新词配额，不再被复习量强行拦截
+    if (remainingNew > 0) {
       newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: 1 });
     }
 
