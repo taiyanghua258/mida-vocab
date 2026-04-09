@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词管理 - My Vocab</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">My Vocab</div>
+    <div class="nav-links">
+      <span id="welcomeUser"></span>
+      <button id="logoutBtn" class="btn btn-secondary">退出</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header-actions">
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-value" id="totalWords">0</span>
+          <span class="stat-label">总单词</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="dueWords">0</span>
+          <span class="stat-label">待复习</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="masteredWords">0</span>
+          <span class="stat-label">已掌握</span>
+        </div>
+      </div>
+      <div class="main-actions">
+        <button id="startStudyBtn" class="btn btn-primary">开始复习</button>
+        <button id="addWordBtn" class="btn btn-success">添加单词</button>
+        <button id="importBtn" class="btn btn-secondary">导入</button>
+        <button id="exportBtn" class="btn btn-secondary">导出</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="搜索日语、中文、假名..." class="search-input">
+      <select id="partOfSpeechFilter" class="filter-select">
+        <option value="">全部词性</option>
+        <option value="名词">名词</option>
+        <option value="动词">动词</option>
+        <option value="形容词">形容词</option>
+        <option value="副词">副词</option>
+        <option value="助词">助词</option>
+        <option value="连词">连词</option>
+        <option value="感叹词">感叹词</option>
+        <option value="代词">代词</option>
+        <option value="数词">数词</option>
+      </select>
+    </div>
+
+    <div class="word-list" id="wordList">
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>日语</th>
+            <th>假名</th>
+            <th>中文</th>
+            <th>词性</th>
+            <th>标签</th>
+            <th>下次复习</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="wordTableBody"></tbody>
+      </table>
+    </div>
+    <div id="pagination"></div>
+  </div>
+
+  <!-- 添加/编辑单词 Modal -->
+  <div class="modal" id="wordModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">添加单词</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="wordForm">
+        <input type="hidden" id="wordId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="japanese">日语 *</label>
+            <input type="text" id="japanese" required>
+          </div>
+          <div class="form-group">
+            <label for="reading">假名</label>
+            <input type="text" id="reading">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="meaning">中文释义 *</label>
+          <input type="text" id="meaning" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="partOfSpeech">词性</label>
+            <select id="partOfSpeech">
+              <option value="名词">名词</option>
+              <option value="动词">动词</option>
+              <option value="形容词">形容词</option>
+              <option value="副词">副词</option>
+              <option value="助词">助词</option>
+              <option value="连词">连词</option>
+              <option value="感叹词">感叹词</option>
+              <option value="代词">代词</option>
+              <option value="数词">数词</option>
+              <option value="接尾词">接尾词</option>
+              <option value="接头词">接头词</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tags">标签（用逗号分隔）</label>
+            <input type="text" id="tags" placeholder="如：N1, 动词, 重要">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 导入 Modal -->
+  <div class="modal" id="importModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>导入单词</h3>
+        <button class="modal-close" onclick="closeImportModal()">&times;</button>
+      </div>
+      <div class="import-area" id="importArea">
+        <p>粘贴 JSON 格式的单词数据</p>
+        <textarea id="importData" placeholder='[{"japanese": "桜", "reading": "さくら", "meaning": "樱花", "partOfSpeech": "名词", "tags": ["N5"]}]'></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeImportModal()">取消</button>
+        <button type="button" class="btn btn-primary" onclick="importWords()">导入</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vocab.js"></script>
+</body>
+</html>

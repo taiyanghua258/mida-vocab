@@ -1,0 +1,351 @@
+/* ================= 单词卡片组 CSS ================= */
+    /* ========== 单词卡片组 ========== */
+    .word-group {
+      position: absolute; width: 100%; height: 100%;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+    .word-group[data-depth="0"] { transform: translateY(0) scale(1); opacity: 1; }
+    .word-group[data-depth="1"] { transform: translateY(10px) scale(0.97); opacity: 1; }
+    .word-group[data-depth="2"] { transform: translateY(20px) scale(0.94); opacity: 1; }
+    .word-group[data-depth="hidden"] { transform: translateY(20px) scale(0.94); opacity: 0; pointer-events: none; }
+    .word-group.discarded { transform: translate(-30%, 40%) rotate(-10deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; z-index: 0 !important; }
+
+    /* ========== 纸张卡片 ========== */
+    .paper-card {
+      position: absolute; width: 100%; height: 100%;
+      border-radius: 1.5rem; background: #fff; border: 1px solid #E5E1D8;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
+      transform-origin: bottom left;
+      transition: transform 0.6s cubic-bezier(0.75, 0, 0.25, 1), opacity 0.5s ease, box-shadow 0.6s ease;
+      will-change: transform, opacity;
+    }
+    .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 8px 32px rgba(26,47,43,0.08); }
+    .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 4px 16px rgba(26,47,43,0.04); background: #FAFAFA; }
+    .word-group[data-depth="2"] .paper-card.front { box-shadow: 0 2px 8px rgba(26,47,43,0.02); background: #F4F2EC; border-color: #E0DCD1; }
+    .paper-card.back { z-index: 1; background: linear-gradient(145deg, #FAFAFA, #F9F7F1); transform: scale(0.97) translateY(4px); opacity: 1; box-shadow: 0 4px 16px rgba(26,47,43,0.04); }
+    .paper-card.front.peeled { transform: translate(60%, -50%) rotate(25deg) scale(0.9); opacity: 0; box-shadow: 20px 30px 40px rgba(0,0,0,0.12); pointer-events: none; }
+    .paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: 0 12px 40px rgba(26,47,43,0.12); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; }
+
+    /* ========== 答案按钮 ========== */
+    #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; transform: translateY(10px); }
+    #answerSection.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .answer-btn { transition: all 0.2s ease; }
+    .answer-btn:active { transform: scale(0.95); }
+
+
+/* ================= STUDY 卡片 HTML ================= */
+
+  <!-- ========== STUDY VIEW ========== -->
+  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative">
+    <nav class="p-6 flex justify-between items-center max-w-4xl mx-auto w-full absolute top-0 left-1/2 -translate-x-1/2 z-10">
+      <button onclick="navigate('dashboard')" class="text-muted hover:text-charcoal flex items-center gap-2 transition-colors font-medium">
+        <div class="w-10 h-10 rounded-full bg-surface border border-borderline flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+        </div>
+        <span class="hidden sm:block">返回词库</span>
+      </button>
+      <div class="text-[11px] font-bold tracking-widest uppercase text-muted">复习中</div>
+    </nav>
+
+    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 justify-center relative pt-20">
+      <div class="w-full mb-10 max-w-md mx-auto">
+        <div class="flex justify-between text-xs text-muted mb-2 font-medium">
+          <span>进度</span>
+          <span id="progressText">0 / 0</span>
+        </div>
+        <div class="w-full bg-borderline rounded-full h-1.5">
+          <div id="progressFill" class="bg-ochre h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="studyComplete" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+        <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
+          <span class="text-4xl">🎓</span>
+        </div>
+        <h2 class="text-2xl font-semibold text-charcoal mb-2">复习完成！</h2>
+        <p class="text-sm text-muted mb-8">干得漂亮，坚持就是胜利。</p>
+        <div id="completeStats" class="grid grid-cols-2 gap-4 mb-8"></div>
+        <div class="flex gap-3">
+          <button onclick="navigate('dashboard')" class="flex-1 bg-parchment border border-borderline text-charcoal px-6 py-3.5 rounded-xl font-medium hover:bg-borderline transition-all active:scale-[0.98]">返回控制台</button>
+          <button onclick="reviewAgain()" class="flex-1 bg-charcoal text-surface px-6 py-3.5 rounded-xl font-medium hover:bg-charcoal/90 transition-all active:scale-[0.98]">再练一次</button>
+        </div>
+      </div>
+
+      <div id="noWords" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+        <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#DF9F28" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.56,87.56,0,0,1-5.42,30.67L148.15,96.24A40,40,0,0,0,127.41,85l-12.47,51.06a16,16,0,0,1-20.24,11.52L55.45,131A40,40,0,0,0,80,194.13l57.47-34.86,17.82,66.74A16,16,0,0,0,168,232a15.93,15.93,0,0,0,4.53-.65l32-12A88,88,0,0,1,216,128ZM128,168a40,40,0,0,1-40-40c0-17.26,11.07-35.74,28-47.33a8,8,0,0,1,9.66,12.66C113.07,103.57,96,122.69,96,136a24,24,0,0,0,24,24,8,8,0,0,1,8,8Z"></path></svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-charcoal mb-2">任务达成！</h2>
+        <p class="text-sm text-muted mb-8">当前没有需要复习的单词，休息一下吧。</p>
+        <div class="flex gap-3">
+          <button onclick="navigate('dashboard')" class="flex-1 bg-surface border border-borderline text-charcoal px-6 py-3.5 rounded-xl font-medium hover:bg-parchment transition-all active:scale-[0.98]">返回控制台</button>
+          <button onclick="reviewLastSession()" class="flex-1 bg-charcoal text-surface px-6 py-3.5 rounded-xl font-medium hover:bg-charcoal/90 transition-all active:scale-[0.98]">再练一次</button>
+        </div>
+      </div>
+
+      <div id="studyCardContainer" class="w-full max-w-md mx-auto relative">
+        <div id="cardStack" class="w-full h-[400px] relative card-stack-container z-30"></div>
+
+        <div id="answerSection" class="w-full flex justify-between gap-2.5 z-10 mt-8 relative">
+          <button onclick="submitReview('again')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">1</span><span>重来</span>
+          </button>
+          <button onclick="submitReview('hard')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">2</span><span>困难</span>
+          </button>
+          <button onclick="submitReview('good')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">3</span><span>良好</span>
+          </button>
+          <button onclick="submitReview('easy')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">4</span><span>简单</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+/* ================= STUDY JS 代码 ================= */
+
+/* ================= STUDY ================= */
+async function initStudy() {
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+  document.getElementById('answerSection').classList.remove('show');
+  revealAllowed = false;
+
+  const words = await api('/study/due');
+  state.studyWords = words;
+  state.originalTotal = words.length;
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+
+  if (state.studyWords.length === 0) {
+    document.getElementById('studyCardContainer').classList.add('hidden');
+    document.getElementById('noWords').classList.remove('hidden');
+  } else {
+    renderCardStack();
+    updateStudyProgress();
+  }
+}
+
+function renderCardStack() {
+  const stack = document.getElementById('cardStack');
+  stack.innerHTML = '';
+  state.studyWords.forEach((word, index) => {
+    addCardToDOM(index, word);
+  });
+  stack.classList.remove('incoming');
+  void stack.offsetWidth;
+  stack.classList.add('incoming');
+}
+
+function addCardToDOM(index, word) {
+  const stack = document.getElementById('cardStack');
+  const zIndex = 1000 - index;
+  const relativeIndex = index - state.studyIndex;
+  let depth = 'hidden';
+  if (relativeIndex === 0) depth = '0';
+  else if (relativeIndex === 1) depth = '1';
+  else if (relativeIndex === 2) depth = '2';
+
+  const groupHTML = `
+    <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
+      <div class="paper-card back">
+        <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
+        <div class="text-3xl font-semibold text-charcoal mb-6 text-center">${word.meaning}</div>
+        <div class="px-4 py-1.5 bg-parchment rounded-full text-xs font-medium text-muted uppercase">${word.partOfSpeech || '其它'}</div>
+      </div>
+      <div class="paper-card front" onclick="revealAnswer()">
+        <span class="text-[10px] font-bold tracking-widest text-muted uppercase mb-4 px-3 py-1 bg-parchment rounded">${word.partOfSpeech || '其它'}</span>
+        <div class="text-5xl md:text-6xl font-jp font-semibold text-charcoal mb-2">${word.japanese}</div>
+        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center gap-2">
+          <span>点击撕下便签</span>
+          <span class="px-1.5 py-0.5 bg-borderline/50 rounded text-[10px] shadow-sm">Space</span>
+        </div>
+      </div>
+    </div>
+  `;
+  stack.insertAdjacentHTML('beforeend', groupHTML);
+}
+
+let revealTimeout;
+let isReviewProcessing = false;
+let revealAllowed = false;
+
+function revealAnswer() {
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) return;
+  const front = currentGroup.querySelector('.front');
+  const back = currentGroup.querySelector('.back');
+  if (!front.classList.contains('peeled')) {
+    revealAllowed = false;
+    front.classList.add('peeled');
+    back.classList.add('revealed');
+    if (revealTimeout) clearTimeout(revealTimeout);
+    revealTimeout = setTimeout(() => {
+      if (isReviewProcessing) return;
+      revealAllowed = true;
+      document.getElementById('answerSection').classList.add('show');
+    }, 200);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (isReviewProcessing) return;
+  const viewStudy = document.getElementById('view-study');
+  if (!viewStudy.classList.contains('active')) return;
+  if (!document.getElementById('studyComplete').classList.contains('hidden')) return;
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) return;
+  const front = currentGroup.querySelector('.front');
+  if (!front.classList.contains('peeled') && (e.code === 'Space' || e.code === 'Enter')) {
+    e.preventDefault();
+    revealAnswer();
+  } else if (front.classList.contains('peeled') && revealAllowed) {
+    if (e.key === '1') submitReview('again');
+    if (e.key === '2') submitReview('hard');
+    if (e.key === '3') submitReview('good');
+    if (e.key === '4') submitReview('easy');
+  }
+});
+
+async function submitReview(result) {
+  // 防止重复处理
+  if (isReviewProcessing) return;
+  isReviewProcessing = true;
+  revealAllowed = false;
+
+  // 清除可能还在路上的按钮浮现定时器
+  if (revealTimeout) { clearTimeout(revealTimeout); revealTimeout = null; }
+
+  // 双保险：卡片正面没撕开（没看到答案）则拦截提交
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) { isReviewProcessing = false; return; }
+  const front = currentGroup.querySelector('.front');
+  if (!front.classList.contains('peeled')) { isReviewProcessing = false; return; }
+
+  document.getElementById('answerSection').classList.remove('show');
+  const word = state.studyWords[state.studyIndex];
+  api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+  state.studyStats.reviewed++;
+  state.studyStats[result]++;
+
+  // 整组卡片飞走剥离
+  currentGroup.classList.add('discarded');
+
+  // 如果选了"重来"，移除旧卡片并添加新卡片到底部
+  if (result === 'again') {
+    // 延迟移除旧卡片，等动画完成
+    setTimeout(() => currentGroup.remove(), 600);
+    const newWord = { ...word };
+    state.studyWords.push(newWord);
+    addCardToDOM(state.studyWords.length - 1, newWord);
+  }
+
+  // 先增加索引，再更新堆叠
+  state.studyIndex++;
+  updateStackDepths();
+  updateStudyProgress();
+
+  if (state.studyIndex >= state.studyWords.length) {
+    // 延迟显示完成界面，等卡片飞走动画先开始
+    requestAnimationFrame(() => showStudyComplete());
+  }
+
+  isReviewProcessing = false;
+}
+
+function updateStackDepths() {
+  state.studyWords.forEach((_, index) => {
+    if (index < state.studyIndex) return;
+    const group = document.getElementById(`word-group-${index}`);
+    if (!group) return;
+    // 已丢弃的卡片：强制降低 z-index，保持 opacity: 0，不参与堆叠
+    if (group.classList.contains('discarded')) {
+      group.setAttribute('data-depth', 'hidden');
+      group.style.zIndex = '0';
+      return;
+    }
+    const relativeIndex = index - state.studyIndex;
+    let depth = 'hidden';
+    if (relativeIndex === 0) depth = '0';
+    else if (relativeIndex === 1) depth = '1';
+    else if (relativeIndex === 2) depth = '2';
+    group.setAttribute('data-depth', depth);
+    // 用 relativeIndex 计算 z-index，确保当前卡片（relativeIndex=0）最高
+    group.style.zIndex = String(1000 - relativeIndex);
+  });
+}
+
+function updateStudyProgress() {
+  const total = state.studyWords.length;
+  const current = Math.min(state.studyIndex, total);
+  const pct = total === 0 ? 0 : (current / total) * 100;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressText').textContent = `${current} / ${total}`;
+}
+
+function showStudyComplete() {
+  document.getElementById('studyCardContainer').classList.add('hidden');
+  const el = document.getElementById('studyComplete');
+  el.classList.remove('hidden');
+  el.classList.add('pop-in');
+  const s = state.studyStats;
+  document.getElementById('completeStats').innerHTML = `
+    <div class="p-4 bg-parchment rounded-xl border border-borderline text-center">
+      <span class="text-2xl font-semibold">${s.reviewed}</span>
+      <span class="block text-xs text-muted mt-1 font-medium">复习次数</span>
+    </div>
+    <div class="p-4 bg-ochre/10 rounded-xl border border-ochre/20 text-center">
+      <span class="text-2xl font-semibold text-ochre">${state.originalTotal}</span>
+      <span class="block text-xs text-muted mt-1 font-medium">原始词汇量</span>
+    </div>
+    <div class="col-span-2 flex justify-around pt-4 mt-2 border-t border-borderline text-sm font-medium">
+      <span class="text-terracotta">重来: ${s.again}</span>
+      <span class="text-ochre">困难: ${s.hard}</span>
+      <span class="text-charcoal">良好: ${s.good}</span>
+      <span class="text-[#4B7365]">简单: ${s.easy}</span>
+    </div>`;
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#DF9F28', '#D16B4A', '#1A2F2B', '#4B7365'] });
+  }
+  // 保存本次学习的单词到 localStorage，供之后再练一次使用
+  localStorage.setItem('lastStudyWords', JSON.stringify(state.studyWords));
+}
+
+function reviewAgain() {
+  // 重置学习状态，保留原始词汇量
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+
+  // 隐藏完成界面，显示卡片容器
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  // 重新渲染卡片堆叠
+  renderCardStack();
+  updateStudyProgress();
+}
+
+function reviewLastSession() {
+  const saved = localStorage.getItem('lastStudyWords');
+  if (!saved) {
+    showToast('没有可复习的记录', 'error');
+    return;
+  }
+  state.studyWords = JSON.parse(saved);
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  renderCardStack();
+  updateStudyProgress();
+}

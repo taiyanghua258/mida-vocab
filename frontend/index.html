@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>見Vocab - 高级极简版</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parchment: '#F9F7F1',
+            surface: '#FFFFFF',
+            charcoal: '#1A2F2B',
+            ochre: '#DF9F28',
+            terracotta: '#D16B4A',
+            lavender: '#C6CBEA',
+            muted: '#8B8982',
+            borderline: '#E5E1D8'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            jp: ['"Noto Sans JP"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ========== 全局审美与排版 (Typography & Globals) ========== */
+    body { background-color: #FDFBF7; } /* 稍微调亮底色以贴合极简白 */
+    
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(138, 133, 125, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(138, 133, 125, 0.4);
+    }
+    
+    /* 工具类：超大间距 (Negative Spaces) */
+    .tracking-widest-plus { letter-spacing: 0.18em; }
+    .tracking-tight-minus { letter-spacing: -0.04em; }
+
+    /* ========== 视图切换 (GPU 优化版) ========== */
+    .view-section { display: none; will-change: transform, opacity; }
+    .view-section.active { display: flex; animation: softlyFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    @keyframes softlyFadeIn {
+      from { opacity: 0; transform: translateY(6px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ========== Niche Aesthetics 组件化 CSS ========== */
+    
+    /* 1. 悬浮线输入框 (Floating Input) */
+    .aesthetic-input {
+      background-color: rgba(249, 247, 241, 0.6);
+      border: none;
+      border-bottom: 1.5px solid rgba(229, 225, 216, 0.6);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+    }
+    .aesthetic-input:focus {
+      background-color: rgba(255, 255, 255, 0.8);
+      border-bottom-color: #DF9F28;
+      box-shadow: 0 4px 12px rgba(223, 159, 40, 0.05);
+      outline: none;
+    }
+
+    /* 2. 磁性胶囊按钮 (Magnetic Capsule) */
+    .magnetic-btn {
+      position: relative;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #1A2F2B;
+      color: #FDFBF7;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+      will-change: transform;
+    }
+    .magnetic-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.08);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .magnetic-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(26, 47, 43, 0.15);
+    }
+    .magnetic-btn:hover::before { opacity: 1; }
+    .magnetic-btn:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    /* 3. 悬浮下划线幽灵按钮 (Ghost Underline) */
+    .ghost-underline-btn {
+      position: relative;
+      display: inline-flex;
+      background: transparent;
+      transition: color 0.3s ease;
+    }
+    .ghost-underline-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: currentColor;
+      transform: scaleX(0);
+      transform-origin: right center;
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .ghost-underline-btn:hover::after {
+      transform: scaleX(1);
+      transform-origin: left center;
+    }
+
+    /* 4. 无边界空气表格 (Airy Table/ListRow) */
+    .airy-row {
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease, box-shadow 0.3s ease;
+      border-bottom: 1px solid rgba(229, 225, 216, 0.3);
+    }
+    .airy-row:hover {
+      transform: translateY(-1px);
+      background-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 24px rgba(26, 47, 43, 0.03);
+      border-bottom-color: transparent;
+    }
+
+    /* 5. 玻璃态模态框 (Glassmorphism Modal Backing) */
+    .modal-overlay { 
+      opacity: 0; 
+      pointer-events: none; 
+      backdrop-filter: blur(4px);
+      background-color: rgba(249, 247, 241, 0.4);
+      transition: opacity 0.35s ease; 
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content { 
+      transform: scale(0.96) translateY(10px); 
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    }
+    .modal-overlay.active .modal-content { 
+      transform: scale(1) translateY(0); 
+      opacity: 1;
+    }
+
+    /* 6. Dashboard 背景卡片精修 */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(229, 225, 216, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+    }
+
+    /* ========== Flashcard 翻转 ========== */
+    .flip-card-container { perspective: 1200px; }
+    /* ========== 卡片堆叠容器 ========== */
+    .card-stack-container { perspective: 1200px; position: relative; }
+    .card-stack-container.incoming { animation: paperDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    @keyframes paperDrop {
+      0% { transform: translateY(-50px) scale(0.9); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* ========== 单词卡片组 ========== */
+    .word-group {
+      position: absolute; width: 100%; height: 100%;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+    .word-group[data-depth="0"] { transform: translateY(0) scale(1); opacity: 1; }
+    .word-group[data-depth="1"] { transform: translateY(10px) scale(0.97); opacity: 1; }
+    .word-group[data-depth="2"] { transform: translateY(20px) scale(0.94); opacity: 1; }
+    .word-group[data-depth="hidden"] { transform: translateY(20px) scale(0.94); opacity: 0; pointer-events: none; }
+    .word-group.discarded { transform: translate(-30%, 40%) rotate(-10deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; z-index: 0 !important; }
+
+    /* ========== 纸张卡片 (更新阴影以符合空气感) ========== */
+    .paper-card {
+      position: absolute; width: 100%; height: 100%;
+      border-radius: 1.5rem; background: #fff; border: 1px solid rgba(229, 225, 216, 0.5);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
+      transform-origin: bottom left;
+      transition: transform 0.6s cubic-bezier(0.75, 0, 0.25, 1), opacity 0.5s ease, box-shadow 0.6s ease;
+      will-change: transform, opacity;
+    }
+    .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 4px 20px rgba(26,47,43,0.03); }
+    .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 2px 10px rgba(26,47,43,0.02); background: linear-gradient(135deg, #FAFAFA 0%, #F9F7F1 100%); }
+    .word-group[data-depth="2"] .paper-card.front { box-shadow: 0 1px 4px rgba(26,47,43,0.01); background: linear-gradient(135deg, #F9F7F1 0%, #F4F2EC 100%); }
+    .paper-card.back { z-index: 1; background: linear-gradient(145deg, #FAFAFA, #F9F7F1); transform: scale(0.97) translateY(4px); opacity: 1; box-shadow: 0 4px 16px rgba(26,47,43,0.04); }
+    .paper-card.front.peeled { transform: translate(60%, -50%) rotate(25deg) scale(0.9); opacity: 0; box-shadow: 20px 30px 40px rgba(0,0,0,0.05); pointer-events: none; }
+    .paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: 0 12px 40px rgba(26,47,43,0.08); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; }
+
+    /* ========== 答案按钮 ========== */
+    #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; transform: translateY(10px); }
+    #answerSection.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .answer-btn { transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(229, 225, 216, 0.4); }
+    .answer-btn:hover { border-color: rgba(223, 159, 40, 0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 47, 43, 0.03); }
+    .answer-btn:active { transform: translateY(1px) scale(0.95); }
+
+    /* ========== Toast & Modal ========== */
+    .toast { opacity: 0; transform: translateY(-12px) scale(0.95); transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.toast-success { border-left-color: #2d5a27; background: linear-gradient(135deg, #f8faf8 0%, #edf5ed 100%); }
+    .toast.toast-success::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #2d5a27; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .toast.toast-error { border-left-color: #c45a3b; animation: shakeIn 0.5s ease forwards; }
+    .toast.toast-error::before { content: '!'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #c45a3b; color: white; border-radius: 50%; font-size: 14px; font-weight: bold; }
+    .toast.toast-info { border-left-color: #b8860b; }
+    .toast.toast-info::before { content: 'i'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #b8860b; color: white; border-radius: 50%; font-size: 12px; font-style: italic; }
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shakeIn {
+      0% { opacity: 0; transform: translateY(-12px) scale(0.95); }
+      20% { transform: translateX(-6px) translateY(-12px) scale(0.95); }
+      40% { transform: translateX(6px) translateY(-12px) scale(0.95); }
+      60% { transform: translateX(-4px) translateY(-12px) scale(0.95); }
+      80% { transform: translateX(4px) translateY(-12px) scale(0.95); }
+      100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    }
+
+    /* ========== 完成庆祝 ========== */
+    .pop-in { animation: popIn 0.5s ease forwards; }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ========== 登录页徽章动效 ========== */
+    .elegant-drip {
+      transform-origin: bottom center;
+      animation: dripDrop 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes dripDrop {
+      0%, 10% { transform: translateY(0) scaleY(1); opacity: 1; }
+      18% { transform: translateY(2px) scaleY(1.2); opacity: 1; }
+      28% { transform: translateY(19px) scaleY(1.5); opacity: 1; }
+      34% { transform: translateY(38px) scaleY(0.4); opacity: 1; }
+      38% { transform: translateY(38px) scaleY(1); opacity: 0; }
+      100% { transform: translateY(38px) scaleY(1); opacity: 0; }
+    }
+    .elegant-pulse {
+      transform-origin: center bottom;
+      animation: targetPulse 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes targetPulse {
+      0%, 32% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(209, 107, 74, 0); }
+      34% { transform: translateX(-50%) scale(1.15, 0.85); }
+      38% { transform: translateX(-50%) scale(1.25); box-shadow: 0 0 0 5px rgba(209, 107, 74, 0.25); }
+      50%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(209, 107, 74, 0); }
+    }
+
+    /* ========== Loading Spinner ========== */
+    .animate-spin { animation: spin 0.8s linear infinite; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ========== 开始学习按钮 ========== */
+    .btn-study {
+      position: relative;
+      background: #1A2F2B;
+      color: #F9F7F1;
+      padding: 0.65rem 1.75rem;
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: none;
+      cursor: pointer;
+      overflow: hidden;
+      transition: color 0.4s ease, transform 0.2s ease;
+    }
+    .btn-study::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 100px;
+      padding: 1.5px;
+      background: linear-gradient(90deg, #DF9F28, #D16B4A, #DF9F28);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .btn-study::after {
+      content: '';
+      position: absolute;
+      bottom: 0.45rem;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 40%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, #DF9F28, transparent);
+      transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .btn-study:hover {
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .btn-study:hover::before { opacity: 1; }
+    .btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
+    .btn-study:active { transform: translateY(0) scale(0.98); }
+    .btn-study svg { transition: transform 0.3s ease; }
+    .btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
+
+    /* ========== Checkbox 自定义样式 ========== */
+    input[type="checkbox"] {
+      accent-color: #DF9F28;
+    }
+  </style>
+</head>
+<body class="text-charcoal font-sans antialiased min-h-screen flex flex-col">
+
+  <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
+
+  <!-- ========== AUTH VIEW ========== -->
+  <div id="view-auth" class="view-section active h-screen flex-col items-center justify-center p-4">
+    <div class="max-w-md w-full bg-surface rounded-[2rem] shadow-lg p-10 border border-borderline">
+      <div class="text-center mb-10 brand-hover-container">
+        <!-- 左右对齐结构 -->
+        <div class="flex items-center justify-center gap-7 mb-6 group cursor-default">
+          <!-- Stacked Flashcards Logo (Large Presentation) -->
+          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110">
+            <!-- Back Card (Parchment) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-borderline rounded-[4px] -rotate-[8deg] translate-x-[-6px] translate-y-[4px] bg-parchment shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[22deg] group-hover:translate-x-[-14px] group-hover:translate-y-[8px]"></div>
+            
+            <!-- Middle Card (Surface) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-muted/20 rounded-[4px] rotate-1 translate-x-[0px] translate-y-[0px] bg-surface shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0 group-hover:translate-x-[0px] group-hover:translate-y-[-2px]"></div>
+            
+            <!-- Front Card (Charcoal Bold) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-charcoal rounded-[4px] rotate-[12deg] translate-x-[6px] translate-y-[-4px] bg-surface shadow-md transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[26deg] group-hover:translate-x-[18px] group-hover:translate-y-[-10px] flex flex-col items-center justify-center gap-[6px]">
+              <div class="w-[18px] h-[2.5px] bg-charcoal rounded-full transition-transform duration-700 group-hover:w-[22px]"></div>
+              <div class="w-[8px] h-[2.5px] bg-ochre rounded-full transition-transform duration-700 group-hover:w-[14px]"></div>
+            </div>
+            
+            <!-- Dynamic Floating Dot representing memory retention -->
+            <div class="absolute w-2.5 h-2.5 bg-terracotta rounded-full -top-1 -right-1 opacity-0 -translate-y-4 scale-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100"></div>
+          </div>
+
+          <!-- 主品牌字 -->
+          <div class="font-jp text-[3.6rem] font-bold text-charcoal leading-none tracking-tighter transition-colors duration-500">見だ</div>
+        </div>
+        <!-- 下方排版：极简横线与副标题 -->
+        <div class="w-12 h-[2px] bg-borderline mt-7 mb-4 mx-auto transition-all duration-700 group-hover:w-24 group-hover:bg-ochre/30"></div>
+        <div class="font-sans text-[0.65rem] font-bold tracking-[0.55em] uppercase text-muted transition-colors duration-700 group-hover:text-charcoal/70">Spaced Repetition</div>
+      </div>
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <input type="text" id="username" required placeholder="用户名 / 账号" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
+        </div>
+        <div>
+          <input type="password" id="password" required placeholder="密码" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
+        </div>
+        <button type="submit" class="magnetic-btn w-full py-4 text-[0.95rem] tracking-widest-plus mt-2">
+          登录系统
+        </button>
+        <p class="text-center text-[0.8rem] text-muted mt-6">
+          还没有账号？<button type="button" onclick="showRegister()" class="ghost-underline-btn text-ochre font-medium ml-1">去注册</button>
+        </p>
+      </form>
+
+      <form id="registerForm" class="space-y-5 hidden">
+        <div>
+          <input type="text" id="regUsername" required placeholder="设置用户名" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
+        </div>
+        <div>
+          <input type="password" id="regPassword" required placeholder="设置密码（至少6位）" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
+        </div>
+        <div>
+          <input type="password" id="regConfirmPassword" required placeholder="再次输入密码确认" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
+        </div>
+        <button type="submit" class="magnetic-btn w-full py-4 text-[0.95rem] tracking-widest-plus mt-2">
+          注册账号
+        </button>
+        <p class="text-center text-[0.8rem] text-muted mt-6">
+          已有账号？<button type="button" onclick="showLogin()" class="ghost-underline-btn text-ochre font-medium ml-1">去登录</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== DASHBOARD VIEW ========== -->
+  <div id="view-dashboard" class="view-section flex-1 flex-col">
+    <nav class="bg-surface/80 backdrop-blur-md border-b border-borderline sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+        <div class="flex items-center gap-3.5 group cursor-pointer select-none">
+          <!-- Stacked Flashcards Logo -->
+          <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
+            <!-- Back Card (Parchment) -->
+            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-borderline rounded-[3px] -rotate-6 translate-x-[-3px] translate-y-[2px] bg-parchment transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[16deg] group-hover:translate-x-[-6px] group-hover:translate-y-[4px]"></div>
+            <!-- Middle Card (Muted) -->
+            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-muted/30 rounded-[3px] rotate-2 translate-x-[0px] translate-y-[0px] bg-surface transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0"></div>
+            <!-- Front Card (Charcoal, Elevate) -->
+            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-charcoal rounded-[3px] rotate-[10deg] translate-x-[3px] translate-y-[-2px] bg-surface shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[18deg] group-hover:translate-x-[6px] group-hover:translate-y-[-4px] flex flex-col items-center justify-center gap-1">
+              <div class="w-2.5 h-[1.5px] bg-charcoal rounded-full transition-transform duration-500 group-hover:w-3"></div>
+              <div class="w-[4px] h-[1.5px] bg-terracotta rounded-full transition-transform duration-500 group-hover:w-[6px]"></div>
+            </div>
+          </div>
+
+          <!-- Logo Text -->
+          <div class="flex flex-col justify-center leading-none mt-[3px]">
+            <div class="flex items-baseline">
+              <span class="font-jp text-[1.25rem] font-bold text-charcoal tracking-tighter transition-colors duration-300">見だ</span>
+              <span class="w-1 h-1 bg-terracotta rounded-full ml-[3px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
+            </div>
+            <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <span class="text-sm text-muted hidden sm:flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>
+            <span id="welcomeUser" class="font-medium"></span>
+          </span>
+          <button onclick="openModal('settingsModal')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all active:scale-90 group" title="记忆算法设置">
+            <!-- 调节滑块图标 (SlidersHorizontal)，替代原本的齿轮以保持极简感 -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:rotate-90 duration-300">
+              <path d="M112,136H32a8,8,0,0,1,0-16h80a8,8,0,0,1,0,16Zm112-16H160a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16ZM88,64a8,8,0,0,0-8-8H32a8,8,0,0,0,0,16H80A8,8,0,0,0,88,64ZM224,56H128a8,8,0,0,0,0,16h96a8,8,0,0,0,0-16Zm0,136H176a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16ZM128,192H32a8,8,0,0,0,0,16h96a8,8,0,0,0,0-16ZM144,48a24,24,0,1,0,24,24A24,24,0,0,0,144,48Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,144,80ZM144,176a24,24,0,1,0,24,24A24,24,0,0,0,144,176Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,144,208Zm-40-96A24,24,0,1,0,80,136,24,24,0,0,0,104,112Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,104,144Z"></path>
+            </svg>
+          </button>
+          <button onclick="handleLogout()" class="ghost-underline-btn text-[0.85rem] font-medium text-muted hover:text-terracotta ml-3">退出</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-10">
+        <div class="flex gap-4 w-full lg:w-auto">
+          <div class="glass-card p-6 rounded-[1.5rem] min-w-[130px] flex flex-col">
+            <span class="text-[2rem] font-bold text-charcoal mb-1" id="totalWords">0</span>
+            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
+          </div>
+          <div class="glass-card p-6 rounded-[1.5rem] min-w-[130px] flex flex-col relative overflow-hidden">
+            <!-- 柔和侧发光替代原本的顶部死板实线 -->
+            <div class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-ochre/80 to-terracotta/80 shadow-[4px_0_12px_rgba(223,159,40,0.3)]"></div>
+            <span class="text-[2rem] font-bold text-ochre mb-1 pl-2" id="dueWords">0</span>
+            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2">待复习</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+          <button onclick="navigate('study')" class="magnetic-btn px-6 py-3.5 tracking-widest text-[0.9rem] flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path></svg>
+            开始学习
+          </button>
+          <button onclick="openModal('wordModal')" class="flex-1 sm:flex-none glass-card bg-surface hover:bg-parchment/60 text-charcoal px-6 py-3.5 rounded-full font-medium active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+            添加单词
+          </button>
+          <div class="flex items-center glass-card bg-surface/50 rounded-full px-1.5 py-1 ml-1">
+            <button onclick="openModal('importModal')" class="w-[42px] h-[42px] flex items-center justify-center rounded-full hover:bg-parchment/80 text-charcoal transition-all active:scale-90 group relative" title="导入词库">
+              <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-charcoal overflow-visible">
+                <path d="M 6,15 L 6,18 C 6,18.5 6.5,19 7,19 L 17,19 C 17.5,19 18,18.5 18,18 L 18,15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 transition-opacity group-hover:opacity-100"/>
+                <g class="group-hover:translate-y-[4px] transition-transform duration-500" style="transition-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);">
+                  <line x1="12" y1="3" x2="12" y2="12" stroke="#DF9F28" stroke-width="1.8" stroke-dasharray="2 2" stroke-linecap="round"/>
+                  <path d="M 8.5,9.5 L 12,13 L 15.5,9.5" fill="none" stroke="#DF9F28" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+              </svg>
+            </button>
+            <div class="w-[1px] h-4 bg-borderline/60 mx-1"></div>
+            <button onclick="exportWords()" class="w-[42px] h-[42px] flex items-center justify-center rounded-full hover:bg-parchment/80 text-charcoal transition-all active:scale-90 group relative" title="导出词库">
+              <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-charcoal overflow-visible">
+                <path d="M 6,15 L 6,18 C 6,18.5 6.5,19 7,19 L 17,19 C 17.5,19 18,18.5 18,18 L 18,15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 transition-opacity group-hover:opacity-100"/>
+                <g class="group-hover:-translate-y-[4px] transition-transform duration-500" style="transition-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);">
+                  <line x1="12" y1="13" x2="12" y2="4" stroke="#D16B4A" stroke-width="1.8" stroke-dasharray="2 2" stroke-linecap="round"/>
+                  <path d="M 8.5,6.5 L 12,3 L 15.5,6.5" fill="none" stroke="#D16B4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-5 flex flex-col sm:flex-row gap-4">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+          </div>
+          <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem]">
+        </div>
+        <select id="partOfSpeechFilter" class="aesthetic-input w-full sm:w-40 px-4 py-3 text-charcoal cursor-pointer text-[0.95rem]">
+          <option value="">全部词性</option>
+          <option value="名词">名词</option>
+          <option value="动词">动词</option>
+          <option value="形容词">形容词</option>
+          <option value="副词">副词</option>
+          <option value="助词">助词</option>
+          <option value="连词">连词</option>
+          <option value="感叹词">感叹词</option>
+          <option value="代词">代词</option>
+          <option value="数词">数词</option>
+          <option value="接尾词">接尾词</option>
+          <option value="接头词">接头词</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <!-- 批量操作进度条 -->
+      <div id="batchProgressBar" class="hidden mb-3">
+        <div class="flex items-center justify-between text-xs text-muted mb-1.5">
+          <span id="batchProgressText">删除中...</span>
+          <span id="batchProgressCount">0/0</span>
+        </div>
+        <div class="w-full h-1.5 bg-borderline rounded-full overflow-hidden">
+          <div id="batchProgressFill" class="h-full bg-ochre transition-all duration-200 ease-out rounded-full" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 批量操作栏 -->
+      <div id="batchActionBar" class="hidden bg-ochre/8 border border-ochre/20 rounded-2xl px-5 py-3 mb-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-charcoal font-medium"><span id="selectedCount">0</span> 项已选择</span>
+          <button onclick="clearWordSelection()" class="text-xs text-muted hover:text-charcoal underline transition-colors">取消选择</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="batchExportSelected()" class="px-4 py-1.5 bg-surface border border-borderline hover:border-charcoal text-charcoal text-sm rounded-lg transition-all active:scale-95 font-medium flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM93.66,133.66a8,8,0,0,1,11.32-11.32L120,137.38V40a8,8,0,0,1,16,0v97.38l15-15a8,8,0,0,1,11.32,11.32l-28.69,28.68a8,8,0,0,1-11.32,0Z"></path></svg>
+            导出
+          </button>
+          <button onclick="batchDeleteSelected()" class="px-4 py-1.5 bg-terracotta/10 hover:bg-terracotta/20 border border-terracotta/30 text-terracotta text-sm rounded-lg transition-all active:scale-95 font-medium flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+            批量删除
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-3xl border border-borderline overflow-hidden flex-1 flex flex-col">
+        <div class="overflow-x-auto flex-1">
+          <table class="min-w-full border-collapse">
+            <thead class="bg-surface">
+              <tr>
+                <th class="px-5 py-5 w-10 border-b border-borderline/40">
+                  <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
+                </th>
+                <th class="px-6 py-5 text-left text-[0.65rem] font-bold text-muted/80 uppercase tracking-widest-plus w-1/4 border-b border-borderline/40">日语单词</th>
+                <th class="px-6 py-5 text-left text-[0.65rem] font-bold text-muted/80 uppercase tracking-widest-plus w-1/4 border-b border-borderline/40">含义</th>
+                <th class="px-5 py-5 text-left text-[0.65rem] font-bold text-muted/80 uppercase tracking-widest-plus w-36 border-b border-borderline/40">标签</th>
+                <th class="px-6 py-5 text-left text-[0.65rem] font-bold text-muted/80 uppercase tracking-widest-plus border-b border-borderline/40">状态</th>
+                <th class="px-6 py-5 text-right text-[0.65rem] font-bold text-muted/80 uppercase tracking-widest-plus border-b border-borderline/40">操作</th>
+              </tr>
+            </thead>
+            <!-- 摒弃原始的 divide-y 强制分割线，让 airy-row 自身管理呼吸态 -->
+            <tbody id="wordTableBody" class="bg-surface"></tbody>
+          </table>
+        </div>
+        <div class="bg-surface px-6 py-5 flex items-center justify-between">
+          <p class="text-[0.7rem] font-medium tracking-wide text-muted">共展现 <span class="font-bold text-charcoal" id="pageTotalItems">0</span> 项条目</p>
+          <nav id="pagination" class="flex gap-1.5"></nav>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========== STUDY VIEW ========== -->
+  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative">
+    <nav class="p-6 flex justify-between items-center max-w-4xl mx-auto w-full absolute top-0 left-1/2 -translate-x-1/2 z-10">
+      <button onclick="navigate('dashboard')" class="text-muted hover:text-charcoal flex items-center gap-2 transition-colors font-medium">
+        <div class="w-10 h-10 rounded-full bg-surface border border-borderline flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+        </div>
+        <span class="hidden sm:block">返回词库</span>
+      </button>
+      <div class="text-[11px] font-bold tracking-widest uppercase text-muted">复习中</div>
+    </nav>
+
+    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 justify-center relative pt-20">
+      <div class="w-full mb-10 max-w-md mx-auto">
+        <div class="flex justify-between text-xs text-muted mb-2 font-medium">
+          <span>进度</span>
+          <span id="progressText">0 / 0</span>
+        </div>
+        <div class="w-full bg-borderline rounded-full h-1.5">
+          <div id="progressFill" class="bg-ochre h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="studyComplete" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+        <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
+          <span class="text-4xl">🎓</span>
+        </div>
+        <h2 class="text-2xl font-semibold text-charcoal mb-2">复习完成！</h2>
+        <p class="text-sm text-muted mb-8">干得漂亮，坚持就是胜利。</p>
+        <div id="completeStats" class="grid grid-cols-2 gap-4 mb-8"></div>
+        <div class="flex gap-3">
+          <button onclick="navigate('dashboard')" class="flex-1 bg-parchment border border-borderline text-charcoal px-6 py-3.5 rounded-xl font-medium hover:bg-borderline transition-all active:scale-[0.98]">返回控制台</button>
+          <button onclick="reviewAgain()" class="flex-1 bg-charcoal text-surface px-6 py-3.5 rounded-xl font-medium hover:bg-charcoal/90 transition-all active:scale-[0.98]">再练一次</button>
+        </div>
+      </div>
+
+      <div id="noWords" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+        <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#DF9F28" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.56,87.56,0,0,1-5.42,30.67L148.15,96.24A40,40,0,0,0,127.41,85l-12.47,51.06a16,16,0,0,1-20.24,11.52L55.45,131A40,40,0,0,0,80,194.13l57.47-34.86,17.82,66.74A16,16,0,0,0,168,232a15.93,15.93,0,0,0,4.53-.65l32-12A88,88,0,0,1,216,128ZM128,168a40,40,0,0,1-40-40c0-17.26,11.07-35.74,28-47.33a8,8,0,0,1,9.66,12.66C113.07,103.57,96,122.69,96,136a24,24,0,0,0,24,24,8,8,0,0,1,8,8Z"></path></svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-charcoal mb-2">任务达成！</h2>
+        <p class="text-sm text-muted mb-8">当前没有需要复习的单词，休息一下吧。</p>
+        <div class="flex gap-3">
+          <button onclick="navigate('dashboard')" class="flex-1 bg-surface border border-borderline text-charcoal px-6 py-3.5 rounded-xl font-medium hover:bg-parchment transition-all active:scale-[0.98]">返回控制台</button>
+          <button onclick="reviewLastSession()" class="flex-1 bg-charcoal text-surface px-6 py-3.5 rounded-xl font-medium hover:bg-charcoal/90 transition-all active:scale-[0.98]">再练一次</button>
+        </div>
+      </div>
+
+      <div id="studyCardContainer" class="w-full max-w-md mx-auto relative">
+        <div id="cardStack" class="w-full h-[400px] relative card-stack-container z-30"></div>
+
+        <div id="answerSection" class="w-full flex justify-between gap-2.5 z-10 mt-8 relative">
+          <button onclick="submitReview('again')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">1</span><span>重来</span>
+          </button>
+          <button onclick="submitReview('hard')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">2</span><span>困难</span>
+          </button>
+          <button onclick="submitReview('good')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">3</span><span>良好</span>
+          </button>
+          <button onclick="submitReview('easy')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+            <span class="text-[10px] text-muted">4</span><span>简单</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODALS ========== -->
+  <div id="wordModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4">
+    <div class="modal-content glass-card rounded-[1.5rem] w-full max-w-lg overflow-hidden shadow-[0_8px_40px_rgba(26,47,43,0.1)] border-borderline">
+      <div class="px-8 py-6 flex justify-between items-center pb-2">
+        <h3 class="text-xl font-bold tracking-widest-plus text-charcoal" id="modalTitle">添加单词</h3>
+        <button onclick="closeModal('wordModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+      <form id="wordForm" class="p-8 space-y-5">
+        <input type="hidden" id="wordId">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">日语 <span class="text-terracotta">*</span></label>
+            <input type="text" id="japanese" required class="aesthetic-input w-full px-2 py-2 text-charcoal font-jp" placeholder="桜">
+          </div>
+          <div class="flex items-end">
+            <button type="button" onclick="handleAiGenerate()" id="aiGenerateBtn" class="w-full py-2 bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-all font-bold tracking-wider text-xs flex items-center justify-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg>
+              AI 补全
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-5 mt-2">
+          <div>
+            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">读音</label>
+            <input type="text" id="reading" class="aesthetic-input w-full px-2 py-2 text-charcoal font-jp" placeholder="さくら">
+          </div>
+          <div>
+            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">中文含义 <span class="text-terracotta">*</span></label>
+            <input type="text" id="meaning" required class="aesthetic-input w-full px-2 py-2 text-charcoal">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-5">
+          <div>
+            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">词性</label>
+            <select id="partOfSpeech" class="aesthetic-input w-full px-2 py-2 text-charcoal cursor-pointer appearance-none">
+              <option value="名词">名词</option>
+              <option value="动词">动词</option>
+              <option value="形容词">形容词</option>
+              <option value="副词">副词</option>
+              <option value="助词">助词</option>
+              <option value="连词">连词</option>
+              <option value="感叹词">感叹词</option>
+              <option value="代词">代词</option>
+              <option value="数词">数词</option>
+              <option value="接尾词">接尾词</option>
+              <option value="接头词">接头词</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">标签</label>
+            <input type="text" id="tags" class="aesthetic-input w-full px-2 py-2 text-charcoal" placeholder="N5, 日常">
+          </div>
+        </div>
+        <div class="pt-6 flex justify-end gap-6 items-center">
+          <button type="button" onclick="closeModal('wordModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
+          <button type="submit" class="magnetic-btn px-8 py-3 text-[0.9rem] tracking-widest text-surface">保存项目</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="importModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4">
+    <div class="modal-content glass-card rounded-[1.5rem] w-full max-w-2xl overflow-hidden shadow-[0_8px_40px_rgba(26,47,43,0.1)] border-borderline">
+      <div class="px-8 py-6 flex justify-between items-center pb-2">
+        <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">批量导入</h3>
+        <button onclick="closeModal('importModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+      <div class="p-8">
+        <!-- Step 1: 输入文本 -->
+        <div id="importStep1">
+          <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
+          <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono text-[0.8rem]" placeholder="每行一个单词：&#10;桜&#10;花&#10;火&#10;&#10;AI 自动提取..."></textarea>
+          <div class="mt-6 flex justify-end">
+            <button type="button" onclick="handleBatchGenerate()" id="batchGenerateBtn" class="magnetic-btn px-6 py-3 tracking-widest text-[0.9rem] flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg>
+              AI 补全
+            </button>
+          </div>
+        </div>
+        <!-- Step 2: 预览列表 -->
+        <div id="importStep2" class="hidden">
+          <!-- 导入进度条 -->
+          <div id="importProgressBar" class="hidden mb-4">
+            <div class="flex items-center justify-between text-xs text-muted mb-1.5">
+              <span id="importProgressText">导入中...</span>
+              <span id="importProgressCount">0/0</span>
+            </div>
+            <div class="w-full h-1.5 bg-borderline rounded-full overflow-hidden">
+              <div id="importProgressFill" class="h-full bg-ochre transition-all duration-200 ease-out rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center mb-3">
+            <p class="text-sm text-muted">生成 <span id="batchCount" class="font-semibold text-charcoal">0</span> 个单词，确认后导入：</p>
+            <button onclick="resetImport()" class="text-sm text-ochre hover:text-ochre/80">重新输入</button>
+          </div>
+          <div id="batchPreviewList" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
+          <div class="flex justify-end gap-6 items-center mt-6">
+            <button type="button" onclick="closeModal('importModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
+            <button type="button" onclick="handleBatchImport()" id="batchImportBtn" class="magnetic-btn px-8 py-3 tracking-widest text-[0.9rem]">确认导入</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SETTINGS MODAL ========== -->
+  <div id="settingsModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4">
+    <div class="modal-content glass-card rounded-[1.5rem] w-full max-w-lg overflow-hidden shadow-[0_8px_40px_rgba(26,47,43,0.1)] border-borderline">
+      <div class="px-8 py-6 flex justify-between items-center pb-2">
+        <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">记忆算法设置</h3>
+        <button onclick="closeModal('settingsModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+      <form id="fsrsSettingsForm" class="p-8 space-y-6">
+        <!-- 目标记忆率 -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-sm font-medium text-charcoal">🎯 目标记忆率</label>
+            <span id="retentionValue" class="text-sm font-semibold text-ochre">90%</span>
+          </div>
+          <input type="range" id="requestRetention" min="70" max="99" value="90" class="w-full h-2 bg-borderline rounded-lg appearance-none cursor-pointer accent-ochre">
+          <p class="text-xs text-muted mt-1.5 leading-relaxed">控制你希望记住单词的概率。设值越高，单词记得越牢，但复习频率会显著增加。建议保持在 85% ~ 95% 之间。</p>
+        </div>
+
+        <!-- 最大复习间隔 -->
+        <div>
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">📅 最大复习间隔（天）</label>
+          <input type="number" id="maximumInterval" min="7" max="36500" value="365" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
+          <p class="text-xs text-muted mt-2 leading-relaxed">设定单词两次复习之间的最长等待时间。即使记忆非常牢固，也会在此期限内强制复习一次，防止极长期的意外遗忘。</p>
+        </div>
+
+        <!-- 每日新卡片上限 -->
+        <div>
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">📚 每日新词上限</label>
+          <input type="number" id="dailyNewLimit" min="1" max="200" value="20" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
+          <p class="text-xs text-muted mt-2 leading-relaxed">每天新加入学习的单词数量。建议根据空闲时间量力而行，少而有规律的学习比偶尔的突击记忆更有效。</p>
+        </div>
+
+        <!-- 间隔随机化 -->
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-charcoal">🎲 间隔随机化 (Fuzz)</label>
+            <p class="text-xs text-muted mt-0.5 leading-relaxed">为复习时间增加微小波动。这能有效打破大量单词在同一天扎堆出现的情况，让你的每日复习量更加平稳。</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="enableFuzz" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+          </label>
+        </div>
+
+        <!-- 学习步骤 -->
+        <div>
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">🪜 学习预热步骤（分钟）</label>
+          <input type="text" id="learningSteps" value="1, 10" placeholder="1, 10" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
+          <p class="text-xs text-muted mt-2 leading-relaxed">新单词初次学习时的复习频率。例如 "1, 10" 表示在你点过“认识”后，会在 1 分钟和 10 分钟后再次出现，加深第一印象。</p>
+        </div>
+
+        <div class="pt-6 flex justify-between items-center mt-4">
+          <button type="button" onclick="resetFsrsSettings()" class="ghost-underline-btn text-[0.8rem] text-terracotta/80 hover:text-terracotta">恢复默认</button>
+          <div class="flex gap-6 items-center">
+            <button type="button" onclick="closeModal('settingsModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
+            <button type="submit" class="magnetic-btn px-8 py-3 tracking-widest text-[0.9rem] text-surface">保存更改</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+const CONFIG = { USE_MOCK_API: false, API_BASE: 'http://localhost:3001/api' };
+
+/* ================= TOAST ================= */
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type} flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 bg-surface shadow-lg text-sm font-medium`;
+  t.innerHTML = `<span>${msg}</span>`;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+/* ================= NAV ================= */
+function navigate(viewId) {
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  document.getElementById(`view-${viewId}`).classList.add('active');
+  if (viewId === 'dashboard') initDashboard();
+  if (viewId === 'study') initStudy();
+  if (viewId === 'auth') {
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regConfirmPassword').value = '';
+    const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+    if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
+    const regBtn = document.querySelector('#registerForm button[type="submit"]');
+    if (regBtn) { regBtn.disabled = false; regBtn.innerHTML = '注册账号'; }
+  }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  if (id === 'settingsModal') loadFsrsSettings();
+}
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  modal.classList.remove('active');
+  if (id === 'wordModal') document.getElementById('wordForm').reset();
+  if (id === 'importModal') resetImport();
+}
+
+/* ================= FSRS SETTINGS ================= */
+const FSRS_DEFAULTS = { requestRetention: 0.9, maximumInterval: 365, learningSteps: [1, 10], enableFuzz: true, dailyNewLimit: 20 };
+
+async function loadFsrsSettings() {
+  try {
+    const data = await api('/auth/settings');
+    const s = { ...FSRS_DEFAULTS, ...data };
+    document.getElementById('requestRetention').value = Math.round(s.requestRetention * 100);
+    document.getElementById('retentionValue').textContent = Math.round(s.requestRetention * 100) + '%';
+    document.getElementById('maximumInterval').value = s.maximumInterval;
+    document.getElementById('dailyNewLimit').value = s.dailyNewLimit;
+    document.getElementById('enableFuzz').checked = s.enableFuzz;
+    document.getElementById('learningSteps').value = (s.learningSteps || [1, 10]).join(', ');
+  } catch (e) { console.error('Failed to load settings:', e); }
+}
+
+function resetFsrsSettings() {
+  document.getElementById('requestRetention').value = 90;
+  document.getElementById('retentionValue').textContent = '90%';
+  document.getElementById('maximumInterval').value = 365;
+  document.getElementById('dailyNewLimit').value = 20;
+  document.getElementById('enableFuzz').checked = true;
+  document.getElementById('learningSteps').value = '1, 10';
+}
+
+document.getElementById('requestRetention').addEventListener('input', function() {
+  document.getElementById('retentionValue').textContent = this.value + '%';
+});
+
+document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const steps = document.getElementById('learningSteps').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n > 0);
+  if (steps.length === 0) { showToast('学习步骤格式错误', 'error'); return; }
+  const data = {
+    requestRetention: parseInt(document.getElementById('requestRetention').value) / 100,
+    maximumInterval: parseInt(document.getElementById('maximumInterval').value) || 365,
+    dailyNewLimit: parseInt(document.getElementById('dailyNewLimit').value) || 20,
+    enableFuzz: document.getElementById('enableFuzz').checked,
+    learningSteps: steps
+  };
+  try {
+    await api('/auth/settings', { method: 'PUT', body: JSON.stringify(data) });
+    showToast('设置已保存', 'success');
+    closeModal('settingsModal');
+  } catch (e) { showToast('保存失败', 'error'); }
+});
+
+function formatDate(dateStr) {
+  if (!dateStr) return '<span class="text-xs text-muted">无日期</span>';
+  const now = new Date();
+  const target = new Date(dateStr);
+  if (target <= now) {
+    return '<span class="px-2 py-0.5 bg-ochre/10 text-ochre rounded text-xs font-semibold">待复习</span>';
+  }
+  const diffMs = target - now;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.ceil(diffMs / 86400000);
+  let timeStr;
+  if (diffMin < 60) timeStr = `${diffMin}分钟后`;
+  else if (diffHours < 24) timeStr = `${diffHours}小时后`;
+  else if (diffDays === 1) timeStr = '明天';
+  else if (diffDays === 2) timeStr = '后天';
+  else if (diffDays <= 7) timeStr = `${diffDays}天后`;
+  else timeStr = target.toLocaleDateString('zh-CN', {month:'short', day:'numeric'});
+  return `<span class="text-xs text-muted">${timeStr}</span><span class="text-xs text-charcoal/30 ml-1">复习</span>`;
+}
+
+/* ================= STATE ================= */
+const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0 };
+
+/* ================= JAPANESE FUZZY SEARCH ================= */
+const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
+const katakana = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォッャュョ';
+const romajiMap = {
+  a:'あ',i:'い',u:'う',e:'え',o:'お',
+  ka:'か',ki:'き',ku:'く',ke:'け',ko:'こ',sa:'さ',si:'し',shi:'し',su:'す',se:'せ',so:'そ',
+  ta:'た',ti:'ち',chi:'ち',tu:'つ',tsu:'つ',te:'て',to:'と',
+  na:'な',ni:'に',nu:'ぬ',ne:'ね',no:'の',
+  ha:'は',hi:'ひ',fu:'ふ',he:'へ',ho:'ほ',
+  ma:'ま',mi:'み',mu:'む',me:'め',mo:'も',
+  ya:'や',yu:'ゆ',yo:'よ',ra:'ら',ri:'り',ru:'る',re:'れ',ro:'ろ',
+  wa:'わ',wo:'を',n:'ん',
+  ga:'が',gi:'ぎ',gu:'ぐ',ge:'げ',go:'ご',za:'ざ',zi:'じ',ji:'じ',zu:'ず',ze:'ぜ',zo:'ぞ',
+  da:'だ',di:'ぢ',du:'づ',de:'で',do:'ど',
+  ba:'ば',bi:'び',bu:'ぶ',be:'べ',bo:'ぼ',
+  pa:'ぱ',pi:'ぴ',pu:'ぷ',pe:'ぺ',po:'ぽ',
+  kya:'きゃ',kyu:'きゅ',kyo:'きょ',sha:'しゃ',shu:'しゅ',sho:'しょ',
+  cha:'ちゃ',chu:'ちゅ',cho:'ちょ',nya:'にゃ',nyu:'にゅ',nyo:'にょ',
+  hya:'ひゃ',hyu:'ひゅ',hyo:'ひょ',mya:'みゃ',myu:'みゅ',myo:'みょ',
+  rya:'りゃ',ryu:'りゅ',ryo:'りょ',pya:'ぴゃ',pyu:'ぴゅ',pyo:'ぴょ',
+  gya:'ぎゃ',gyu:'ぎゅ',gyo:'ぎょ',bya:'びゃ',byu:'びゅ',byo:'びょ',
+};
+
+function normalizeJapanese(text) {
+  if (!text) return '';
+  let result = '';
+  // 全角转半角
+  text = text.replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  // 片假名 → 平假名
+  for (let i = 0; i < text.length; i++) {
+    const idx = katakana.indexOf(text[i]);
+    result += idx !== -1 ? hiragana[idx] : text[i];
+  }
+  // 小写平假名 → 大写（促音前面的っ省略）
+  result = result.replace(/っ([kstnhmyrw])/g, '$1');
+  return result;
+}
+
+function romajiToHiragana(text) {
+  text = text.toLowerCase().replace(/[^a-z]/g, '');
+  let result = '', i = 0;
+  while (i < text.length) {
+    let matched = false;
+    // 优先尝试3字符匹配
+    if (i + 2 < text.length) {
+      const triple = text[i] + text[i + 1] + text[i + 2];
+      if (romajiMap[triple]) { result += romajiMap[triple]; i += 3; matched = true; }
+    }
+    if (!matched && i + 1 < text.length) {
+      const double = text[i] + text[i + 1];
+      if (romajiMap[double]) { result += romajiMap[double]; i += 2; matched = true; }
+    }
+    if (!matched) {
+      if (romajiMap[text[i]]) { result += romajiMap[text[i]]; }
+      else { result += text[i]; }
+      i++;
+    }
+  }
+  // 还原促音
+  result = result.replace(/([kstnhmyrw])/g, '$1っ');
+  return result;
+}
+
+function fuzzyMatch(query, target, reading) {
+  if (!query) return true;
+  query = query.toLowerCase().trim();
+  if (!query) return true;
+
+  // 罗马字 → 平假名（用于和读音匹配）
+  const queryHira = romajiToHiragana(query);
+  // 拉丁化查询（用于和 meaning 匹配）
+  const queryLower = query;
+
+  // 1. reading（假名读音）精确包含
+  if (reading) {
+    const readingNorm = normalizeJapanese(reading.toLowerCase());
+    if (readingNorm.includes(queryHira) || readingNorm === queryHira) return true;
+    if (editDistance(normalizeJapanese(queryHira), readingNorm) <= 1) return true;
+  }
+
+  // 2. 汉字词直接包含（用户输入汉字）
+  if (target) {
+    const targetNorm = normalizeJapanese(target.toLowerCase());
+    if (targetNorm.includes(queryHira) || targetNorm === queryHira) return true;
+  }
+
+  // 3. meaning 包含原文
+  // (由调用方额外判断)
+
+  return false;
+}
+
+function wordMatchesSearch(query, word) {
+  if (!query) return true;
+  const q = query.toLowerCase().trim();
+  if (!q) return true;
+
+  // 直接全文匹配
+  if (word.japanese.toLowerCase().includes(q)) return true;
+  if ((word.reading || '').toLowerCase().includes(q)) return true;
+  if ((word.meaning || '').toLowerCase().includes(q)) return true;
+
+  // 模糊匹配（罗马字/假名/输入错误）
+  if (fuzzyMatch(q, word.japanese, word.reading)) return true;
+  if (fuzzyMatch(q, word.meaning, null)) return true;
+
+  return false;
+}
+
+function editDistance(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+/* ================= API ================= */
+const api = async (endpoint, options = {}) => {
+  const token = localStorage.getItem('token');
+  const config = {
+    method: options.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'x-auth-token': token })
+    }
+  };
+  if (options.body) config.body = options.body;
+  const res = await fetch(`${CONFIG.API_BASE}${endpoint}`, config);
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
+    throw new Error('Unauthorized');
+  }
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || 'API error');
+  }
+  return res.json();
+};
+
+/* ================= AUTH ================= */
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const btn = e.target.querySelector('button[type="submit"]');
+
+  if (!username || !password) {
+    showToast('请输入用户名和密码', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin inline-block mr-2" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> 登录中...';
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || '登录失败');
+    }
+
+    const data = await res.json();
+    state.token = data.token;
+    state.user = data.user;
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    document.getElementById('welcomeUser').textContent = data.user.username;
+    showToast('登录成功', 'success');
+    navigate('dashboard');
+  } catch (err) {
+    showToast(err.message || '登录失败，请检查用户名和密码', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '登录系统';
+  }
+});
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('regUsername').value;
+  const password = document.getElementById('regPassword').value;
+  const confirmPassword = document.getElementById('regConfirmPassword').value;
+  const btn = e.target.querySelector('button[type="submit"]');
+
+  if (!username || !password || !confirmPassword) {
+    showToast('请填写完整信息', 'error');
+    return;
+  }
+  if (password.length < 6) {
+    showToast('密码至少6位', 'error');
+    return;
+  }
+  if (password !== confirmPassword) {
+    showToast('两次密码输入不一致', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin inline-block mr-2" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> 注册中...';
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email: username, password })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || '注册失败');
+    }
+
+    const data = await res.json();
+    showToast('注册成功，请登录', 'success');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    btn.disabled = false;
+    btn.innerHTML = '注册账号';
+    showLogin();
+  } catch (err) {
+    showToast(err.message || '注册失败，该邮箱或用户名可能已被使用', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '注册账号';
+  }
+});
+
+function handleLogout() {
+  state.token = null; state.user = null;
+  localStorage.removeItem('token'); localStorage.removeItem('user');
+  // 重置按钮状态
+  const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+  if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
+  const regBtn = document.querySelector('#registerForm button[type="submit"]');
+  if (regBtn) { regBtn.disabled = false; regBtn.innerHTML = '注册账号'; }
+  navigate('auth');
+}
+
+function showRegister() {
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('registerForm').classList.remove('hidden');
+  document.getElementById('regUsername').value = '';
+  document.getElementById('regPassword').value = '';
+  document.getElementById('regConfirmPassword').value = '';
+  const regBtn = document.querySelector('#registerForm button[type="submit"]');
+  if (regBtn) { regBtn.disabled = false; regBtn.innerHTML = '注册账号'; }
+}
+
+function showLogin() {
+  document.getElementById('registerForm').classList.add('hidden');
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+  if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
+}
+
+/* ================= DASHBOARD ================= */
+async function initDashboard() { await loadStats(); loadWords(1); }
+
+async function loadStats() {
+  const data = await api('/study/stats');
+  document.getElementById('totalWords').textContent = data.totalWords;
+  document.getElementById('dueWords').textContent = data.dueWords;
+}
+
+async function loadWords(page = 1) {
+  state.pagination.page = page;
+  const search = document.getElementById('searchInput').value, pos = document.getElementById('partOfSpeechFilter').value;
+  const tbody = document.getElementById('wordTableBody');
+  tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-muted">加载中...</td></tr>';
+  try {
+    let endpoint = `/words?page=${page}&limit=${state.pagination.limit}`;
+    if (search) endpoint += `&search=${encodeURIComponent(search)}`;
+    if (pos) endpoint += `&partOfSpeech=${encodeURIComponent(pos)}`;
+    const data = await api(endpoint);
+    state.pagination.totalPages = data.pages;
+    document.getElementById('pageTotalItems').textContent = data.total || data.words.length;
+    renderWordList(data.words);
+    renderPagination();
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-terracotta">加载失败</td></tr>'; }
+}
+
+function renderWordList(words) {
+  state.currentPageWords = words;
+  const tbody = document.getElementById('wordTableBody');
+  if (!words.length) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-muted">暂无单词</td></tr>'; return; }
+  tbody.innerHTML = words.map(w => {
+    const checked = state.selectedWordIds.has(w._id) ? 'checked' : '';
+    return `
+    <tr class="airy-row group ${checked ? 'bg-ochre/5 border-transparent shadow-[inset_4px_0_0_#DF9F28]' : ''}">
+      <td class="px-5 py-5">
+        <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
+      </td>
+      <td class="px-6 py-4"><span class="text-lg font-semibold font-jp">${w.japanese}</span><br><span class="text-xs text-muted">${w.reading || ''}</span></td>
+      <td class="px-6 py-4 text-sm font-medium">${w.meaning}</td>
+      <td class="px-4 py-4">
+        <div class="flex flex-wrap gap-1 max-w-[120px]">
+          <span class="px-1.5 py-0.5 bg-parchment rounded text-[10px]">${w.partOfSpeech || '其他'}</span>
+          ${((w.tags || []).slice(0, 2).map(t => `<span class="px-1.5 py-0.5 border border-borderline rounded text-[10px] text-muted">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="px-1.5 py-0.5 text-[10px] text-muted">+${(w.tags || []).length - 2}</span>` : ''}
+        </div>
+      </td>
+      <td class="px-6 py-4">${formatDate(w.due)}</td>
+      <td class="px-6 py-4 text-right">
+        <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="editWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all flex items-center justify-center" title="编辑">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+          </button>
+          <button onclick="deleteWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-terracotta transition-all flex items-center justify-center" title="删除">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  updateBatchBar();
+}
+
+function renderPagination() {
+  const nav = document.getElementById('pagination'), { page, totalPages } = state.pagination;
+  if (totalPages <= 1) return nav.innerHTML = '';
+  let html = '';
+  for (let i = 1; i <= totalPages; i++) {
+    const active = i === page ? 'bg-charcoal text-surface shadow-md' : 'bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50';
+    html += `<button onclick="loadWords(${i})" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all ${active}">${i}</button>`;
+  }
+  nav.innerHTML = html;
+}
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadWords(1), 250); });
+document.getElementById('partOfSpeechFilter').addEventListener('change', () => loadWords(1));
+
+/* ================= CRUD ================= */
+document.getElementById('wordForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('wordId').value;
+  const data = { japanese: document.getElementById('japanese').value, reading: document.getElementById('reading').value, meaning: document.getElementById('meaning').value, partOfSpeech: document.getElementById('partOfSpeech').value, tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean) };
+  try {
+    if (id) await api(`/words/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    else await api('/words', { method: 'POST', body: JSON.stringify(data) });
+    closeModal('wordModal');
+    showToast('保存成功', 'success');
+    loadWords(state.pagination.page); loadStats();
+  } catch (err) { showToast('保存失败', 'error'); }
+});
+
+async function editWord(id) {
+  const data = await api(`/words?limit=1000`);
+  const word = data.words.find(w => w._id === id);
+  if (!word) return;
+  document.getElementById('modalTitle').textContent = '编辑单词';
+  document.getElementById('wordId').value = id;
+  document.getElementById('japanese').value = word.japanese;
+  document.getElementById('reading').value = word.reading || '';
+  document.getElementById('meaning').value = word.meaning;
+  document.getElementById('partOfSpeech').value = word.partOfSpeech || '名词';
+  document.getElementById('tags').value = (word.tags || []).join(', ');
+  openModal('wordModal');
+}
+
+async function deleteWord(id) {
+  if (!confirm('确定要删除这个单词吗？')) return;
+  await api(`/words/${id}`, { method: 'DELETE' });
+  showToast('已删除', 'success');
+  loadWords(state.pagination.page); loadStats();
+}
+
+async function handleAiGenerate() {
+  const japanese = document.getElementById('japanese').value.trim();
+  if (!japanese) return showToast('请先输入日语单词', 'error');
+
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> 生成中...';
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/ai/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
+      body: JSON.stringify({ japanese })
+    });
+
+    if (!res.ok) throw new Error('生成失败');
+
+    const data = await res.json();
+    document.getElementById('reading').value = data.reading || '';
+    document.getElementById('meaning').value = data.meaning || '';
+    if (data.partOfSpeech) {
+      document.getElementById('partOfSpeech').value = data.partOfSpeech;
+    }
+    document.getElementById('tags').value = (data.tags || []).join(', ');
+
+    showToast('生成成功', 'success');
+  } catch (e) {
+    showToast('生成失败，请重试', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg> AI 补全`;
+  }
+}
+
+/* ================= BATCH IMPORT ================= */
+let batchGeneratedWords = [];
+
+async function handleBatchGenerate() {
+  const text = document.getElementById('importWordsText').value.trim();
+  if (!text) return showToast('请输入日语内容', 'error');
+
+  const btn = document.getElementById('batchGenerateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '生成中...';
+
+  try {
+    // 调用后端 AI 批量生成接口
+    const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
+      body: JSON.stringify({ text })
+    });
+
+    if (!res.ok) throw new Error('生成失败');
+    batchGeneratedWords = await res.json();
+
+    document.getElementById('importStep1').classList.add('hidden');
+    document.getElementById('importStep2').classList.remove('hidden');
+    document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+
+    const list = document.getElementById('batchPreviewList');
+    list.innerHTML = batchGeneratedWords.map((w, i) => `
+      <div class="flex justify-between items-center p-3 bg-parchment rounded-xl">
+        <div>
+          <span class="font-semibold font-jp">${w.japanese}</span>
+          <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
+        </div>
+        <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+      </div>
+    `).join('');
+
+    showToast('生成成功', 'success');
+  } catch (e) {
+    showToast('生成失败，请重试', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'AI 补全';
+  }
+}
+
+function removeBatchWord(index) {
+  batchGeneratedWords.splice(index, 1);
+  document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+  const list = document.getElementById('batchPreviewList');
+  list.innerHTML = batchGeneratedWords.map((w, i) => `
+    <div class="flex justify-between items-center p-3 bg-parchment rounded-xl">
+      <div>
+        <span class="font-semibold font-jp">${w.japanese}</span>
+        <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
+      </div>
+      <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+    </div>
+  `).join('');
+}
+
+async function handleBatchImport() {
+  if (!batchGeneratedWords.length) return showToast('没有单词可导入', 'error');
+  const btn = document.getElementById('batchImportBtn');
+  const progressBar = document.getElementById('importProgressBar');
+  const progressFill = document.getElementById('importProgressFill');
+  const progressText = document.getElementById('importProgressText');
+  const progressCount = document.getElementById('importProgressCount');
+  const previewList = document.getElementById('batchPreviewList');
+
+  btn.disabled = true; btn.innerHTML = '导入中...';
+  previewList.classList.add('opacity-50');
+  progressBar.classList.remove('hidden');
+  progressBar.style.display = 'block';
+  // 强制重绘确保进度条可见
+  void progressBar.offsetWidth;
+  const total = batchGeneratedWords.length;
+  progressCount.textContent = `0/${total}`;
+  progressFill.style.width = '0%';
+
+  // 模拟进度动画
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress = Math.min(progress + Math.random() * 15, 85);
+    progressFill.style.width = `${progress}%`;
+  }, 100);
+
+  try {
+    const result = await api('/words/import', {
+      method: 'POST',
+      body: JSON.stringify({ words: batchGeneratedWords })
+    });
+    clearInterval(interval);
+    progressFill.style.width = '100%';
+    progressCount.textContent = `${total}/${total}`;
+    // 确保进度条至少显示 500ms
+    await new Promise(r => setTimeout(r, 500));
+    showToast(`成功导入 ${result.count} 个单词`, 'success');
+    resetImport();
+    closeModal('importModal');
+    loadWords(1); loadStats();
+  } catch (e) {
+    clearInterval(interval);
+    showToast('导入失败', 'error');
+    progressBar.classList.add('hidden');
+    progressBar.style.display = '';
+    progressFill.style.width = '0%';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '确认导入';
+    previewList.classList.remove('opacity-50');
+  }
+}
+
+function resetImport() {
+  batchGeneratedWords = [];
+  document.getElementById('importStep1').classList.remove('hidden');
+  document.getElementById('importStep2').classList.add('hidden');
+  document.getElementById('importWordsText').value = '';
+  const pb = document.getElementById('importProgressBar');
+  if (pb) { pb.classList.add('hidden'); pb.style.display = ''; }
+  document.getElementById('importProgressFill').style.width = '0%';
+  const genBtn = document.getElementById('batchGenerateBtn');
+  if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = 'AI 补全'; }
+}
+
+async function exportWords() {
+  try {
+    const data = await api('/words/export');
+    const blob = new Blob([JSON.stringify(data.data || data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'my-vocab-words.json'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('导出成功', 'success');
+  } catch (e) { showToast('导出失败', 'error'); }
+}
+
+/* ================= BATCH SELECTION ================= */
+function toggleWordSelect(id) {
+  if (state.selectedWordIds.has(id)) {
+    state.selectedWordIds.delete(id);
+  } else {
+    state.selectedWordIds.add(id);
+  }
+  // 直接更新对应行，不重新渲染整个表格
+  const row = document.querySelector(`tr:has(input[value="${id}"])`);
+  if (row) {
+    const cb = row.querySelector('input[type="checkbox"]');
+    cb.checked = state.selectedWordIds.has(id);
+    row.classList.toggle('bg-ochre/5', state.selectedWordIds.has(id));
+  }
+  updateBatchBar();
+}
+
+function toggleSelectAll() {
+  const checkbox = document.getElementById('selectAllCheckbox');
+  if (checkbox.checked) {
+    state.currentPageWords.forEach(w => {
+      state.selectedWordIds.add(w._id);
+      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      if (row) {
+        row.querySelector('input[type="checkbox"]').checked = true;
+        row.classList.add('bg-ochre/5');
+      }
+    });
+  } else {
+    state.currentPageWords.forEach(w => {
+      state.selectedWordIds.delete(w._id);
+      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      if (row) {
+        row.querySelector('input[type="checkbox"]').checked = false;
+        row.classList.remove('bg-ochre/5');
+      }
+    });
+  }
+  updateBatchBar();
+}
+
+function clearWordSelection() {
+  state.selectedWordIds.forEach(id => {
+    const row = document.querySelector(`tr:has(input[value="${id}"])`);
+    if (row) {
+      row.querySelector('input[type="checkbox"]').checked = false;
+      row.classList.remove('bg-ochre/5');
+    }
+  });
+  state.selectedWordIds.clear();
+  const selectAll = document.getElementById('selectAllCheckbox');
+  selectAll.checked = false;
+  selectAll.indeterminate = false;
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  const bar = document.getElementById('batchActionBar');
+  const count = state.selectedWordIds.size;
+  document.getElementById('selectedCount').textContent = count;
+  const selectAll = document.getElementById('selectAllCheckbox');
+  selectAll.checked = state.currentPageWords.length > 0 && state.currentPageWords.every(w => state.selectedWordIds.has(w._id));
+  selectAll.indeterminate = count > 0 && !selectAll.checked;
+  if (count === 0) {
+    bar.classList.add('hidden');
+  } else {
+    bar.classList.remove('hidden');
+  }
+}
+
+async function batchDeleteSelected() {
+  if (state.selectedWordIds.size === 0) return;
+  if (!confirm(`确定删除选中的 ${state.selectedWordIds.size} 个单词吗？此操作不可恢复。`)) return;
+
+  const progressBar = document.getElementById('batchProgressBar');
+  const progressFill = document.getElementById('batchProgressFill');
+  const progressText = document.getElementById('batchProgressText');
+  const progressCount = document.getElementById('batchProgressCount');
+  const batchBar = document.getElementById('batchActionBar');
+
+  const ids = Array.from(state.selectedWordIds);
+  const total = ids.length;
+
+  batchBar.classList.add('hidden');
+  progressBar.classList.remove('hidden');
+  progressText.textContent = '删除中...';
+
+  for (let i = 0; i < ids.length; i++) {
+    await api(`/words/${ids[i]}`, { method: 'DELETE' });
+    const pct = ((i + 1) / total) * 100;
+    progressFill.style.width = `${pct}%`;
+    progressCount.textContent = `${i + 1}/${total}`;
+  }
+
+  progressBar.classList.add('hidden');
+  progressFill.style.width = '0%';
+  state.selectedWordIds.clear();
+  showToast('批量删除成功', 'success');
+  loadWords(state.pagination.page);
+  loadStats();
+}
+
+function batchExportSelected() {
+  if (state.selectedWordIds.size === 0) return showToast('请先选择要导出的单词', 'error');
+  const words = state.currentPageWords.filter(w => state.selectedWordIds.has(w._id));
+  const blob = new Blob([JSON.stringify(words, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `my-vocab-selected-${Date.now()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showToast(`导出 ${words.length} 个单词`, 'success');
+}
+
+/* ================= STUDY ================= */
+async function initStudy() {
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+  document.getElementById('answerSection').classList.remove('show');
+  revealAllowed = false;
+
+  const words = await api('/study/due');
+  state.studyWords = words;
+  state.originalTotal = words.length;
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+
+  if (state.studyWords.length === 0) {
+    document.getElementById('studyCardContainer').classList.add('hidden');
+    document.getElementById('noWords').classList.remove('hidden');
+  } else {
+    renderCardStack();
+    updateStudyProgress();
+  }
+}
+
+function renderCardStack() {
+  const stack = document.getElementById('cardStack');
+  stack.innerHTML = '';
+  state.studyWords.forEach((word, index) => {
+    addCardToDOM(index, word);
+  });
+  stack.classList.remove('incoming');
+  void stack.offsetWidth;
+  stack.classList.add('incoming');
+}
+
+function addCardToDOM(index, word) {
+  const stack = document.getElementById('cardStack');
+  const zIndex = 1000 - index;
+  const relativeIndex = index - state.studyIndex;
+  let depth = 'hidden';
+  if (relativeIndex === 0) depth = '0';
+  else if (relativeIndex === 1) depth = '1';
+  else if (relativeIndex === 2) depth = '2';
+
+  const groupHTML = `
+    <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
+      <div class="paper-card back">
+        <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
+        <div class="text-3xl font-semibold text-charcoal mb-6 text-center">${word.meaning}</div>
+        <div class="px-4 py-1.5 bg-parchment rounded-full text-xs font-medium text-muted uppercase">${word.partOfSpeech || '其他'}</div>
+      </div>
+      <div class="paper-card front" onclick="revealAnswer()">
+        <span class="text-[10px] font-bold tracking-widest text-muted uppercase mb-4 px-3 py-1 bg-parchment rounded">${word.partOfSpeech || '其他'}</span>
+        <div class="text-5xl md:text-6xl font-jp font-semibold text-charcoal mb-2">${word.japanese}</div>
+        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center gap-2">
+          <span>点击撕下便签</span>
+          <span class="px-1.5 py-0.5 bg-borderline/50 rounded text-[10px] shadow-sm">Space</span>
+        </div>
+      </div>
+    </div>
+  `;
+  stack.insertAdjacentHTML('beforeend', groupHTML);
+}
+
+let revealTimeout;
+let isReviewProcessing = false;
+let revealAllowed = false;
+
+function revealAnswer() {
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) return;
+  const front = currentGroup.querySelector('.front');
+  const back = currentGroup.querySelector('.back');
+  if (!front.classList.contains('peeled')) {
+    revealAllowed = false;
+    front.classList.add('peeled');
+    back.classList.add('revealed');
+    if (revealTimeout) clearTimeout(revealTimeout);
+    revealTimeout = setTimeout(() => {
+      if (isReviewProcessing) return;
+      revealAllowed = true;
+      document.getElementById('answerSection').classList.add('show');
+    }, 200);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (isReviewProcessing) return;
+  const viewStudy = document.getElementById('view-study');
+  if (!viewStudy.classList.contains('active')) return;
+  if (!document.getElementById('studyComplete').classList.contains('hidden')) return;
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) return;
+  const front = currentGroup.querySelector('.front');
+  if (!front.classList.contains('peeled') && (e.code === 'Space' || e.code === 'Enter')) {
+    e.preventDefault();
+    revealAnswer();
+  } else if (front.classList.contains('peeled') && revealAllowed) {
+    if (e.key === '1') submitReview('again');
+    if (e.key === '2') submitReview('hard');
+    if (e.key === '3') submitReview('good');
+    if (e.key === '4') submitReview('easy');
+  }
+});
+
+async function submitReview(result) {
+  // 防止重复处理
+  if (isReviewProcessing) return;
+  isReviewProcessing = true;
+  revealAllowed = false;
+
+  // 清除可能还在路上的按钮浮现定时器
+  if (revealTimeout) { clearTimeout(revealTimeout); revealTimeout = null; }
+
+  // 双保险：卡片正面没撕开（没看到答案）则拦截提交
+  const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
+  if (!currentGroup) { isReviewProcessing = false; return; }
+  const front = currentGroup.querySelector('.front');
+  if (!front.classList.contains('peeled')) { isReviewProcessing = false; return; }
+
+  document.getElementById('answerSection').classList.remove('show');
+  const word = state.studyWords[state.studyIndex];
+  api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+  state.studyStats.reviewed++;
+  state.studyStats[result]++;
+
+  // 整组卡片飞走剥离
+  if (currentGroup) {
+    currentGroup.classList.add('discarded');
+    // 动画完成后彻底从 DOM 摘除，防止层叠崩溃
+    setTimeout(() => {
+      if (currentGroup.parentNode) {
+        currentGroup.parentNode.removeChild(currentGroup);
+      }
+    }, 600);
+  }
+
+  if (result === 'again') {
+    const newWord = { ...word };
+    state.studyWords.push(newWord);
+    addCardToDOM(state.studyWords.length - 1, newWord);
+  }
+
+  state.studyIndex++;
+  updateStackDepths();
+  updateStudyProgress();
+
+  if (state.studyIndex >= state.studyWords.length) {
+    // 延迟显示完成界面，等卡片飞走动画先完成
+    setTimeout(() => {
+      showStudyComplete();
+      isReviewProcessing = false;
+    }, 400);
+  } else {
+    // 短暂延迟解锁，留给过渡动画缓冲时间
+    setTimeout(() => {
+      isReviewProcessing = false;
+    }, 150);
+  }
+}
+
+function updateStackDepths() {
+  state.studyWords.forEach((_, index) => {
+    if (index < state.studyIndex) return;
+    const group = document.getElementById(`word-group-${index}`);
+    if (!group) return;
+
+    const relativeIndex = index - state.studyIndex;
+    let depth = 'hidden';
+    if (relativeIndex === 0) depth = '0';
+    else if (relativeIndex === 1) depth = '1';
+    else if (relativeIndex === 2) depth = '2';
+
+    group.setAttribute('data-depth', depth);
+    group.style.zIndex = String(1000 - relativeIndex);
+  });
+}
+
+function updateStudyProgress() {
+  const total = state.studyWords.length;
+  const current = Math.min(state.studyIndex, total);
+  const pct = total === 0 ? 0 : (current / total) * 100;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressText').textContent = `${current} / ${total}`;
+}
+
+function showStudyComplete() {
+  document.getElementById('studyCardContainer').classList.add('hidden');
+  const el = document.getElementById('studyComplete');
+  el.classList.remove('hidden');
+  el.classList.add('pop-in');
+  const s = state.studyStats;
+  document.getElementById('completeStats').innerHTML = `
+    <div class="p-4 bg-parchment rounded-xl border border-borderline text-center">
+      <span class="text-2xl font-semibold">${s.reviewed}</span>
+      <span class="block text-xs text-muted mt-1 font-medium">复习次数</span>
+    </div>
+    <div class="p-4 bg-ochre/10 rounded-xl border border-ochre/20 text-center">
+      <span class="text-2xl font-semibold text-ochre">${state.originalTotal}</span>
+      <span class="block text-xs text-muted mt-1 font-medium">原始词汇量</span>
+    </div>
+    <div class="col-span-2 flex justify-around pt-4 mt-2 border-t border-borderline text-sm font-medium">
+      <span class="text-terracotta">重来: ${s.again}</span>
+      <span class="text-ochre">困难: ${s.hard}</span>
+      <span class="text-charcoal">良好: ${s.good}</span>
+      <span class="text-[#4B7365]">简单: ${s.easy}</span>
+    </div>`;
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#DF9F28', '#D16B4A', '#1A2F2B', '#4B7365'] });
+  }
+  // 保存本次学习的单词到 localStorage，供之后再练一次使用
+  localStorage.setItem('lastStudyWords', JSON.stringify(state.studyWords));
+}
+
+function reviewAgain() {
+  // 重置学习状态，保留原始词汇量
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+
+  // 隐藏完成界面，显示卡片容器
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  // 重新渲染卡片堆叠
+  renderCardStack();
+  updateStudyProgress();
+}
+
+function reviewLastSession() {
+  const saved = localStorage.getItem('lastStudyWords');
+  if (!saved) {
+    showToast('没有可复习的记录', 'error');
+    return;
+  }
+  state.studyWords = JSON.parse(saved);
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  renderCardStack();
+  updateStudyProgress();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token'), user = localStorage.getItem('user');
+  if (token && user) { state.token = token; state.user = JSON.parse(user); document.getElementById('welcomeUser').textContent = state.user.username; navigate('dashboard'); }
+  else navigate('auth');
+});
+</script>
+
+<!-- Confetti (按需加载) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
+</body>
+</html>
