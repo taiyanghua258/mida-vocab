@@ -850,6 +850,47 @@
           </label>
         </div>
 
+        <!-- 复习提醒设置 -->
+        <div class="border-t border-borderline/40 pt-5">
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-4">🔔 复习提醒</label>
+
+          <!-- 铃声 -->
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <label class="text-sm font-medium text-charcoal">铃声提醒</label>
+              <p class="text-xs text-muted mt-0.5">单词到期时播放风铃音效</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifySoundToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifySound', this.checked)">
+              <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+
+          <!-- 桌面通知 -->
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <label class="text-sm font-medium text-charcoal">桌面通知</label>
+              <p class="text-xs text-muted mt-0.5">浏览器弹窗提醒（需点击铃铛授权）</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifyDesktopToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifyDesktop', this.checked)">
+              <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+
+          <!-- 震动 -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-sm font-medium text-charcoal">震动提醒</label>
+              <p class="text-xs text-muted mt-0.5">手机端振动反馈</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifyVibrateToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifyVibrate', this.checked)">
+              <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+        </div>
+
         <!-- 学习步骤 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">🪜 学习预热步骤（分钟）</label>
@@ -1129,19 +1170,35 @@ function tickLocalTimer() {
   renderUpcomingWidget();
 }
 
-function triggerDueNotification(count) {
-  // 播放风铃音效（尝试唤醒 AudioContext）
-  playGentleDing();
+// 通知去抖：60 秒内只触发一次完整提醒
+let lastNotifyTime = 0;
 
-  // 浏览器桌面通知
-  if (state.notificationsEnabled && Notification.permission === 'granted') {
-    new Notification("見だ | 记忆召唤", {
-      body: `时间到！有 ${count} 个单词加入待复习队列，趁热打铁吧。`,
-      icon: "favicon.png"
-    });
+function triggerDueNotification(count) {
+  const now = Date.now();
+  // 去抖：60 秒内不重复触发音效/通知/震动，但始终更新 UI
+  const shouldAlert = (now - lastNotifyTime) > 60000;
+
+  if (shouldAlert) {
+    lastNotifyTime = now;
+
+    // 风铃音效
+    if (state.notifySound) playGentleDing();
+
+    // 浏览器桌面通知
+    if (state.notifyDesktop && state.notificationsEnabled && Notification.permission === 'granted') {
+      new Notification("見だ | 记忆召唤", {
+        body: `时间到！有 ${count} 个单词加入待复习队列，趁热打铁吧。`,
+        icon: "favicon.png"
+      });
+    }
+
+    // 震动（移动端）
+    if (state.notifyVibrate && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
   }
 
-  // 页面标题闪烁（即使没有通知权限也能提醒用户）
+  // 页面标题闪烁（始终生效，不受开关影响）
   if (!document.hasFocus()) {
     let blinkCount = 0;
     const originalTitle = document.title;
@@ -1161,6 +1218,33 @@ function triggerDueNotification(count) {
   const dueElement = document.getElementById('dueWords').parentElement;
   dueElement.classList.add('pulse-ochre');
   setTimeout(() => dueElement.classList.remove('pulse-ochre'), 5000);
+}
+
+function updateNotifySetting(key, value) {
+  state[key] = value;
+  localStorage.setItem('notifySettings', JSON.stringify({
+    notifySound: state.notifySound,
+    notifyDesktop: state.notifyDesktop,
+    notifyVibrate: state.notifyVibrate
+  }));
+}
+
+function loadNotifySettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('notifySettings'));
+    if (saved) {
+      state.notifySound = saved.notifySound !== false;
+      state.notifyDesktop = saved.notifyDesktop !== false;
+      state.notifyVibrate = saved.notifyVibrate !== false;
+    }
+    // 同步 toggle 状态到 UI
+    const s = document.getElementById('notifySoundToggle');
+    const d = document.getElementById('notifyDesktopToggle');
+    const v = document.getElementById('notifyVibrateToggle');
+    if (s) s.checked = state.notifySound;
+    if (d) d.checked = state.notifyDesktop;
+    if (v) v.checked = state.notifyVibrate;
+  } catch (e) {}
 }
 
 function renderUpcomingWidget() {
@@ -1203,7 +1287,7 @@ function updateTableDueTimes() {
 }
 
 /* ================= STATE ================= */
-const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false, lastDueCount: 0, pollingInterval: null, notificationsEnabled: false, coolingWords: [], upcomingWords: [], notifiedWordIds: new Set(), localTimer: null };
+const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false, lastDueCount: 0, pollingInterval: null, notificationsEnabled: false, coolingWords: [], upcomingWords: [], notifiedWordIds: new Set(), localTimer: null, notifySound: true, notifyDesktop: true, notifyVibrate: true };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */
 const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
@@ -1389,6 +1473,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     document.getElementById('welcomeUser').textContent = data.user.username;
     showToast('登录成功', 'success');
     startBackgroundPolling();
+    loadNotifySettings();
     navigate('dashboard');
   } catch (err) {
     showToast(err.message || '登录失败，请检查用户名和密码', 'error');
@@ -2319,6 +2404,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     startBackgroundPolling();
+    loadNotifySettings();
     navigate('dashboard');
   }
   else navigate('auth');
