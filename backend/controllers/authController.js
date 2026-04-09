@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+// 新增下面这两行引入
+const Word = require('../models/Word');
+const ReviewLog = require('../models/ReviewLog');
 
 exports.register = async (req, res) => {
   try {
@@ -130,11 +133,23 @@ exports.updateSettings = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const { username } = req.params;
-    const result = await User.findOneAndDelete({ username });
-    if (!result) {
-      return res.status(404).json({ message: 'User not found' });
+    
+    // 1. 获取当前发请求的用户
+    const user = await User.findById(req.userId);
+    
+    // 2. 权限校验：只能删除自己（校验 token 中的 userId 对应的用户名，是否和 params 请求的用户名一致）
+    if (!user || user.username !== username) {
+      return res.status(403).json({ message: 'Forbidden: 越权操作，只能删除自己的账号' });
     }
-    res.json({ message: `User ${username} deleted` });
+
+    // 3. 级联删除相关的单词和复习日志，防止产生幽灵数据占用服务器存储
+    await Word.deleteMany({ userId: user._id });
+    await ReviewLog.deleteMany({ userId: user._id });
+
+    // 4. 最后删除用户本身
+    await User.findByIdAndDelete(user._id);
+
+    res.json({ message: `用户 ${username} 及其所有词库数据已彻底删除` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

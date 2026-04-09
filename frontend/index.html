@@ -1660,14 +1660,50 @@ async function batchDeleteSelected() {
   }
 }
 
-function batchExportSelected() {
+async function batchExportSelected() {
   if (state.selectedWordIds.size === 0) return showToast('请先选择要导出的单词', 'error');
-  const words = state.currentPageWords.filter(w => state.selectedWordIds.has(w._id));
-  const blob = new Blob([JSON.stringify(words, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `my-vocab-selected-${Date.now()}.json`; a.click();
-  URL.revokeObjectURL(url);
-  showToast(`导出 ${words.length} 个单词`, 'success');
+
+  try {
+    // 提示用户正在处理
+    const btn = document.querySelector('button[onclick="batchExportSelected()"]');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '导出中...';
+    btn.disabled = true;
+
+    // 拉取用户所有单词（突破当前页限制）
+    const data = await api('/words?limit=10000');
+    const allWords = data.words || [];
+
+    // 根据选中的 ID 跨页过滤出需要导出的词
+    const wordsToExport = allWords.filter(w => state.selectedWordIds.has(w._id));
+
+    if (wordsToExport.length === 0) {
+      btn.innerHTML = oldHtml;
+      btn.disabled = false;
+      return showToast('未找到对应的数据', 'error');
+    }
+
+    // 生成文件下载
+    const blob = new Blob([JSON.stringify(wordsToExport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = `my-vocab-selected-${Date.now()}.json`; 
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast(`成功导出 ${wordsToExport.length} 个单词`, 'success');
+
+    // 恢复按钮状态
+    btn.innerHTML = oldHtml;
+    btn.disabled = false;
+  } catch (e) { 
+    showToast('导出失败，请重试', 'error'); 
+    // 恢复按钮状态
+    const btn = document.querySelector('button[onclick="batchExportSelected()"]');
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM93.66,133.66a8,8,0,0,1,11.32-11.32L120,137.38V40a8,8,0,0,1,16,0v97.38l15-15a8,8,0,0,1,11.32,11.32l-28.69,28.68a8,8,0,0,1-11.32,0Z"></path></svg> 导出`;
+    btn.disabled = false;
+  }
 }
 
 /* ================= STUDY ================= */

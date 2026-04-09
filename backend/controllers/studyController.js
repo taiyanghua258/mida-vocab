@@ -210,7 +210,7 @@ exports.getStats = async (req, res) => {
     const totalWords = await Word.countDocuments({ userId: req.userId });
     const dueWords = await Word.countDocuments({
       userId: req.userId,
-      due: { $lte: tomorrow }
+      due: { $lte: now } // <--- 改为 now，与实际抓取学习单词的逻辑完全一致
     });
     const newWords = await Word.countDocuments({
       userId: req.userId,
