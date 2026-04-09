@@ -72,6 +72,7 @@
 git clone [https://github.com/taiyanghua258/mida-vocab.git](https://github.com/taiyanghua258/mida-vocab.git)
 cd mida-vocab/backend
 npm install
+
 ### 2. 配置环境变量
 ​在 backend 目录下创建 .env 文件，并填入以下必要参数：
 PORT=3001
@@ -79,6 +80,7 @@ MONGODB_URI=mongodb://127.0.0.1:27017/my-vocab
 JWT_SECRET=your_super_secret_jwt_key
 DEEPSEEK_API_KEY=your_deepseek_api_key
 CORS_ORIGIN=*
+
 ### 3. 启动服务 (推荐使用 PM2)
 pm2 start server.js --name "mida-vocab"
 后端启动后，静态资源将一并挂载提供服务。接着配置 Nginx 反向代理至 3001 端口即可开始使用。
