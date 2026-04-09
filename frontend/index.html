@@ -1037,7 +1037,7 @@ function formatDate(dateStr) {
     return '<span class="px-2 py-0.5 bg-ochre/10 text-ochre rounded text-xs font-semibold pulse-ochre">待复习</span>';
   }
   const diffMs = target - now;
-  const diffMin = Math.floor(diffMs / 60000);
+  const diffMin = Math.ceil(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.ceil(diffMs / 86400000);
   let timeStr;

@@ -80,10 +80,11 @@ exports.getDueWords = async (req, res) => {
 
     // 时区修复：使用 dayjs 获取严格意义上的"本地今日凌晨"
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
-      reviewDate: { $gte: todayStart },
+      reviewDate: { $gte: todayStart, $lt: tomorrowStart },
       state: 0
     });
 
