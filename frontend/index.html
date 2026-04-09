@@ -527,6 +527,13 @@
         </div>
       </div>
 
+      <div id="upcomingWidget" class="hidden mb-6 glass-card p-4 rounded-2xl border border-borderline flex flex-wrap gap-3 items-center">
+        <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
+          记忆冷却池
+        </div>
+        <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
+      </div>
       <div class="mb-5 flex flex-col sm:flex-row gap-4">
         <div class="relative flex-1">
           <div class="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none text-muted">
@@ -1048,43 +1055,117 @@ function toggleNotifications() {
 
 async function startBackgroundPolling() {
   if (state.pollingInterval) clearInterval(state.pollingInterval);
+  if (state.localTimer) clearInterval(state.localTimer);
+
+  checkDueUpdates();
+  // 依然每 30 秒去后端兜底拉取一次
   state.pollingInterval = setInterval(checkDueUpdates, 30000);
+  // 新增：每秒执行一次的本地精准时钟引擎
+  state.localTimer = setInterval(tickLocalTimer, 1000);
 }
 
 async function checkDueUpdates() {
   if (!state.token) return;
   try {
     const data = await api('/study/stats');
-    const currentDue = data.dueWords;
-
     document.getElementById('totalWords').textContent = data.totalWords;
-    document.getElementById('dueWords').textContent = currentDue;
+    document.getElementById('dueWords').textContent = data.dueWords;
 
-    if (currentDue > state.lastDueCount && currentDue > 0) {
-      playGentleDing();
+    // 更新到最新的等待列表
+    state.upcomingWords = data.upcomingWords || [];
+    state.lastDueCount = data.dueWords;
 
-      if (state.notificationsEnabled && Notification.permission === 'granted') {
-        new Notification("見だ | 记忆召唤", {
-          body: `时间到！有 ${currentDue} 个单词刚从你的记忆曲线中滑落，趁热打铁复习一下吧。`,
-          icon: "favicon.png"
-        });
-      }
+    renderUpcomingWidget();
+    updateTableDueTimes();
+  } catch (e) { /* 忽略静默错误 */ }
+}
+
+function tickLocalTimer() {
+  if (!state.upcomingWords || state.upcomingWords.length === 0) return;
+  const now = Date.now();
+  let justDueCount = 0;
+
+  // 1秒扫描一次冷却池，看看有没有刚才时间到的单词
+  state.upcomingWords = state.upcomingWords.filter(w => {
+    const dueTime = new Date(w.due).getTime();
+    if (dueTime <= now) {
+       // 该词时间已到！触发提醒
+       if (!state.notifiedWordIds.has(w._id)) {
+           state.notifiedWordIds.add(w._id);
+           justDueCount++;
+       }
+       return false; // 从待背窗口移出
     }
+    return true; // 还没到时间，继续展示
+  });
 
-    state.lastDueCount = currentDue;
+  // 如果这一秒内有单词刚好冷却完毕
+  if (justDueCount > 0) {
+     state.lastDueCount += justDueCount;
+     document.getElementById('dueWords').textContent = state.lastDueCount;
 
-    if (document.getElementById('view-dashboard').classList.contains('active')) {
-      const cells = document.querySelectorAll('.due-cell');
-      cells.forEach(cell => {
-         const dueStr = cell.getAttribute('data-due');
-         if (dueStr) cell.innerHTML = formatDate(dueStr);
-      });
-    }
-  } catch (e) { /* 静默失败，不打扰用户 */ }
+     // 触发播放音效与系统通知
+     playGentleDing();
+     if (state.notificationsEnabled && Notification.permission === 'granted') {
+       new Notification("見だ | 记忆召唤", {
+         body: `时间到！刚刚有 ${justDueCount} 个单词加入待复习队列，趁热打铁吧。`,
+         icon: "favicon.png"
+       });
+     }
+
+     // 给待复习数字加上显眼的橙色发光特效
+     const dueElement = document.getElementById('dueWords').parentElement;
+     dueElement.classList.add('pulse-ochre');
+     setTimeout(() => dueElement.classList.remove('pulse-ochre'), 3000);
+
+     updateTableDueTimes();
+  }
+
+  // 刷新主页的"几分钟后" UI
+  renderUpcomingWidget();
+}
+
+function renderUpcomingWidget() {
+  const widget = document.getElementById('upcomingWidget');
+  const timeline = document.getElementById('upcomingTimeline');
+  if (!state.upcomingWords || state.upcomingWords.length === 0) {
+    widget.classList.add('hidden');
+    return;
+  }
+
+  // 计算分组：如 [ { 1分钟: 3词 }, { 7分钟: 1词 } ]
+  const groups = {};
+  const now = Date.now();
+  state.upcomingWords.forEach(w => {
+    const diffMs = new Date(w.due).getTime() - now;
+    const diffMin = Math.ceil(diffMs / 60000);
+    const key = diffMin > 0 ? diffMin : 1;
+    groups[key] = (groups[key] || 0) + 1;
+  });
+
+  const sortedKeys = Object.keys(groups).map(Number).sort((a,b)=>a-b);
+  timeline.innerHTML = sortedKeys.map(min => `
+    <div class="px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all">
+       <span class="font-mono font-bold">${min}</span> 分钟后
+       <span class="bg-surface text-charcoal px-1.5 py-0.5 rounded text-[10px] shadow-sm">${groups[min]} 词</span>
+    </div>
+  `).join('');
+
+  widget.classList.remove('hidden');
+}
+
+function updateTableDueTimes() {
+  if (document.getElementById('view-dashboard').classList.contains('active')) {
+    const cells = document.querySelectorAll('.due-cell');
+    cells.forEach(cell => {
+       const dueStr = cell.getAttribute('data-due');
+       if (dueStr) cell.innerHTML = formatDate(dueStr);
+    });
+  }
 }
 
 /* ================= STATE ================= */
-const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false, lastDueCount: 0, pollingInterval: null, notificationsEnabled: false, coolingWords: [] };
+const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false, lastDueCount: 0, pollingInterval: null, notificationsEnabled: false, coolingWords: [], upcomingWords: [], notifiedWordIds: new Set(), localTimer: null };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */
 const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
@@ -1329,6 +1410,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
 function handleLogout() {
   if (state.pollingInterval) clearInterval(state.pollingInterval);
+  if (state.localTimer) clearInterval(state.localTimer);
   state.token = null; state.user = null;
   localStorage.removeItem('token'); localStorage.removeItem('user');
   // 重置按钮状态
@@ -1825,16 +1907,8 @@ async function batchExportSelected() {
 
 /* ================= STUDY ================= */
 async function initStudy() {
-  state.isCramMode = false; // 正常学习，记录数据
-  state.coolingWords = []; // 清空冷却队列
-
-  // 恢复可能被篡改的空状态文案
-  const noWordsEl = document.getElementById('noWords');
-  noWordsEl.querySelector('h2').textContent = '任务达成！';
-  noWordsEl.querySelector('p').textContent = '当前没有需要复习的单词，休息一下吧。';
-  const rightBtn = noWordsEl.querySelectorAll('button')[1];
-  rightBtn.textContent = '再练一次';
-  rightBtn.onclick = () => reviewLastSession();
+  state.isCramMode = false;
+  state.coolingWords = [];
 
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
@@ -1850,11 +1924,44 @@ async function initStudy() {
 
   if (state.studyWords.length === 0) {
     document.getElementById('studyCardContainer').classList.add('hidden');
-    document.getElementById('noWords').classList.remove('hidden');
+
+    // 动态抓取真实冷却状态，而非错误展示任务达成
+    const stats = await api('/study/stats');
+    if (stats.upcomingWords && stats.upcomingWords.length > 0) {
+       showCoolingState(stats.upcomingWords);
+    } else {
+       showTaskAccomplished();
+    }
   } else {
     renderCardStack();
     updateStudyProgress();
   }
+}
+
+function showCoolingState(upcomingWords) {
+  const el = document.getElementById('noWords');
+  el.classList.remove('hidden');
+  el.classList.add('pop-in');
+
+  el.querySelector('h2').textContent = '记忆冷却中 ⏳';
+  el.querySelector('p').textContent = `还有 ${upcomingWords.length} 个单词正在记忆冷却中，请休息几分钟后继续。`;
+
+  const rightBtn = el.querySelectorAll('button')[1];
+  rightBtn.textContent = '刷新复习';
+  rightBtn.onclick = () => { initStudy(); };
+}
+
+function showTaskAccomplished() {
+  const el = document.getElementById('noWords');
+  el.classList.remove('hidden');
+  el.classList.add('pop-in');
+
+  el.querySelector('h2').textContent = '任务达成！';
+  el.querySelector('p').textContent = '当前没有需要复习的单词，休息一下吧。';
+
+  const rightBtn = el.querySelectorAll('button')[1];
+  rightBtn.textContent = '再练一次';
+  rightBtn.onclick = () => reviewLastSession();
 }
 
 function renderCardStack() {
@@ -2076,52 +2183,37 @@ function updateStudyProgress() {
 function showStudyComplete() {
   document.getElementById('studyCardContainer').classList.add('hidden');
 
-  // 计算当前真实还在冷却中的单词（有些可能已经到期了）
-  const now = Date.now();
-  const actuallyCooling = state.coolingWords.filter(w => new Date(w.due).getTime() > now);
-
-  if (actuallyCooling.length > 0) {
-    // 拦截：显示记忆冷却中
-    const el = document.getElementById('noWords');
-    el.classList.remove('hidden');
-    el.classList.add('pop-in');
-
-    // 动态替换文案
-    el.querySelector('h2').textContent = '记忆冷却中 ⏳';
-    el.querySelector('p').textContent = `还有 ${actuallyCooling.length} 个单词正在记忆冷却中，请休息几分钟后继续。`;
-
-    // 替换按钮动作：让用户可以强制刷新复习
-    const rightBtn = el.querySelectorAll('button')[1];
-    rightBtn.textContent = '刷新复习';
-    rightBtn.onclick = () => { initStudy(); };
-
-  } else {
-    // 正常显示学习完成
-    const el = document.getElementById('studyComplete');
-    el.classList.remove('hidden');
-    el.classList.add('pop-in');
-    const s = state.studyStats;
-    document.getElementById('completeStats').innerHTML = `
-    <div class="p-4 bg-parchment rounded-xl border border-borderline text-center">
-      <span class="text-2xl font-semibold">${s.reviewed}</span>
-      <span class="block text-xs text-muted mt-1 font-medium">复习次数</span>
-    </div>
-    <div class="p-4 bg-ochre/10 rounded-xl border border-ochre/20 text-center">
-      <span class="text-2xl font-semibold text-ochre">${state.originalTotal}</span>
-      <span class="block text-xs text-muted mt-1 font-medium">原始词汇量</span>
-    </div>
-    <div class="col-span-2 flex justify-around pt-4 mt-2 border-t border-borderline text-sm font-medium">
-      <span class="text-terracotta">重来: ${s.again}</span>
-      <span class="text-ochre">困难: ${s.hard}</span>
-      <span class="text-charcoal">良好: ${s.good}</span>
-      <span class="text-[#4B7365]">简单: ${s.easy}</span>
-    </div>`;
-    if (typeof confetti === 'function') {
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#DF9F28', '#D16B4A', '#1A2F2B', '#4B7365'] });
-    }
-    // 保存本次学习的单词到 localStorage，供之后再练一次使用
-    localStorage.setItem('lastStudyWords', JSON.stringify(state.studyWords));
-  }
+  // 每次学完不靠旧状态，直接找后端要最新倒计时
+  api('/study/stats').then(stats => {
+      if (stats.upcomingWords && stats.upcomingWords.length > 0) {
+          showCoolingState(stats.upcomingWords);
+      } else {
+          // 彻底没有待复习单词了
+          const el = document.getElementById('studyComplete');
+          el.classList.remove('hidden');
+          el.classList.add('pop-in');
+          const s = state.studyStats;
+          document.getElementById('completeStats').innerHTML = `
+          <div class="p-4 bg-parchment rounded-xl border border-borderline text-center">
+            <span class="text-2xl font-semibold">${s.reviewed}</span>
+            <span class="block text-xs text-muted mt-1 font-medium">复习次数</span>
+          </div>
+          <div class="p-4 bg-ochre/10 rounded-xl border border-ochre/20 text-center">
+            <span class="text-2xl font-semibold text-ochre">${state.originalTotal}</span>
+            <span class="block text-xs text-muted mt-1 font-medium">原始词汇量</span>
+          </div>
+          <div class="col-span-2 flex justify-around pt-4 mt-2 border-t border-borderline text-sm font-medium">
+            <span class="text-terracotta">重来: ${s.again}</span>
+            <span class="text-ochre">困难: ${s.hard}</span>
+            <span class="text-charcoal">良好: ${s.good}</span>
+            <span class="text-[#4B7365]">简单: ${s.easy}</span>
+          </div>`;
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#DF9F28', '#D16B4A', '#1A2F2B', '#4B7365'] });
+          }
+          localStorage.setItem('lastStudyWords', JSON.stringify(state.studyWords));
+      }
+  });
 }
 
 function reviewAgain() {

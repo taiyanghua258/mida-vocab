@@ -266,6 +266,14 @@ exports.getStats = async (req, res) => {
       reviewDate: { $gte: todayStart, $lt: tomorrowStart }
     });
 
+    // 提前抓取未来1小时内即将冷却完毕的单词
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    const upcomingWords = await Word.find({
+      userId: req.userId,
+      state: { $ne: 0 },
+      due: { $gt: now, $lte: oneHourLater }
+    }).select('_id due').sort({ due: 1 }).lean();
+
     res.json({
       totalWords,
       dueWords,
@@ -273,7 +281,8 @@ exports.getStats = async (req, res) => {
       learningWords,
       reviewWords,
       masteredWords,
-      todayReviews
+      todayReviews,
+      upcomingWords
     });
   } catch (err) {
     console.error(err);
