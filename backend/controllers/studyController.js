@@ -3,6 +3,16 @@ const ReviewLog = require('../models/ReviewLog');
 const User = require('../models/User');
 const { createEmptyCard, fsrs, generatorParameters, Rating, State } = require('ts-fsrs');
 
+// 引入 dayjs 抹平服务器时区差异
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// 设定基准时区（可按需修改，或后续让前端传参）
+const TIMEZONE = "Asia/Shanghai";
+
 const RESULT_TO_RATING = {
   'again': Rating.Again,
   'hard': Rating.Hard,
@@ -55,20 +65,22 @@ function formatInterval(dueDate, now) {
 
 exports.getDueWords = async (req, res) => {
   try {
-    const now = new Date(); // 恢复精确到现在这一秒
+    const now = new Date();
     const user = await User.findById(req.userId).select('fsrsSettings');
     const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
 
-    // 【修复】：改回 <= now，严格遵守 1分钟/10分钟 的冷却期
+    // 性能隐患修复：加入 limit(100) 拦截超大数组，实现单次会话的"分页打断"
     const reviewWords = await Word.find({
       userId: req.userId,
       state: { $ne: 0 },
       due: { $lte: now }
-    }).sort({ due: 1 });
+    }).sort({ due: 1 }).limit(100);
 
     let newWords = [];
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
+
+    // 时区修复：使用 dayjs 获取严格意义上的"本地今日凌晨"
+    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
       reviewDate: { $gte: todayStart },
@@ -77,11 +89,12 @@ exports.getDueWords = async (req, res) => {
 
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
-    if (remainingNew > 0) {
+    // 复习优先原则：只有当本次取出的待复习单词量小于一定阈值（如50）时，才塞入新词
+    if (reviewWords.length < 50 && remainingNew > 0) {
       newWords = await Word.find({
         userId: req.userId,
         state: 0,
-        due: { $lte: now } // 【修复】：同样改回 <= now
+        due: { $lte: now }
       }).sort({ createdAt: 1 }).limit(remainingNew);
     }
 
@@ -150,11 +163,9 @@ exports.reviewWord = async (req, res) => {
     const newCard = chosen.card;
     const log = chosen.log;
 
-    // 真正的 Anki 跨日逻辑：如果是长线复习(>=1天)，把时间抹平到该天的 00:00:00
-    // 如果是短期学习(<1天，比如10分钟)，保留精确分秒，不予干涉
+    // 时区修复：如果是长线复习(>=1天)，使用 dayjs 对齐到本地时区的 00:00:00
     if (newCard.scheduled_days >= 1) {
-      const alignedDue = new Date(newCard.due);
-      alignedDue.setHours(0, 0, 0, 0);
+      const alignedDue = dayjs(newCard.due).tz(TIMEZONE).startOf('day').toDate();
       newCard.due = alignedDue;
     }
 
@@ -204,45 +215,61 @@ exports.reviewWord = async (req, res) => {
 exports.getStats = async (req, res) => {
   try {
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // 时区修复：统一日切线
+    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
     const totalWords = await Word.countDocuments({ userId: req.userId });
 
-    // 【修复】：统计恢复严格时间
-    const dueWords = await Word.countDocuments({
+    // 1. 查找必须复习的旧词
+    const dueReviewCount = await Word.countDocuments({
       userId: req.userId,
+      state: { $ne: 0 },
       due: { $lte: now }
     });
-    const newWords = await Word.countDocuments({
+
+    // 2. 查找还没背过的新词
+    const newWordsCount = await Word.countDocuments({
       userId: req.userId,
-      state: 0 // New
+      state: 0
     });
+
+    // 3. 计算今天还剩下的新词额度
+    const todayNewReviews = await ReviewLog.countDocuments({
+      userId: req.userId,
+      reviewDate: { $gte: todayStart, $lt: tomorrowStart },
+      state: 0
+    });
+
+    const user = await User.findById(req.userId).select('fsrsSettings');
+    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+    const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
+
+    // 真实待复习总数 = 旧词 + min(剩余额度, 待背新词总数)
+    const dueWords = dueReviewCount + Math.min(remainingNew, newWordsCount);
+
     const learningWords = await Word.countDocuments({
       userId: req.userId,
-      state: { $in: [1, 3] } // Learning, Relearning
+      state: { $in: [1, 3] }
     });
     const reviewWords = await Word.countDocuments({
       userId: req.userId,
-      state: 2 // Review
+      state: 2
     });
     const masteredWords = await Word.countDocuments({
       userId: req.userId,
       state: 2,
       reps: { $gte: 5 }
     });
-
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
     const todayReviews = await ReviewLog.countDocuments({
       userId: req.userId,
-      reviewDate: { $gte: todayStart, $lt: tomorrow }
+      reviewDate: { $gte: todayStart, $lt: tomorrowStart }
     });
 
     res.json({
       totalWords,
       dueWords,
-      newWords,
+      newWords: newWordsCount,
       learningWords,
       reviewWords,
       masteredWords,
