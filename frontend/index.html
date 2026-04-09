@@ -734,6 +734,17 @@
         <div id="importStep1">
           <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
           <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono text-[0.8rem]" placeholder="每行一个单词：&#10;桜&#10;花&#10;火&#10;&#10;AI 自动提取..."></textarea>
+          
+          <div id="aiProgressBar" class="hidden mt-4">
+            <div class="flex items-center justify-between text-xs text-muted mb-1.5">
+              <span id="aiProgressText">AI 解析中，请勿关闭...</span>
+              <span id="aiProgressCount">0/0</span>
+            </div>
+            <div class="w-full h-1.5 bg-borderline rounded-full overflow-hidden">
+              <div id="aiProgressFill" class="h-full bg-ochre transition-all duration-300 ease-out rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+
           <div class="mt-6 flex justify-end">
             <button type="button" onclick="handleBatchGenerate()" id="batchGenerateBtn" class="magnetic-btn px-6 py-3 tracking-widest text-[0.9rem] flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg>
@@ -1383,28 +1394,58 @@ async function handleBatchGenerate() {
   const text = document.getElementById('importWordsText').value.trim();
   if (!text) return showToast('请输入日语内容', 'error');
 
+  // 将输入的文本按换行符拆分，并过滤掉空行
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return showToast('请输入有效的单词', 'error');
+
   const btn = document.getElementById('batchGenerateBtn');
   btn.disabled = true;
-  btn.innerHTML = '生成中...';
+  btn.innerHTML = 'AI 解析中...';
+
+  // 展开进度条 UI
+  const pb = document.getElementById('aiProgressBar');
+  const pCount = document.getElementById('aiProgressCount');
+  const pFill = document.getElementById('aiProgressFill');
+  pb.classList.remove('hidden');
+
+  batchGeneratedWords = [];
+  const total = lines.length;
+  // 【核心】每次最多发给 AI 10 个词，处理极快，进度反馈真实
+  const chunkSize = 10; 
+  let processed = 0;
+
+  pCount.textContent = `0/${total}`;
+  pFill.style.width = `0%`;
 
   try {
-    // 调用后端 AI 批量生成接口
-    const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
-      body: JSON.stringify({ text })
-    });
+    for (let i = 0; i < total; i += chunkSize) {
+      const chunkLines = lines.slice(i, i + chunkSize);
+      const chunkText = chunkLines.join('\n');
 
-    if (!res.ok) throw new Error('生成失败');
-    batchGeneratedWords = await res.json();
+      const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
+        body: JSON.stringify({ text: chunkText })
+      });
 
+      if (!res.ok) throw new Error('AI 解析中断');
+      const chunkResult = await res.json();
+      batchGeneratedWords.push(...chunkResult);
+
+      // 计算真实进度并推给进度条
+      processed += chunkLines.length;
+      pCount.textContent = `${processed}/${total}`;
+      pFill.style.width = `${(processed / total) * 100}%`;
+    }
+
+    // 成功后：隐藏步骤1，进入步骤2（核对列表）
     document.getElementById('importStep1').classList.add('hidden');
     document.getElementById('importStep2').classList.remove('hidden');
     document.getElementById('batchCount').textContent = batchGeneratedWords.length;
 
     const list = document.getElementById('batchPreviewList');
     list.innerHTML = batchGeneratedWords.map((w, i) => `
-      <div class="flex justify-between items-center p-3 bg-parchment rounded-xl">
+      <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
         <div>
           <span class="font-semibold font-jp">${w.japanese}</span>
           <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
@@ -1413,12 +1454,13 @@ async function handleBatchGenerate() {
       </div>
     `).join('');
 
-    showToast('生成成功', 'success');
+    showToast('全部生成成功', 'success');
   } catch (e) {
-    showToast('生成失败，请重试', 'error');
+    showToast('生成过程中发生网络错误', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'AI 补全';
+    pb.classList.add('hidden'); // 收起进度条
   }
 }
 
@@ -1442,7 +1484,6 @@ async function handleBatchImport() {
   const btn = document.getElementById('batchImportBtn');
   const progressBar = document.getElementById('importProgressBar');
   const progressFill = document.getElementById('importProgressFill');
-  const progressText = document.getElementById('importProgressText');
   const progressCount = document.getElementById('importProgressCount');
   const previewList = document.getElementById('batchPreviewList');
 
@@ -1450,43 +1491,46 @@ async function handleBatchImport() {
   previewList.classList.add('opacity-50');
   progressBar.classList.remove('hidden');
   progressBar.style.display = 'block';
-  // 强制重绘确保进度条可见
-  void progressBar.offsetWidth;
+  
   const total = batchGeneratedWords.length;
+  // 数据库保存速度极快，每次发 50 个
+  const chunkSize = 50; 
+  let processed = 0;
+  let successCount = 0;
+
   progressCount.textContent = `0/${total}`;
   progressFill.style.width = '0%';
 
-  // 模拟进度动画
-  let progress = 0;
-  const interval = setInterval(() => {
-    progress = Math.min(progress + Math.random() * 15, 85);
-    progressFill.style.width = `${progress}%`;
-  }, 100);
-
   try {
-    const result = await api('/words/import', {
-      method: 'POST',
-      body: JSON.stringify({ words: batchGeneratedWords })
-    });
-    clearInterval(interval);
-    progressFill.style.width = '100%';
-    progressCount.textContent = `${total}/${total}`;
-    // 确保进度条至少显示 500ms
-    await new Promise(r => setTimeout(r, 500));
-    showToast(`成功导入 ${result.count} 个单词`, 'success');
+    for (let i = 0; i < total; i += chunkSize) {
+      const chunk = batchGeneratedWords.slice(i, i + chunkSize);
+      
+      const result = await api('/words/import', {
+        method: 'POST',
+        body: JSON.stringify({ words: chunk })
+      });
+      
+      successCount += (result.count || 0);
+      processed += chunk.length;
+      
+      // 真实进度更新
+      progressCount.textContent = `${processed}/${total}`;
+      progressFill.style.width = `${(processed / total) * 100}%`;
+    }
+
+    // 稍微等待 300 毫秒让用户看清 100% 满状态的动画
+    await new Promise(r => setTimeout(r, 300));
+    showToast(`成功导入 ${successCount} 个新单词`, 'success');
     resetImport();
     closeModal('importModal');
     loadWords(1); loadStats();
   } catch (e) {
-    clearInterval(interval);
-    showToast('导入失败', 'error');
-    progressBar.classList.add('hidden');
-    progressBar.style.display = '';
-    progressFill.style.width = '0%';
+    showToast('导入中断，请重试', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '确认导入';
     previewList.classList.remove('opacity-50');
+    progressBar.classList.add('hidden');
   }
 }
 
@@ -1495,9 +1539,17 @@ function resetImport() {
   document.getElementById('importStep1').classList.remove('hidden');
   document.getElementById('importStep2').classList.add('hidden');
   document.getElementById('importWordsText').value = '';
+  
   const pb = document.getElementById('importProgressBar');
   if (pb) { pb.classList.add('hidden'); pb.style.display = ''; }
   document.getElementById('importProgressFill').style.width = '0%';
+  
+  // 重置 AI 进度条
+  const aiPb = document.getElementById('aiProgressBar');
+  if (aiPb) { aiPb.classList.add('hidden'); }
+  const aiFill = document.getElementById('aiProgressFill');
+  if (aiFill) { aiFill.style.width = '0%'; }
+
   const genBtn = document.getElementById('batchGenerateBtn');
   if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = 'AI 补全'; }
 }
