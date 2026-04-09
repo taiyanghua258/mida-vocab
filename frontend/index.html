@@ -1947,13 +1947,53 @@ function showStudyComplete() {
 }
 
 function reviewAgain() {
-  // 彻底阻断使用当前已复习词的逻辑，直接重新初始化并拉取最新到期单词
-  initStudy();
+  // 恢复学习状态，只取最初的那批单词（去除上一轮选了“重来”追加到尾部的重复项）
+  state.studyWords = state.studyWords.slice(0, state.originalTotal);
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+  
+  // 隐藏完成/空状态界面，显示卡片容器
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  // 重新渲染卡片堆叠
+  renderCardStack();
+  updateStudyProgress();
 }
 
 function reviewLastSession() {
-  // 废除本地缓存读取，同样改为拉取最新数据
-  initStudy();
+  const saved = localStorage.getItem('lastStudyWords');
+  if (!saved) {
+    showToast('没有可复习的记录', 'error');
+    return;
+  }
+  
+  let words = JSON.parse(saved);
+  
+  // 根据 _id 进行去重，确保拿到的是最纯净的初始词库集合
+  const uniqueWords = [];
+  const seenIds = new Set();
+  for (const w of words) {
+    if (!seenIds.has(w._id)) {
+      uniqueWords.push(w);
+      seenIds.add(w._id);
+    }
+  }
+  
+  state.studyWords = uniqueWords;
+  state.originalTotal = uniqueWords.length;
+  state.studyIndex = 0;
+  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  revealAllowed = false;
+
+  document.getElementById('studyComplete').classList.add('hidden');
+  document.getElementById('noWords').classList.add('hidden');
+  document.getElementById('studyCardContainer').classList.remove('hidden');
+
+  renderCardStack();
+  updateStudyProgress();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
