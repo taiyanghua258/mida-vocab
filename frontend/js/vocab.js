@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = '/api';
 let currentPage = 1;
 let totalPages = 1;
 let editingWordId = null;
