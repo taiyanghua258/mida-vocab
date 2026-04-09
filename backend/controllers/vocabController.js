@@ -1,4 +1,13 @@
 const Word = require('../models/Word');
+const User = require('../models/User');
+const ReviewLog = require('../models/ReviewLog');
+
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const TIMEZONE = "Asia/Shanghai";
 
 const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
 const katakana = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォッャュョ';
@@ -113,6 +122,25 @@ exports.addWord = async (req, res) => {
       return res.status(400).json({ message: 'Japanese word and meaning are required' });
     }
 
+    // 计算今日剩余新词额度
+    const user = await User.findById(req.userId).select('fsrsSettings');
+    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    const now = new Date();
+
+    const todayNewReviews = await ReviewLog.countDocuments({
+      userId: req.userId,
+      reviewDate: { $gte: todayStart },
+      state: 0
+    });
+    const queuedNew = await Word.countDocuments({
+      userId: req.userId,
+      state: 0,
+      due: { $lte: now }
+    });
+    const remainingQuota = Math.max(0, dailyNewLimit - todayNewReviews - queuedNew);
+    const dueDate = remainingQuota > 0 ? now : dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
+
     const word = new Word({
       userId: req.userId,
       japanese,
@@ -120,7 +148,7 @@ exports.addWord = async (req, res) => {
       meaning,
       partOfSpeech: partOfSpeech || '名词',
       tags: tags || [],
-      due: new Date()
+      due: dueDate
     });
 
     await word.save();
@@ -249,7 +277,37 @@ exports.importWords = async (req, res) => {
     
     // 过滤掉已存在的单词
     const finalInsert = wordsToInsert.filter(w => !existingSet.has(w.japanese));
-    
+
+    // 计算今日剩余新词额度，超出的词推到明天
+    if (finalInsert.length > 0) {
+      const user = await User.findById(req.userId).select('fsrsSettings');
+      const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+      const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+
+      const todayNewReviews = await ReviewLog.countDocuments({
+        userId: req.userId,
+        reviewDate: { $gte: todayStart },
+        state: 0
+      });
+
+      // 当前还在排队的新词（state: 0, due <= now）也算占用额度
+      const queuedNew = await Word.countDocuments({
+        userId: req.userId,
+        state: 0,
+        due: { $lte: new Date() }
+      });
+
+      const usedQuota = todayNewReviews + queuedNew;
+      const remainingQuota = Math.max(0, dailyNewLimit - usedQuota);
+
+      const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
+      finalInsert.forEach((w, i) => {
+        if (i >= remainingQuota) {
+          w.due = tomorrowStart;
+        }
+      });
+    }
+
     if (finalInsert.length === 0) {
       return res.status(200).json({ 
         message: '没有新单词需要导入（皆为重复）', 

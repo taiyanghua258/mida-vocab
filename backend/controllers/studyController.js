@@ -98,6 +98,15 @@ exports.getDueWords = async (req, res) => {
       }).sort({ createdAt: 1 }).limit(remainingNew);
     }
 
+    // 将超出今日额度的新词推到明天，防止表格显示与统计不一致
+    const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
+    await Word.updateMany({
+      userId: req.userId,
+      state: 0,
+      due: { $lte: now },
+      _id: { $nin: newWords.map(w => w._id) }
+    }, { $set: { due: tomorrowStart } });
+
     const words = [...reviewWords, ...newWords];
     res.json(words);
   } catch (err) {
