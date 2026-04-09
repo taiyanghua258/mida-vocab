@@ -282,15 +282,54 @@ exports.importWords = async (req, res) => {
       due: new Date()
     }));
 
-    console.log('Importing words:', wordsToInsert.length, 'for user:', req.userId);
-    const result = await Word.insertMany(wordsToInsert);
+    // 提取所有准备导入的日语单词
+    const newJapaneseWords = wordsToInsert.map(w => w.japanese);
+    
+    // 从数据库查询当前用户已有的单词
+    const existingWords = await Word.find({ 
+      userId: req.userId, 
+      japanese: { $in: newJapaneseWords } 
+    }).select('japanese').lean();
+    
+    // 构建 Set 用于快速查重
+    const existingSet = new Set(existingWords.map(w => w.japanese));
+    
+    // 过滤掉已存在的单词
+    const finalInsert = wordsToInsert.filter(w => !existingSet.has(w.japanese));
+    
+    if (finalInsert.length === 0) {
+      return res.status(200).json({ 
+        message: '没有新单词需要导入（皆为重复）', 
+        count: 0, 
+        skipped: words.length 
+      });
+    }
+
+    // 只插入不重复的新单词
+    console.log('Inserting unique words:', finalInsert.length, 'for user:', req.userId);
+    const result = await Word.insertMany(finalInsert);
     res.status(201).json({
       message: `Imported ${result.length} words`,
       count: result.length,
-      skipped: words.length - wordsToImport.length
+      skipped: words.length - finalInsert.length
     });
   } catch (err) {
     console.error('Import error:', err.message, err.stack);
     res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+};
+
+exports.batchDeleteWords = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: '没有提供需要删除的 ID' });
+    }
+    // 数据库层面一次性删除
+    await Word.deleteMany({ _id: { $in: ids }, userId: req.userId });
+    res.json({ message: '批量删除成功' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 };

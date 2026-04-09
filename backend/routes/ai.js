@@ -71,6 +71,10 @@ router.post('/generate-batch', auth, async (req, res) => {
       return res.status(400).json({ message: '请提供文本内容' });
     }
 
+    if (text.length > 3000) {
+      return res.status(400).json({ message: '文本过长，请分批次生成（限制 3000 字符以内）' });
+    }
+
     const prompt = `从以下文本中提取所有日语单词（日语汉字、平假名、片假名组成的词），并为每个单词生成信息。
 
 文本内容：

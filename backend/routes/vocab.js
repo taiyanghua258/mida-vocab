@@ -11,6 +11,7 @@ router.get('/:id', vocabController.getWord);
 router.post('/', vocabController.addWord);
 router.post('/import', vocabController.importWords);
 router.put('/:id', vocabController.updateWord);
+router.post('/batch-delete', vocabController.batchDeleteWords);
 router.delete('/:id', vocabController.deleteWord);
 
 module.exports = router;

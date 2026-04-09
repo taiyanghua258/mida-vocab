@@ -1572,32 +1572,25 @@ async function batchDeleteSelected() {
   if (state.selectedWordIds.size === 0) return;
   if (!confirm(`确定删除选中的 ${state.selectedWordIds.size} 个单词吗？此操作不可恢复。`)) return;
 
-  const progressBar = document.getElementById('batchProgressBar');
-  const progressFill = document.getElementById('batchProgressFill');
-  const progressText = document.getElementById('batchProgressText');
-  const progressCount = document.getElementById('batchProgressCount');
   const batchBar = document.getElementById('batchActionBar');
-
   const ids = Array.from(state.selectedWordIds);
-  const total = ids.length;
+  
+  batchBar.classList.add('hidden'); // 隐藏操作栏
 
-  batchBar.classList.add('hidden');
-  progressBar.classList.remove('hidden');
-  progressText.textContent = '删除中...';
-
-  for (let i = 0; i < ids.length; i++) {
-    await api(`/words/${ids[i]}`, { method: 'DELETE' });
-    const pct = ((i + 1) / total) * 100;
-    progressFill.style.width = `${pct}%`;
-    progressCount.textContent = `${i + 1}/${total}`;
+  try {
+    // 发送单次批量删除请求
+    await api(`/words/batch-delete`, { 
+      method: 'POST', 
+      body: JSON.stringify({ ids }) 
+    });
+    
+    state.selectedWordIds.clear();
+    showToast('批量删除成功', 'success');
+    loadWords(state.pagination.page);
+    loadStats();
+  } catch (e) {
+    showToast('批量删除失败', 'error');
   }
-
-  progressBar.classList.add('hidden');
-  progressFill.style.width = '0%';
-  state.selectedWordIds.clear();
-  showToast('批量删除成功', 'success');
-  loadWords(state.pagination.page);
-  loadStats();
 }
 
 function batchExportSelected() {
