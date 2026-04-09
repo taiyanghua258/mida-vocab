@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const auth = require('../middleware/auth');
+// 1. 引入限流器
+const aiRateLimiter = require('../middleware/aiRateLimiter');
+
 
 // 单个单词生成
-router.post('/generate', auth, async (req, res) => {
+router.post('/generate', auth, aiRateLimiter, async (req, res) => {
   try {
     const { japanese } = req.body;
 
@@ -63,7 +66,7 @@ router.post('/generate', auth, async (req, res) => {
 });
 
 // 批量生成
-router.post('/generate-batch', auth, async (req, res) => {
+router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
   try {
     const { text } = req.body;
 

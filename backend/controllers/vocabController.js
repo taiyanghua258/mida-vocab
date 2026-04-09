@@ -22,17 +22,6 @@ const romajiMap = {
   gya:'ぎゃ',gyu:'ぎゅ',gyo:'ぎょ',bya:'びゃ',byu:'びゅ',byo:'びょ',
 };
 
-function normalizeJapanese(text) {
-  if (!text) return '';
-  text = text.replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
-  let result = '';
-  for (let i = 0; i < text.length; i++) {
-    const idx = katakana.indexOf(text[i]);
-    result += idx !== -1 ? hiragana[idx] : text[i];
-  }
-  result = result.replace(/っ([kstnhmyrw])/g, '$1');
-  return result;
-}
 
 function romajiToHiragana(text) {
   text = text.toLowerCase().replace(/[^a-z]/g, '');
@@ -54,57 +43,6 @@ function romajiToHiragana(text) {
   return result;
 }
 
-function editDistance(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-    }
-  }
-  return dp[m][n];
-}
-
-function fuzzyMatch(query, target, reading) {
-  if (!query) return true;
-  query = query.toLowerCase().trim();
-  if (!query) return true;
-
-  const queryHira = romajiToHiragana(query);
-
-  if (reading) {
-    const readingNorm = normalizeJapanese(reading.toLowerCase());
-    if (readingNorm.includes(queryHira) || readingNorm === queryHira) return true;
-    if (editDistance(normalizeJapanese(queryHira), readingNorm) <= 1) return true;
-  }
-
-  if (target) {
-    const targetNorm = normalizeJapanese(target.toLowerCase());
-    if (targetNorm.includes(queryHira) || targetNorm === queryHira) return true;
-  }
-
-  return false;
-}
-
-function wordMatchesSearch(query, word) {
-  if (!query) return true;
-  const q = query.toLowerCase().trim();
-  if (!q) return true;
-
-  if (word.japanese.toLowerCase().includes(q)) return true;
-  if ((word.reading || '').toLowerCase().includes(q)) return true;
-  if ((word.meaning || '').toLowerCase().includes(q)) return true;
-
-  if (fuzzyMatch(q, word.japanese, word.reading)) return true;
-  if (fuzzyMatch(q, word.meaning, null)) return true;
-
-  return false;
-}
-
 exports.getWords = async (req, res) => {
   try {
     let { page = 1, limit = 50, partOfSpeech, tag, search } = req.query;
@@ -112,32 +50,40 @@ exports.getWords = async (req, res) => {
     page = Math.max(1, parseInt(page) || 1);
     limit = Math.max(1, Math.min(100, parseInt(limit) || 50));
 
-    const baseQuery = { userId: req.userId };
+    const query = { userId: req.userId };
 
-    if (partOfSpeech) baseQuery.partOfSpeech = partOfSpeech;
-    if (tag) baseQuery.tags = tag;
+    if (partOfSpeech) query.partOfSpeech = partOfSpeech;
+    if (tag) query.tags = tag;
 
-    let allWords = await Word.find(baseQuery).lean();
-
-    // 排序：待复习优先，然后按 due 升序（已复习单词：距下次复习时间越长越在下面）
-    const now = new Date(); now.setHours(0, 0, 0, 0);
-    allWords.sort((a, b) => {
-      const aDate = new Date(a.due || 0); aDate.setHours(0, 0, 0, 0);
-      const bDate = new Date(b.due || 0); bDate.setHours(0, 0, 0, 0);
-      const aIsDue = aDate <= now;
-      const bIsDue = bDate <= now;
-      if (aIsDue !== bIsDue) return aIsDue ? -1 : 1;
-      // 已复习：距下次复习时间越长（due 越大）越在下面
-      return aDate - bDate;
-    });
-
+    // 数据库级别的模糊搜索
     if (search) {
-      allWords = allWords.filter(w => wordMatchesSearch(search, w));
+      const searchStr = search.trim();
+      const searchRegex = new RegExp(searchStr, 'i');
+      
+      // 借用你写好的罗马音转平假名函数，让搜索也支持罗马音查假名
+      const searchHira = romajiToHiragana(searchStr);
+      const hiraRegex = new RegExp(searchHira, 'i');
+
+      query.$or = [
+        { japanese: searchRegex },
+        { japanese: hiraRegex },
+        { reading: searchRegex },
+        { reading: hiraRegex },
+        { meaning: searchRegex }
+      ];
     }
 
-    const total = allWords.length;
+    // 1. 先用 MongoDB 获取符合条件的总数
+    const total = await Word.countDocuments(query);
     const pages = Math.ceil(total / limit) || 1;
-    const words = allWords.slice((page - 1) * limit, page * limit);
+
+    // 2. 将排序、分页全部交给 MongoDB
+    // sort({ due: 1 }) 刚好完美符合你的需求：过去的日期排在最前(待复习优先)，未来的日期按远近排在后面
+    const words = await Word.find(query)
+      .sort({ due: 1 }) 
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
 
     res.json({ words, total, page, pages });
   } catch (err) {
