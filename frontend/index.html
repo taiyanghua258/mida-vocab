@@ -346,6 +346,14 @@
       accent-color: #DF9F28;
     }
 
+    /* ========== 待复习呼吸灯特效 ========== */
+    .pulse-ochre { animation: pulseOchre 2.5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes pulseOchre {
+      0% { box-shadow: 0 0 0 0 rgba(223, 159, 40, 0.3); }
+      70% { box-shadow: 0 0 0 6px rgba(223, 159, 40, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(223, 159, 40, 0); }
+    }
+
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       body {
         padding-bottom: env(safe-area-inset-bottom);
@@ -455,6 +463,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>
             <span id="welcomeUser" class="font-medium"></span>
           </span>
+          <button onclick="toggleNotifications()" id="notifyBtn" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-parchment text-muted transition-all active:scale-90 group" title="开启复习提醒">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:rotate-[15deg] duration-300">
+              <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Zm-80-32c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+            </svg>
+          </button>
           <button onclick="openModal('settingsModal')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all active:scale-90 group" title="记忆算法设置">
             <!-- 调节滑块图标 (SlidersHorizontal)，替代原本的齿轮以保持极简感 -->
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:rotate-90 duration-300">
@@ -959,7 +972,7 @@ function formatDate(dateStr) {
   const now = new Date();
   const target = new Date(dateStr);
   if (target <= now) {
-    return '<span class="px-2 py-0.5 bg-ochre/10 text-ochre rounded text-xs font-semibold">待复习</span>';
+    return '<span class="px-2 py-0.5 bg-ochre/10 text-ochre rounded text-xs font-semibold pulse-ochre">待复习</span>';
   }
   const diffMs = target - now;
   const diffMin = Math.floor(diffMs / 60000);
@@ -975,8 +988,103 @@ function formatDate(dateStr) {
   return `<span class="text-xs text-muted">${timeStr}</span><span class="text-xs text-charcoal/30 ml-1">复习</span>`;
 }
 
+/* ================= NOTIFICATIONS & REAL-TIME POLLING ================= */
+let audioCtx = null;
+
+function playGentleDing() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    // 主音 (C6 柔和敲击)
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.05);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 1.2);
+
+    // 泛音 (E6 拖尾，增加空气感)
+    const osc2 = audioCtx.createOscillator();
+    const gainNode2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
+    gainNode2.gain.setValueAtTime(0, audioCtx.currentTime + 0.1);
+    gainNode2.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.15);
+    gainNode2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+    osc2.connect(gainNode2);
+    gainNode2.connect(audioCtx.destination);
+    osc2.start(audioCtx.currentTime + 0.1);
+    osc2.stop(audioCtx.currentTime + 1.5);
+  } catch(e) { console.log('浏览器阻止了音频播放', e); }
+}
+
+function toggleNotifications() {
+  if (!('Notification' in window)) return showToast('您的浏览器不支持桌面通知', 'error');
+
+  if (Notification.permission === 'granted') {
+    state.notificationsEnabled = true;
+    document.getElementById('notifyBtn').classList.add('text-ochre');
+    showToast('复习提醒已开启', 'success');
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        state.notificationsEnabled = true;
+        document.getElementById('notifyBtn').classList.add('text-ochre');
+        showToast('复习提醒已开启', 'success');
+      } else {
+        showToast('通知权限被拒绝，将仅使用声音提醒', 'info');
+      }
+    });
+  } else {
+    showToast('请在浏览器设置中手动允许通知', 'error');
+  }
+}
+
+async function startBackgroundPolling() {
+  if (state.pollingInterval) clearInterval(state.pollingInterval);
+  state.pollingInterval = setInterval(checkDueUpdates, 30000);
+}
+
+async function checkDueUpdates() {
+  if (!state.token) return;
+  try {
+    const data = await api('/study/stats');
+    const currentDue = data.dueWords;
+
+    document.getElementById('totalWords').textContent = data.totalWords;
+    document.getElementById('dueWords').textContent = currentDue;
+
+    if (currentDue > state.lastDueCount && currentDue > 0) {
+      playGentleDing();
+
+      if (state.notificationsEnabled && Notification.permission === 'granted') {
+        new Notification("見だ | 记忆召唤", {
+          body: `时间到！有 ${currentDue} 个单词刚从你的记忆曲线中滑落，趁热打铁复习一下吧。`,
+          icon: "favicon.png"
+        });
+      }
+    }
+
+    state.lastDueCount = currentDue;
+
+    if (document.getElementById('view-dashboard').classList.contains('active')) {
+      const cells = document.querySelectorAll('.due-cell');
+      cells.forEach(cell => {
+         const dueStr = cell.getAttribute('data-due');
+         if (dueStr) cell.innerHTML = formatDate(dueStr);
+      });
+    }
+  } catch (e) { /* 静默失败，不打扰用户 */ }
+}
+
 /* ================= STATE ================= */
-const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false };
+const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false, lastDueCount: 0, pollingInterval: null, notificationsEnabled: false };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */
 const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
@@ -1161,6 +1269,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     localStorage.setItem('user', JSON.stringify(data.user));
     document.getElementById('welcomeUser').textContent = data.user.username;
     showToast('登录成功', 'success');
+    startBackgroundPolling();
     navigate('dashboard');
   } catch (err) {
     showToast(err.message || '登录失败，请检查用户名和密码', 'error');
@@ -1219,6 +1328,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 });
 
 function handleLogout() {
+  if (state.pollingInterval) clearInterval(state.pollingInterval);
   state.token = null; state.user = null;
   localStorage.removeItem('token'); localStorage.removeItem('user');
   // 重置按钮状态
@@ -1255,6 +1365,7 @@ async function loadStats() {
   const data = await api('/study/stats');
   document.getElementById('totalWords').textContent = data.totalWords;
   document.getElementById('dueWords').textContent = data.dueWords;
+  state.lastDueCount = data.dueWords;
 }
 
 async function loadWords(page = 1) {
@@ -1293,7 +1404,7 @@ function renderWordList(words) {
           ${((w.tags || []).slice(0, 2).map(t => `<span class="px-1.5 py-0.5 border border-borderline rounded text-[10px] text-muted">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="px-1.5 py-0.5 text-[10px] text-muted">+${(w.tags || []).length - 2}</span>` : ''}
         </div>
       </td>
-      <td class="px-6 py-4">${formatDate(w.due)}</td>
+      <td class="px-6 py-4 due-cell" data-due="${w.due}">${formatDate(w.due)}</td>
       <td class="px-6 py-4 text-right">
         <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button onclick="editWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all flex items-center justify-center" title="编辑">
@@ -2014,7 +2125,19 @@ function reviewLastSession() {
 
 window.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
-  if (token && user) { state.token = token; state.user = JSON.parse(user); document.getElementById('welcomeUser').textContent = state.user.username; navigate('dashboard'); }
+  if (token && user) {
+    state.token = token; state.user = JSON.parse(user);
+    document.getElementById('welcomeUser').textContent = state.user.username;
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      state.notificationsEnabled = true;
+      const btn = document.getElementById('notifyBtn');
+      if (btn) btn.classList.add('text-ochre');
+    }
+
+    startBackgroundPolling();
+    navigate('dashboard');
+  }
   else navigate('auth');
 });
 </script>
