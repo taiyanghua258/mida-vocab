@@ -976,7 +976,7 @@ function formatDate(dateStr) {
 }
 
 /* ================= STATE ================= */
-const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0 };
+const state = { user: null, token: null, pagination: { page: 1, totalPages: 1, limit: 20 }, studyWords: [], studyIndex: 0, studyStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, studyStartTime: null, selectedWordIds: new Set(), currentPageWords: [], originalTotal: 0, isCramMode: false };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */
 const hiragana = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょ';
@@ -1714,6 +1714,7 @@ async function batchExportSelected() {
 
 /* ================= STUDY ================= */
 async function initStudy() {
+  state.isCramMode = false; // 正常学习，记录数据
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
   document.getElementById('studyCardContainer').classList.remove('hidden');
@@ -1790,17 +1791,27 @@ function revealAnswer() {
     front.classList.add('peeled');
     back.classList.add('revealed');
     
-    // 【新增】异步拉取时间预测，动态替换按钮上方的数字(1,2,3,4)为时间
-    const word = state.studyWords[state.studyIndex];
-    api(`/study/scheduling?wordId=${word._id}`).then(info => {
+    // 【修改】：只有在正常复习模式下，才去后端拉取1,2,3,4的时间预测
+    if (!state.isCramMode) {
+      api(`/study/scheduling?wordId=${word._id}`).then(info => {
+        const btns = document.querySelectorAll('#answerSection .answer-btn span:first-child');
+        if (btns.length === 4) {
+          btns[0].textContent = info.again ? info.again.interval : '1';
+          btns[1].textContent = info.hard ? info.hard.interval : '2';
+          btns[2].textContent = info.good ? info.good.interval : '3';
+          btns[3].textContent = info.easy ? info.easy.interval : '4';
+        }
+      }).catch(err => console.log('预测时间获取失败', err));
+    } else {
+      // 巩固模式下直接显示数字 1, 2, 3, 4
       const btns = document.querySelectorAll('#answerSection .answer-btn span:first-child');
       if (btns.length === 4) {
-        btns[0].textContent = info.again ? info.again.interval : '1';
-        btns[1].textContent = info.hard ? info.hard.interval : '2';
-        btns[2].textContent = info.good ? info.good.interval : '3';
-        btns[3].textContent = info.easy ? info.easy.interval : '4';
+        btns[0].textContent = '1';
+        btns[1].textContent = '2';
+        btns[2].textContent = '3';
+        btns[3].textContent = '4';
       }
-    }).catch(err => console.log('预测时间获取失败', err));
+    }
 
     if (revealTimeout) clearTimeout(revealTimeout);
     revealTimeout = setTimeout(() => {
@@ -1846,7 +1857,10 @@ async function submitReview(result) {
   const word = state.studyWords[state.studyIndex];
   
   try {
-    await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+    // 【关键修改】：如果不是无痕巩固模式，才向后端发送复习记录
+    if (!state.isCramMode) {
+      await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+    }
   } catch (err) {
     showToast('网络异常，复习记录保存失败', 'error');
     // 【修复】发生错误时恢复按钮交互
@@ -1947,6 +1961,7 @@ function showStudyComplete() {
 }
 
 function reviewAgain() {
+  state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
   // 恢复学习状态，只取最初的那批单词（去除上一轮选了“重来”追加到尾部的重复项）
   state.studyWords = state.studyWords.slice(0, state.originalTotal);
   state.studyIndex = 0;
@@ -1971,6 +1986,7 @@ function reviewLastSession() {
   }
   
   let words = JSON.parse(saved);
+  state.isCramMode = true; // 开启纯净巩固模式
   
   // 根据 _id 进行去重，确保拿到的是最纯净的初始词库集合
   const uniqueWords = [];
