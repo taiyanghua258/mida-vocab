@@ -1731,7 +1731,13 @@ async function submitReview(result) {
 
   document.getElementById('answerSection').classList.remove('show');
   const word = state.studyWords[state.studyIndex];
-  api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+  try {
+    await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+  } catch (err) {
+    showToast('网络异常，复习记录保存失败', 'error');
+    isReviewProcessing = false;
+    return; // 拦截请求，防止前端强行跳到下一个单词
+  }
   state.studyStats.reviewed++;
   state.studyStats[result]++;
 

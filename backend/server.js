@@ -10,6 +10,7 @@ const studyRoutes = require('./routes/study');
 const aiRoutes = require('./routes/ai');
 
 const app = express();
+app.set('trust proxy', 1); // 信任 Nginx 代理，获取真实客户端 IP
 
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {

@@ -134,7 +134,7 @@ if (document.getElementById('registerForm')) {
       }
 
       try {
-        const data = await register(username, email, password);
+        const data = await register(username, username, password);
         setToken(data.token);
         setCurrentUser(data.user);
         window.location.href = 'dashboard.html';
