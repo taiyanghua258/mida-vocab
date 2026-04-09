@@ -55,29 +55,18 @@ function formatInterval(dueDate, now) {
 
 exports.getDueWords = async (req, res) => {
   try {
-    const now = new Date();
-
-    // 【关键修复 1】：设定"逻辑跨日"边界为今天的 23:59:59。
-    // 这样昨晚 11 点背的词（系统显示 1 天后复习，即明晚 11 点），第二天早上 8 点起床打开软件时，
-    // 因为明晚 11 点 <= 明天 23:59:59，它就会乖乖出现在待复习列表里了！
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
-
-    // 获取用户设置
+    const now = new Date(); // 恢复精确到现在这一秒
     const user = await User.findById(req.userId).select('fsrsSettings');
     const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
 
-    // 【关键修复 2】：获取【所有】已学习且到期的老词。
-    // 移除 limit(20) 限制，使用 endOfToday 作为判定标准。
+    // 【修复】：改回 <= now，严格遵守 1分钟/10分钟 的冷却期
     const reviewWords = await Word.find({
       userId: req.userId,
       state: { $ne: 0 },
-      due: { $lte: endOfToday }
+      due: { $lte: now }
     }).sort({ due: 1 });
 
-    // 【关键修复 3】：新词配额独立计算，彻底与老词数量解绑
     let newWords = [];
-
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const todayNewReviews = await ReviewLog.countDocuments({
@@ -92,11 +81,10 @@ exports.getDueWords = async (req, res) => {
       newWords = await Word.find({
         userId: req.userId,
         state: 0,
-        due: { $lte: endOfToday }
-      }).sort({ createdAt: 1 }).limit(remainingNew); // 取满今天剩余的新词额度
+        due: { $lte: now } // 【修复】：同样改回 <= now
+      }).sort({ createdAt: 1 }).limit(remainingNew);
     }
 
-    // 合并返回 (老词 + 独立配额的新词)，移除 .slice(0, 20)
     const words = [...reviewWords, ...newWords];
     res.json(words);
   } catch (err) {
@@ -162,6 +150,14 @@ exports.reviewWord = async (req, res) => {
     const newCard = chosen.card;
     const log = chosen.log;
 
+    // 真正的 Anki 跨日逻辑：如果是长线复习(>=1天)，把时间抹平到该天的 00:00:00
+    // 如果是短期学习(<1天，比如10分钟)，保留精确分秒，不予干涉
+    if (newCard.scheduled_days >= 1) {
+      const alignedDue = new Date(newCard.due);
+      alignedDue.setHours(0, 0, 0, 0);
+      newCard.due = alignedDue;
+    }
+
     word.due = newCard.due;
     word.stability = newCard.stability;
     word.difficulty = newCard.difficulty;
@@ -212,12 +208,11 @@ exports.getStats = async (req, res) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const totalWords = await Word.countDocuments({ userId: req.userId });
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
 
+    // 【修复】：统计恢复严格时间
     const dueWords = await Word.countDocuments({
       userId: req.userId,
-      due: { $lte: endOfToday } // <--- 同步使用逻辑跨日时间
+      due: { $lte: now }
     });
     const newWords = await Word.countDocuments({
       userId: req.userId,
