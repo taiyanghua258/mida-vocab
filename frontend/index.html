@@ -998,6 +998,16 @@ function formatDate(dateStr) {
 /* ================= NOTIFICATIONS & REAL-TIME POLLING ================= */
 let audioCtx = null;
 
+// 在用户首次交互时解锁 AudioContext（解决浏览器自动播放限制）
+function unlockAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  document.removeEventListener('click', unlockAudio);
+  document.removeEventListener('touchstart', unlockAudio);
+}
+document.addEventListener('click', unlockAudio);
+document.addEventListener('touchstart', unlockAudio);
+
 function playGentleDing() {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1057,10 +1067,12 @@ async function startBackgroundPolling() {
   if (state.pollingInterval) clearInterval(state.pollingInterval);
   if (state.localTimer) clearInterval(state.localTimer);
 
-  checkDueUpdates();
-  // 依然每 30 秒去后端兜底拉取一次
-  state.pollingInterval = setInterval(checkDueUpdates, 30000);
-  // 新增：每秒执行一次的本地精准时钟引擎
+  // 首次立即拉一次，建立基准线
+  await checkDueUpdates();
+
+  // 每 15 秒后端轮询（缩短间隔，减少漏检）
+  state.pollingInterval = setInterval(checkDueUpdates, 15000);
+  // 每秒本地精准时钟
   state.localTimer = setInterval(tickLocalTimer, 1000);
 }
 
@@ -1068,16 +1080,26 @@ async function checkDueUpdates() {
   if (!state.token) return;
   try {
     const data = await api('/study/stats');
+    const newDue = data.dueWords;
+    const oldDue = state.lastDueCount;
+
+    // 更新面板数字
     document.getElementById('totalWords').textContent = data.totalWords;
-    document.getElementById('dueWords').textContent = data.dueWords;
+    document.getElementById('dueWords').textContent = newDue;
 
-    // 更新到最新的等待列表
+    // 更新冷却池列表
     state.upcomingWords = data.upcomingWords || [];
-    state.lastDueCount = data.dueWords;
 
+    // 核心判定：待复习数量比上次增加了，说明有新词到期！
+    if (newDue > oldDue && oldDue >= 0) {
+      const diff = newDue - oldDue;
+      triggerDueNotification(diff);
+    }
+
+    state.lastDueCount = newDue;
     renderUpcomingWidget();
     updateTableDueTimes();
-  } catch (e) { /* 忽略静默错误 */ }
+  } catch (e) { /* 静默 */ }
 }
 
 function tickLocalTimer() {
@@ -1085,44 +1107,60 @@ function tickLocalTimer() {
   const now = Date.now();
   let justDueCount = 0;
 
-  // 1秒扫描一次冷却池，看看有没有刚才时间到的单词
   state.upcomingWords = state.upcomingWords.filter(w => {
     const dueTime = new Date(w.due).getTime();
     if (dueTime <= now) {
-       // 该词时间已到！触发提醒
        if (!state.notifiedWordIds.has(w._id)) {
            state.notifiedWordIds.add(w._id);
            justDueCount++;
        }
-       return false; // 从待背窗口移出
+       return false;
     }
-    return true; // 还没到时间，继续展示
+    return true;
   });
 
-  // 如果这一秒内有单词刚好冷却完毕
   if (justDueCount > 0) {
      state.lastDueCount += justDueCount;
      document.getElementById('dueWords').textContent = state.lastDueCount;
-
-     // 触发播放音效与系统通知
-     playGentleDing();
-     if (state.notificationsEnabled && Notification.permission === 'granted') {
-       new Notification("見だ | 记忆召唤", {
-         body: `时间到！刚刚有 ${justDueCount} 个单词加入待复习队列，趁热打铁吧。`,
-         icon: "favicon.png"
-       });
-     }
-
-     // 给待复习数字加上显眼的橙色发光特效
-     const dueElement = document.getElementById('dueWords').parentElement;
-     dueElement.classList.add('pulse-ochre');
-     setTimeout(() => dueElement.classList.remove('pulse-ochre'), 3000);
-
+     triggerDueNotification(justDueCount);
      updateTableDueTimes();
   }
 
-  // 刷新主页的"几分钟后" UI
   renderUpcomingWidget();
+}
+
+function triggerDueNotification(count) {
+  // 播放风铃音效（尝试唤醒 AudioContext）
+  playGentleDing();
+
+  // 浏览器桌面通知
+  if (state.notificationsEnabled && Notification.permission === 'granted') {
+    new Notification("見だ | 记忆召唤", {
+      body: `时间到！有 ${count} 个单词加入待复习队列，趁热打铁吧。`,
+      icon: "favicon.png"
+    });
+  }
+
+  // 页面标题闪烁（即使没有通知权限也能提醒用户）
+  if (!document.hasFocus()) {
+    let blinkCount = 0;
+    const originalTitle = document.title;
+    const blinkInterval = setInterval(() => {
+      document.title = blinkCount % 2 === 0
+        ? `(${count}个待复习) 見だ`
+        : originalTitle;
+      blinkCount++;
+      if (blinkCount >= 10) {
+        clearInterval(blinkInterval);
+        document.title = originalTitle;
+      }
+    }, 800);
+  }
+
+  // 待复习数字脉冲特效
+  const dueElement = document.getElementById('dueWords').parentElement;
+  dueElement.classList.add('pulse-ochre');
+  setTimeout(() => dueElement.classList.remove('pulse-ochre'), 5000);
 }
 
 function renderUpcomingWidget() {
