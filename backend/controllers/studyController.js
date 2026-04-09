@@ -56,44 +56,48 @@ function formatInterval(dueDate, now) {
 exports.getDueWords = async (req, res) => {
   try {
     const now = new Date();
+
+    // 【关键修复 1】：设定"逻辑跨日"边界为今天的 23:59:59。
+    // 这样昨晚 11 点背的词（系统显示 1 天后复习，即明晚 11 点），第二天早上 8 点起床打开软件时，
+    // 因为明晚 11 点 <= 明天 23:59:59，它就会乖乖出现在待复习列表里了！
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
     // 获取用户设置
     const user = await User.findById(req.userId).select('fsrsSettings');
     const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
 
-    // 1. 优先获取已学习且到期的老词 (state 不为 0)
+    // 【关键修复 2】：获取【所有】已学习且到期的老词。
+    // 移除 limit(20) 限制，使用 endOfToday 作为判定标准。
     const reviewWords = await Word.find({
       userId: req.userId,
-      state: { $ne: 0 }, 
-      due: { $lte: now }
-    }).sort({ due: 1 }).limit(20);
+      state: { $ne: 0 },
+      due: { $lte: endOfToday }
+    }).sort({ due: 1 });
 
-    // 2. 如果复习词不足 20 个，根据剩余配额补充新词
+    // 【关键修复 3】：新词配额独立计算，彻底与老词数量解绑
     let newWords = [];
-    if (reviewWords.length < 20) {
-      // 统计今天已经学了多少个新词 (ReviewLog 中 state 为 0 代表这是针对新词的首重复习)
-      const todayStart = new Date(now);
-      todayStart.setHours(0, 0, 0, 0);
-      const todayNewReviews = await ReviewLog.countDocuments({
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayNewReviews = await ReviewLog.countDocuments({
+      userId: req.userId,
+      reviewDate: { $gte: todayStart },
+      state: 0
+    });
+
+    const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
+
+    if (remainingNew > 0) {
+      newWords = await Word.find({
         userId: req.userId,
-        reviewDate: { $gte: todayStart },
-        state: 0 
-      });
-
-      // 计算还能抓取多少新词
-      const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
-      const limitNew = Math.min(20 - reviewWords.length, remainingNew);
-
-      if (limitNew > 0) {
-        newWords = await Word.find({
-          userId: req.userId,
-          state: 0,
-          due: { $lte: now }
-        }).sort({ createdAt: 1 }).limit(limitNew); // 新词按入库时间先入先出
-      }
+        state: 0,
+        due: { $lte: endOfToday }
+      }).sort({ createdAt: 1 }).limit(remainingNew); // 取满今天剩余的新词额度
     }
 
-    // 合并返回
-    const words = [...reviewWords, ...newWords].slice(0, 20);
+    // 合并返回 (老词 + 独立配额的新词)，移除 .slice(0, 20)
+    const words = [...reviewWords, ...newWords];
     res.json(words);
   } catch (err) {
     console.error(err);
@@ -208,9 +212,12 @@ exports.getStats = async (req, res) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const totalWords = await Word.countDocuments({ userId: req.userId });
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
     const dueWords = await Word.countDocuments({
       userId: req.userId,
-      due: { $lte: now } // <--- 改为 now，与实际抓取学习单词的逻辑完全一致
+      due: { $lte: endOfToday } // <--- 同步使用逻辑跨日时间
     });
     const newWords = await Word.countDocuments({
       userId: req.userId,

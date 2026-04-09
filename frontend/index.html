@@ -2040,11 +2040,19 @@ function updateStackDepths() {
 }
 
 function updateStudyProgress() {
-  const total = state.studyWords.length;
-  const current = Math.min(state.studyIndex, total);
-  const pct = total === 0 ? 0 : (current / total) * 100;
+  // 1. 计算出当前真实的"剩余未掌握卡片数"
+  const totalLeft = state.studyWords.length - state.studyIndex;
+
+  // 2. 已完成数量 = 初始目标总量 - 剩余量
+  let completed = state.originalTotal - totalLeft;
+  if (completed < 0) completed = 0; // 防止极端情况下点太多重来变成负数
+
+  // 3. 计算百分比（分母永远锁定为最开始定下的总量）
+  const pct = state.originalTotal === 0 ? 0 : (completed / state.originalTotal) * 100;
+
+  // 4. 更新 UI
   document.getElementById('progressFill').style.width = `${pct}%`;
-  document.getElementById('progressText').textContent = `${current} / ${total}`;
+  document.getElementById('progressText').textContent = `${completed} / ${state.originalTotal}`;
 }
 
 function showStudyComplete() {
