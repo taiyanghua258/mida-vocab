@@ -89,22 +89,27 @@ exports.getDueWords = async (req, res) => {
 
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
-    // 复习优先原则：只有当本次取出的待复习单词量小于一定阈值（如50）时，才塞入新词
+    // 无论是否达到 50 的阈值，先预留出今日配额保护的单词 ID
+    const quotaNewWords = await Word.find({
+      userId: req.userId,
+      state: 0,
+      due: { $lte: now }
+    }).sort({ createdAt: 1 }).limit(remainingNew).select('_id');
+
+    const quotaIds = quotaNewWords.map(w => w._id);
+
+    // 只有旧词复习量不大时，才把配额词塞入返回列表
     if (reviewWords.length < 50 && remainingNew > 0) {
-      newWords = await Word.find({
-        userId: req.userId,
-        state: 0,
-        due: { $lte: now }
-      }).sort({ createdAt: 1 }).limit(remainingNew);
+      newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: 1 });
     }
 
-    // 将超出今日额度的新词推到明天，防止表格显示与统计不一致
+    // 推迟的只是"配额之外"的词
     const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
     await Word.updateMany({
       userId: req.userId,
       state: 0,
       due: { $lte: now },
-      _id: { $nin: newWords.map(w => w._id) }
+      _id: { $nin: quotaIds }
     }, { $set: { due: tomorrowStart } });
 
     const words = [...reviewWords, ...newWords];
