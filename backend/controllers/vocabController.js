@@ -272,7 +272,7 @@ exports.importWords = async (req, res) => {
       return validPos.includes(pos) ? pos : '名词';
     };
 
-    const wordsToInsert = wordsToImport.map(w => ({
+    const wordsToInsertRaw = wordsToImport.map(w => ({
       userId: req.userId,
       japanese: w.japanese || w.word,
       reading: w.reading || w.kana || '',
@@ -281,6 +281,13 @@ exports.importWords = async (req, res) => {
       tags: w.tags || [],
       due: new Date()
     }));
+
+    // 【新增修复】：先进行 payload 内部去重，保留最后一个出现的重复项
+    const uniqueMap = new Map();
+    wordsToInsertRaw.forEach(w => {
+        if (w.japanese) uniqueMap.set(w.japanese, w);
+    });
+    const wordsToInsert = Array.from(uniqueMap.values());
 
     // 提取所有准备导入的日语单词
     const newJapaneseWords = wordsToInsert.map(w => w.japanese);

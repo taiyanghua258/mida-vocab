@@ -33,7 +33,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Connect to MongoDB
