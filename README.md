@@ -1,5 +1,4 @@
 
-
 # 見だ (Mida) | 日语单词记忆 🌸
 
 **見だ (Mida)** 是一款专为日语学习者打造的现代化单词记忆 Web 应用。它结合了极简主义的美学设计、目前最先进的 **FSRS (Free Spaced Repetition Scheduler)** 记忆算法，以及强大的 **DeepSeek AI** 智能辅助，旨在为你提供最高效、最无压力的日语单词背诵体验。
@@ -72,16 +71,25 @@
 git clone [https://github.com/taiyanghua258/mida-vocab.git](https://github.com/taiyanghua258/mida-vocab.git)
 cd mida-vocab/backend
 npm install
+```
 
 ### 2. 配置环境变量
-​在 backend 目录下创建 .env 文件，并填入以下必要参数：
+在 `backend` 目录下创建 `.env` 文件，并填入以下必要参数：
+
+```env
 PORT=3001
 MONGODB_URI=mongodb://127.0.0.1:27017/my-vocab
 JWT_SECRET=your_super_secret_jwt_key
 DEEPSEEK_API_KEY=your_deepseek_api_key
 CORS_ORIGIN=*
+```
 
 ### 3. 启动服务 (推荐使用 PM2)
+```bash
 pm2 start server.js --name "mida-vocab"
+```
+
 后端启动后，静态资源将一并挂载提供服务。接着配置 Nginx 反向代理至 3001 端口即可开始使用。
 
+---
+*“回到东京。”*
