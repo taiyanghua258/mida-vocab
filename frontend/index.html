@@ -1894,6 +1894,10 @@ let revealAllowed = false;
 function revealAnswer() {
   const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
   if (!currentGroup) return;
+
+  // 【修复】：在这里获取当前的 word 对象，供后面拉取预测时间使用
+  const word = state.studyWords[state.studyIndex];
+
   const front = currentGroup.querySelector('.front');
   const back = currentGroup.querySelector('.back');
   
