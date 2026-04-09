@@ -106,8 +106,9 @@ async function saveSettings() {
   const stepsStr = document.getElementById('settingsSteps').value;
   const steps = stepsStr.split(',').map(s => parseInt(s.trim())).filter(s => !isNaN(s));
   
+  // 修复1: 严格对齐后端 User.js 的白名单字段
   const settings = {
-    newCardsPerDay: parseInt(document.getElementById('settingsNewCards').value) || 20,
+    dailyNewLimit: parseInt(document.getElementById('settingsNewCards').value) || 20, 
     requestRetention: parseFloat(document.getElementById('settingsRetention').value) || 0.9,
     maximumInterval: 365,
     enableFuzz: true,
@@ -117,7 +118,8 @@ async function saveSettings() {
   try {
     await api('/auth/settings', {
       method: 'PUT',
-      body: JSON.stringify({ settings })
+      // 修复2: 移除 JSON.stringify({ settings }) 带来的无用外层包装
+      body: JSON.stringify(settings) 
     });
     showToast('FSRS 参数已同步', 'success');
     closeSettings();

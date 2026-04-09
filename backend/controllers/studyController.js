@@ -56,11 +56,44 @@ function formatInterval(dueDate, now) {
 exports.getDueWords = async (req, res) => {
   try {
     const now = new Date();
-    const words = await Word.find({
+    // 获取用户设置
+    const user = await User.findById(req.userId).select('fsrsSettings');
+    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+
+    // 1. 优先获取已学习且到期的老词 (state 不为 0)
+    const reviewWords = await Word.find({
       userId: req.userId,
+      state: { $ne: 0 }, 
       due: { $lte: now }
     }).sort({ due: 1 }).limit(20);
 
+    // 2. 如果复习词不足 20 个，根据剩余配额补充新词
+    let newWords = [];
+    if (reviewWords.length < 20) {
+      // 统计今天已经学了多少个新词 (ReviewLog 中 state 为 0 代表这是针对新词的首重复习)
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayNewReviews = await ReviewLog.countDocuments({
+        userId: req.userId,
+        reviewDate: { $gte: todayStart },
+        state: 0 
+      });
+
+      // 计算还能抓取多少新词
+      const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
+      const limitNew = Math.min(20 - reviewWords.length, remainingNew);
+
+      if (limitNew > 0) {
+        newWords = await Word.find({
+          userId: req.userId,
+          state: 0,
+          due: { $lte: now }
+        }).sort({ createdAt: 1 }).limit(limitNew); // 新词按入库时间先入先出
+      }
+    }
+
+    // 合并返回
+    const words = [...reviewWords, ...newWords].slice(0, 20);
     res.json(words);
   } catch (err) {
     console.error(err);

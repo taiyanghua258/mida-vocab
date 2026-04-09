@@ -783,7 +783,7 @@
             <label class="text-sm font-medium text-charcoal">🎯 目标记忆率</label>
             <span id="retentionValue" class="text-sm font-semibold text-ochre">90%</span>
           </div>
-          <input type="range" id="requestRetention" min="70" max="99" value="90" class="w-full h-2 bg-borderline rounded-lg appearance-none cursor-pointer accent-ochre">
+          <input type="range" id="settingsRetention" min="70" max="99" value="90" class="w-full h-2 bg-borderline rounded-lg appearance-none cursor-pointer accent-ochre">
           <p class="text-xs text-muted mt-1.5 leading-relaxed">控制你希望记住单词的概率。设值越高，单词记得越牢，但复习频率会显著增加。建议保持在 85% ~ 95% 之间。</p>
         </div>
 
@@ -797,7 +797,7 @@
         <!-- 每日新卡片上限 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">📚 每日新词上限</label>
-          <input type="number" id="dailyNewLimit" min="1" max="200" value="20" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
+          <input type="number" id="settingsNewCards" min="1" max="200" value="20" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
           <p class="text-xs text-muted mt-2 leading-relaxed">每天新加入学习的单词数量。建议根据空闲时间量力而行，少而有规律的学习比偶尔的突击记忆更有效。</p>
         </div>
 
@@ -816,7 +816,7 @@
         <!-- 学习步骤 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">🪜 学习预热步骤（分钟）</label>
-          <input type="text" id="learningSteps" value="1, 10" placeholder="1, 10" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
+          <input type="text" id="settingsSteps" value="1, 10" placeholder="1, 10" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
           <p class="text-xs text-muted mt-2 leading-relaxed">新单词初次学习时的复习频率。例如 "1, 10" 表示在你点过“认识”后，会在 1 分钟和 10 分钟后再次出现，加深第一印象。</p>
         </div>
 
@@ -882,44 +882,59 @@ async function loadFsrsSettings() {
   try {
     const data = await api('/auth/settings');
     const s = { ...FSRS_DEFAULTS, ...data };
-    document.getElementById('requestRetention').value = Math.round(s.requestRetention * 100);
+    document.getElementById('settingsRetention').value = Math.round(s.requestRetention * 100);
     document.getElementById('retentionValue').textContent = Math.round(s.requestRetention * 100) + '%';
     document.getElementById('maximumInterval').value = s.maximumInterval;
-    document.getElementById('dailyNewLimit').value = s.dailyNewLimit;
+    document.getElementById('settingsNewCards').value = s.dailyNewLimit;
     document.getElementById('enableFuzz').checked = s.enableFuzz;
-    document.getElementById('learningSteps').value = (s.learningSteps || [1, 10]).join(', ');
+    document.getElementById('settingsSteps').value = (s.learningSteps || [1, 10]).join(', ');
   } catch (e) { console.error('Failed to load settings:', e); }
 }
 
 function resetFsrsSettings() {
-  document.getElementById('requestRetention').value = 90;
+  document.getElementById('settingsRetention').value = 90;
   document.getElementById('retentionValue').textContent = '90%';
   document.getElementById('maximumInterval').value = 365;
-  document.getElementById('dailyNewLimit').value = 20;
+  document.getElementById('settingsNewCards').value = 20;
   document.getElementById('enableFuzz').checked = true;
-  document.getElementById('learningSteps').value = '1, 10';
+  document.getElementById('settingsSteps').value = '1, 10';
 }
 
-document.getElementById('requestRetention').addEventListener('input', function() {
+document.getElementById('settingsRetention').addEventListener('input', function() {
   document.getElementById('retentionValue').textContent = this.value + '%';
 });
 
 document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const steps = document.getElementById('learningSteps').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n > 0);
-  if (steps.length === 0) { showToast('学习步骤格式错误', 'error'); return; }
-  const data = {
-    requestRetention: parseInt(document.getElementById('requestRetention').value) / 100,
+  const btn = document.getElementById('saveSettingsBtn');
+  const orgText = btn.textContent;
+  btn.textContent = '保存中...';
+  
+  const stepsStr = document.getElementById('settingsSteps').value;
+  const steps = stepsStr.split(',').map(s => parseInt(s.trim())).filter(s => !isNaN(s));
+  
+  // 修复1: 严格对齐后端 User.js 的白名单字段
+  const settings = {
+    dailyNewLimit: parseInt(document.getElementById('settingsNewCards').value) || 20, 
+    requestRetention: (parseFloat(document.getElementById('settingsRetention').value) || 90) / 100,
     maximumInterval: parseInt(document.getElementById('maximumInterval').value) || 365,
-    dailyNewLimit: parseInt(document.getElementById('dailyNewLimit').value) || 20,
     enableFuzz: document.getElementById('enableFuzz').checked,
-    learningSteps: steps
+    learningSteps: steps.length ? steps : [1, 10]
   };
+
   try {
-    await api('/auth/settings', { method: 'PUT', body: JSON.stringify(data) });
-    showToast('设置已保存', 'success');
+    await api('/auth/settings', {
+      method: 'PUT',
+      // 修复2: 移除 JSON.stringify({ settings }) 带来的无用外层包装
+      body: JSON.stringify(settings) 
+    });
+    showToast('FSRS 参数已同步', 'success');
     closeModal('settingsModal');
-  } catch (e) { showToast('保存失败', 'error'); }
+  } catch (e) {
+    showToast('保存失败: ' + e.message, 'error');
+  } finally {
+    btn.textContent = orgText;
+  }
 });
 
 function formatDate(dateStr) {
@@ -1675,10 +1690,24 @@ function revealAnswer() {
   if (!currentGroup) return;
   const front = currentGroup.querySelector('.front');
   const back = currentGroup.querySelector('.back');
+  
   if (!front.classList.contains('peeled')) {
     revealAllowed = false;
     front.classList.add('peeled');
     back.classList.add('revealed');
+    
+    // 【新增】异步拉取时间预测，动态替换按钮上方的数字(1,2,3,4)为时间
+    const word = state.studyWords[state.studyIndex];
+    api(`/study/scheduling?wordId=${word._id}`).then(info => {
+      const btns = document.querySelectorAll('#answerSection .answer-btn span:first-child');
+      if (btns.length === 4) {
+        btns[0].textContent = info.again ? info.again.interval : '1';
+        btns[1].textContent = info.hard ? info.hard.interval : '2';
+        btns[2].textContent = info.good ? info.good.interval : '3';
+        btns[3].textContent = info.easy ? info.easy.interval : '4';
+      }
+    }).catch(err => console.log('预测时间获取失败', err));
+
     if (revealTimeout) clearTimeout(revealTimeout);
     revealTimeout = setTimeout(() => {
       if (isReviewProcessing) return;
@@ -1708,15 +1737,12 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function submitReview(result) {
-  // 防止重复处理
   if (isReviewProcessing) return;
   isReviewProcessing = true;
   revealAllowed = false;
 
-  // 清除可能还在路上的按钮浮现定时器
   if (revealTimeout) { clearTimeout(revealTimeout); revealTimeout = null; }
 
-  // 双保险：卡片正面没撕开（没看到答案）则拦截提交
   const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
   if (!currentGroup) { isReviewProcessing = false; return; }
   const front = currentGroup.querySelector('.front');
@@ -1724,12 +1750,16 @@ async function submitReview(result) {
 
   document.getElementById('answerSection').classList.remove('show');
   const word = state.studyWords[state.studyIndex];
+  
   try {
     await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
   } catch (err) {
     showToast('网络异常，复习记录保存失败', 'error');
+    // 【修复】发生错误时恢复按钮交互
     isReviewProcessing = false;
-    return; // 拦截请求，防止前端强行跳到下一个单词
+    revealAllowed = true;
+    document.getElementById('answerSection').classList.add('show');
+    return; 
   }
   state.studyStats.reviewed++;
   state.studyStats[result]++;
@@ -1823,36 +1853,13 @@ function showStudyComplete() {
 }
 
 function reviewAgain() {
-  // 重置学习状态，保留原始词汇量
-  state.studyIndex = 0;
-  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-  revealAllowed = false;
-
-  // 隐藏完成界面，显示卡片容器
-  document.getElementById('studyComplete').classList.add('hidden');
-  document.getElementById('studyCardContainer').classList.remove('hidden');
-
-  // 重新渲染卡片堆叠
-  renderCardStack();
-  updateStudyProgress();
+  // 彻底阻断使用当前已复习词的逻辑，直接重新初始化并拉取最新到期单词
+  initStudy();
 }
 
 function reviewLastSession() {
-  const saved = localStorage.getItem('lastStudyWords');
-  if (!saved) {
-    showToast('没有可复习的记录', 'error');
-    return;
-  }
-  state.studyWords = JSON.parse(saved);
-  state.studyIndex = 0;
-  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-  revealAllowed = false;
-
-  document.getElementById('noWords').classList.add('hidden');
-  document.getElementById('studyCardContainer').classList.remove('hidden');
-
-  renderCardStack();
-  updateStudyProgress();
+  // 废除本地缓存读取，同样改为拉取最新数据
+  initStudy();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
