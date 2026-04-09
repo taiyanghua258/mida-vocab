@@ -45,51 +45,14 @@ pm2 save
 pm2 startup
 ```
 
-## 4. 配置 Nginx 反向代理
-我们需要告诉 Nginx 如何处理你的域名请求。
+## 4. 访问方式 (重要)
+既然 Node.js 兼任了网页服务器，你完全不需要额外配置 Nginx（除非你需要域名和 HTTPS）。
 
-1. 创建配置文件：
-   `nano /etc/nginx/sites-available/my-vocab`
+**推荐访问方式：**
+直接在浏览器输入：`http://107.175.233.60:3001`
 
-2. 粘贴以下内容（**请将 `yourdomain.com` 替换为你真实的域名**）：
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com; # 替换成你的域名
-
-    root /var/www/my-vocab/frontend;
-    index index.html;
-
-    # 静态前端文件
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # 后端 API 转发
-    location /api/ {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-3. 激活配置并重启 Nginx：
-```bash
-ln -s /etc/nginx/sites-available/my-vocab /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
-```
-
-## 5. 配置 HTTPS (推荐)
-使用 Certbot 免费获取 SSL 证书：
-```bash
-apt install certbot python3-certbot-nginx -y
-certbot --nginx -d yourdomain.com # 替换成你的域名
-```
+> [!TIP]
+> 如果通过 80 端口（直接输入 IP）访问到了默认页面（如 Apache/Nginx 默认页）导致 API 报错，请务必在地址后面加上 `:3001`。
 
 ---
 
@@ -97,4 +60,4 @@ certbot --nginx -d yourdomain.com # 替换成你的域名
 * **查看后端状态**: `pm2 status`
 * **查看日志**: `pm2 logs my-vocab`
 * **重启后端**: `pm2 restart my-vocab`
-* **Nginx 状态**: `systemctl status nginx`
+* **开放端口**: `sudo ufw allow 3001/tcp` (如果无法访问，请检查防火墙)
