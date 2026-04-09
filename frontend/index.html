@@ -1410,8 +1410,8 @@ async function handleBatchGenerate() {
 
   batchGeneratedWords = [];
   const total = lines.length;
-  // 【核心】每次最多发给 AI 10 个词，处理极快，进度反馈真实
-  const chunkSize = 10; 
+  // 【核心】每次发给 AI 3 个词，进度条反馈更细腻
+  const chunkSize = 3; 
   let processed = 0;
 
   pCount.textContent = `0/${total}`;

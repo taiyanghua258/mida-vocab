@@ -1,8 +1,8 @@
 const aiAttempts = new Map();
 // 限制时间窗口：1 小时
 const WINDOW_MS = 60 * 60 * 1000; 
-// 每小时每个用户最多调用 AI 的次数 (包含单个生成和批量生成)
-const MAX_REQUESTS = 20; 
+// 每小时每个用户最多调用 AI 的次数 (提升至200次，以满足更小切片的批量导入)
+const MAX_REQUESTS = 200; 
 
 // 定期清理过期记录，释放内存
 setInterval(() => {
