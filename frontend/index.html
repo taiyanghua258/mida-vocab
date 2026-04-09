@@ -861,7 +861,7 @@
               <p class="text-xs text-muted mt-0.5">单词到期时播放风铃音效</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="notifySoundToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifySound', this.checked)">
+              <input type="checkbox" id="notifySoundToggle" class="sr-only peer" checked>
               <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
@@ -873,7 +873,7 @@
               <p class="text-xs text-muted mt-0.5">浏览器弹窗提醒（需点击铃铛授权）</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="notifyDesktopToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifyDesktop', this.checked)">
+              <input type="checkbox" id="notifyDesktopToggle" class="sr-only peer" checked>
               <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
@@ -885,7 +885,7 @@
               <p class="text-xs text-muted mt-0.5">手机端振动反馈</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="notifyVibrateToggle" class="sr-only peer" checked onchange="updateNotifySetting('notifyVibrate', this.checked)">
+              <input type="checkbox" id="notifyVibrateToggle" class="sr-only peer" checked>
               <div class="w-11 h-6 bg-borderline peer-focus:ring-2 peer-focus:ring-ochre/20 rounded-full peer peer-checked:bg-ochre transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
@@ -944,7 +944,7 @@ function navigate(viewId) {
 
 function openModal(id) {
   document.getElementById(id).classList.add('active');
-  if (id === 'settingsModal') loadFsrsSettings();
+  if (id === 'settingsModal') { loadFsrsSettings(); loadNotifySettings(); }
 }
 function closeModal(id) {
   const modal = document.getElementById(id);
@@ -976,6 +976,9 @@ function resetFsrsSettings() {
   document.getElementById('settingsNewCards').value = 20;
   document.getElementById('enableFuzz').checked = true;
   document.getElementById('settingsSteps').value = '1, 10';
+  document.getElementById('notifySoundToggle').checked = true;
+  document.getElementById('notifyDesktopToggle').checked = true;
+  document.getElementById('notifyVibrateToggle').checked = true;
 }
 
 document.getElementById('settingsRetention').addEventListener('input', function() {
@@ -1004,9 +1007,20 @@ document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e)
     await api('/auth/settings', {
       method: 'PUT',
       // 修复2: 移除 JSON.stringify({ settings }) 带来的无用外层包装
-      body: JSON.stringify(settings) 
+      body: JSON.stringify(settings)
     });
-    showToast('FSRS 参数已同步', 'success');
+
+    // 保存通知设置到 localStorage
+    state.notifySound = document.getElementById('notifySoundToggle').checked;
+    state.notifyDesktop = document.getElementById('notifyDesktopToggle').checked;
+    state.notifyVibrate = document.getElementById('notifyVibrateToggle').checked;
+    localStorage.setItem('notifySettings', JSON.stringify({
+      notifySound: state.notifySound,
+      notifyDesktop: state.notifyDesktop,
+      notifyVibrate: state.notifyVibrate
+    }));
+
+    showToast('设置已保存', 'success');
     closeModal('settingsModal');
   } catch (e) {
     showToast('保存失败: ' + e.message, 'error');
@@ -1218,15 +1232,6 @@ function triggerDueNotification(count) {
   const dueElement = document.getElementById('dueWords').parentElement;
   dueElement.classList.add('pulse-ochre');
   setTimeout(() => dueElement.classList.remove('pulse-ochre'), 5000);
-}
-
-function updateNotifySetting(key, value) {
-  state[key] = value;
-  localStorage.setItem('notifySettings', JSON.stringify({
-    notifySound: state.notifySound,
-    notifyDesktop: state.notifyDesktop,
-    notifyVibrate: state.notifyVibrate
-  }));
 }
 
 function loadNotifySettings() {
