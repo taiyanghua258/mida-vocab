@@ -237,10 +237,11 @@ exports.getStats = async (req, res) => {
       due: { $lte: now }
     });
 
-    // 2. 查找还没背过的新词
-    const newWordsCount = await Word.countDocuments({
+    // 2. 查找还没背过且今日到期的新词（与 getDueWords 查询条件完全一致）
+    const dueNewWords = await Word.countDocuments({
       userId: req.userId,
-      state: 0
+      state: 0,
+      due: { $lte: now }
     });
 
     // 3. 计算今天还剩下的新词额度
@@ -254,8 +255,8 @@ exports.getStats = async (req, res) => {
     const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
-    // 真实待复习总数 = 旧词 + min(剩余额度, 待背新词总数)
-    const dueWords = dueReviewCount + Math.min(remainingNew, newWordsCount);
+    // 真实待复习总数 = 旧词 + min(剩余额度, 今日到期新词)
+    const dueWords = dueReviewCount + Math.min(remainingNew, dueNewWords);
 
     const learningWords = await Word.countDocuments({
       userId: req.userId,
@@ -286,7 +287,7 @@ exports.getStats = async (req, res) => {
     res.json({
       totalWords,
       dueWords,
-      newWords: newWordsCount,
+      newWords: dueNewWords,
       learningWords,
       reviewWords,
       masteredWords,
