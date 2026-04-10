@@ -363,7 +363,7 @@
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col">
 
-  <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
+  <div id="toast-container" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
   <!-- ========== AUTH VIEW ========== -->
   <div id="view-auth" class="view-section active h-screen flex-col items-center justify-center p-4">
@@ -950,6 +950,16 @@
                   <svg class="animate-spin h-5 w-5 text-ochre" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
               </div>
+              <!-- APKG 转换进度条 -->
+              <div id="apkgProgressBar" class="hidden mt-4 bg-parchment/50 border border-borderline rounded-2xl p-4">
+                <div class="flex items-center justify-between text-xs text-muted mb-2">
+                  <span id="apkgProgressText">云端解包并清洗数据中...</span>
+                  <span id="apkgProgressPct">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-borderline rounded-full overflow-hidden">
+                  <div id="apkgProgressFill" class="h-full bg-ochre transition-all duration-300 ease-out rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1137,7 +1147,8 @@ const CONFIG = { USE_MOCK_API: false, API_BASE: '/api' };
 function showToast(msg, type = 'info') {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');
-  t.className = `toast toast-${type} flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 bg-surface shadow-lg text-sm font-medium`;
+  // 加入 pointer-events-auto 保证弹窗自身可以点击
+  t.className = `toast toast-${type} flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 bg-surface shadow-lg text-sm font-medium pointer-events-auto`;
   t.innerHTML = `<span>${msg}</span>`;
   c.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
@@ -2334,36 +2345,52 @@ async function handleDictBatchImport() {
   }
 }
 
-// 独立的 APKG 云端转换逻辑
+// 独立的 APKG 云端转换逻辑（加入渐进式进度条）
 async function handleApkgConvert(event) {
   const file = event.target.files[0];
   if (!file) return;
   event.target.value = '';
 
-  const indicator = document.getElementById('apkgConvertIndicator');
-  
   if (!file.name.endsWith('.apkg')) {
     showToast('请上传标准 .apkg 格式的文件', 'error');
     return;
   }
 
+  const dropZone = document.getElementById('apkgDropZone');
+  const pb = document.getElementById('apkgProgressBar');
+  const fill = document.getElementById('apkgProgressFill');
+  const pctText = document.getElementById('apkgProgressPct');
+
+  // 隐藏拖拽区，显示进度条
+  dropZone.classList.add('hidden');
+  pb.classList.remove('hidden');
+  fill.style.width = '0%';
+  pctText.textContent = '0%';
+
+  // 模拟平滑进度 (渐进式靠近 95%)
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += (95 - progress) * 0.08; 
+    fill.style.width = `${progress}%`;
+    pctText.textContent = `${Math.floor(progress)}%`;
+  }, 500);
+
   const formData = new FormData();
   formData.append('dictFile', file);
 
   try {
-    indicator.classList.remove('hidden');
-    showToast('正在云端清洗转换，请稍候...', 'info');
-    
-    // 我们必须手动 fetch，因为 api 函数强制转为 JSON
     const response = await fetch(`${CONFIG.API_BASE}/words/upload-apkg`, {
       method: 'POST',
-      headers: {
-        'x-auth-token': localStorage.getItem('token')
-      },
+      headers: { 'x-auth-token': localStorage.getItem('token') },
       body: formData
     });
-    
+
+    clearInterval(interval);
+
     if (response.ok) {
+      fill.style.width = '100%';
+      pctText.textContent = '100%';
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2380,9 +2407,15 @@ async function handleApkgConvert(event) {
       throw new Error(result.message);
     }
   } catch (err) {
+    clearInterval(interval);
     showToast(err.message || '转换失败，请检查文件有效性', 'error');
   } finally {
-    indicator.classList.add('hidden');
+    // 延迟 2 秒后恢复初始界面
+    setTimeout(() => {
+      pb.classList.add('hidden');
+      dropZone.classList.remove('hidden');
+      fill.style.width = '0%';
+    }, 2000);
   }
 }
 
