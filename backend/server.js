@@ -1,4 +1,9 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+// 优先加载根目录 .env，若不存在则 fallback 到 backend/.env
+const _path = require('path');
+const _dotenvResult = require('dotenv').config({ path: _path.resolve(__dirname, '../.env') });
+if (_dotenvResult.error) {
+  require('dotenv').config(); // fallback: 加载当前目录 (backend/) 下的 .env
+}
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
