@@ -492,8 +492,9 @@
           
           <div class="relative hidden sm:block" id="userMenuContainer">
             <button onclick="toggleUserMenu()" class="flex items-center gap-2 p-1 pr-3 bg-surface border border-borderline/80 rounded-full shadow-[0_2px_10px_rgba(26,47,43,0.02)] hover:shadow-sm hover:border-borderline transition-all active:scale-95 group">
-              <div class="w-8 h-8 rounded-full bg-charcoal text-surface flex items-center justify-center text-sm font-bold uppercase overflow-hidden shadow-inner transition-transform group-hover:scale-105">
-                <span id="avatarLetter">U</span>
+              <div class="w-8 h-8 rounded-full bg-charcoal text-surface flex items-center justify-center text-sm font-bold uppercase overflow-hidden shadow-inner transition-transform group-hover:scale-105 relative">
+                <span id="navAvatarLetter">U</span>
+                <img id="navAvatarImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10">
               </div>
               <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase"></span>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted transition-transform duration-300" id="userMenuArrow"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
@@ -502,16 +503,24 @@
             <div id="userDropdown" class="absolute right-0 mt-3 w-64 bg-surface/85 backdrop-blur-xl border border-borderline rounded-[1.5rem] shadow-[0_12px_40px_rgba(26,47,43,0.08)] opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-300 z-50 overflow-hidden">
               <div class="p-5 border-b border-borderline/40 bg-parchment/30">
                 <div class="flex items-center gap-3.5 mb-1">
-                  <div class="w-12 h-12 rounded-full bg-charcoal text-surface flex items-center justify-center text-xl font-bold uppercase shadow-inner">
+                  <div class="relative w-12 h-12 rounded-full bg-charcoal text-surface flex items-center justify-center text-xl font-bold uppercase shadow-inner overflow-hidden">
                     <span id="dropdownAvatarLetter">U</span>
+                    <img id="dropdownAvatarImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10">
                   </div>
                   <div class="flex-1 overflow-hidden">
                     <div id="dropdownUsername" class="font-bold text-charcoal tracking-tight truncate">Username</div>
-                    <div class="text-[0.65rem] text-muted mt-0.5 truncate">保持纯粹，专注语言。</div> </div>
+                    <div id="dropdownSignature" class="text-[0.65rem] text-muted mt-0.5 truncate">保持纯粹，专注语言。</div>
+                  </div>
                 </div>
               </div>
               
               <div class="p-2.5 flex flex-col gap-1">
+                <button onclick="openModal('profileModal'); closeUserMenu();" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-charcoal hover:bg-parchment transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
+                  <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-charcoal/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/70"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+                  </div>
+                  编辑个人资料
+                </button>
                 <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-charcoal hover:bg-parchment transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
                   <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-charcoal/30 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/70"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H104a8,8,0,0,0,0,16H204.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"></path></svg>
@@ -977,6 +986,41 @@
             <button type="button" onclick="closeModal('settingsModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
             <button type="submit" id="saveSettingsBtn" class="magnetic-btn px-8 py-3 tracking-widest text-[0.9rem] text-surface">保存更改</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="profileModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[1.5rem] w-full max-w-sm max-h-[90vh] overflow-y-auto flex flex-col shadow-[0_12px_40px_rgba(26,47,43,0.12)] border border-borderline">
+      <div class="px-8 py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
+        <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">个人资料</h3>
+        <button onclick="closeModal('profileModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+      <form id="profileForm" class="p-8 space-y-6">
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="relative w-20 h-20 rounded-full bg-charcoal text-surface flex items-center justify-center text-3xl font-bold uppercase shadow-inner overflow-hidden group cursor-pointer" onclick="document.getElementById('avatarUpload').click()">
+            <span id="previewAvatarLetter">U</span>
+            <img id="previewAvatarImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10">
+            <div class="absolute inset-0 bg-black/40 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,80h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z"></path></svg>
+            </div>
+          </div>
+          <input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
+          <span class="text-[0.65rem] text-muted tracking-widest uppercase font-bold">点击更换头像 (Max 2MB)</span>
+        </div>
+
+        <div>
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-2">✍️ 个性签名</label>
+          <input type="text" id="signatureInput" placeholder="保持纯粹，专注语言。" maxlength="50" class="aesthetic-input w-full px-2 py-3 text-charcoal">
+        </div>
+
+        <div class="pt-4 flex justify-end gap-4 items-center">
+          <button type="button" onclick="closeModal('profileModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
+          <button type="submit" id="saveProfileBtn" class="magnetic-btn px-6 py-3 tracking-widest text-[0.9rem] text-surface">保存</button>
         </div>
       </form>
     </div>
@@ -1568,6 +1612,118 @@ function editDistance(a, b) {
   return dp[m][n];
 }
 
+
+/* ================= USER PROFILE ================= */
+let tempAvatarBase64 = ''; // 暂存选中的头像
+
+// 1. 抽离出一个渲染用户信息的通用函数
+function renderUserInfo() {
+  if (!state.user) return;
+  const uname = state.user.username;
+  const firstLetter = uname.charAt(0).toUpperCase();
+  const avatarUrl = state.user.avatar || '';
+  const signature = state.user.signature || '保持纯粹，专注语言。';
+
+  // 渲染文字
+  const welcomeUser = document.getElementById('welcomeUser');
+  if (welcomeUser) welcomeUser.textContent = uname;
+  
+  const dropdownUsername = document.getElementById('dropdownUsername');
+  if (dropdownUsername) dropdownUsername.textContent = uname;
+
+  if (document.getElementById('dropdownSignature')) {
+    document.getElementById('dropdownSignature').textContent = signature;
+  }
+  if (document.getElementById('signatureInput')) {
+    document.getElementById('signatureInput').value = signature;
+  }
+
+  // 渲染头像（导航栏、下拉菜单、编辑弹窗）
+  const letterIds = ['navAvatarLetter', 'dropdownAvatarLetter', 'previewAvatarLetter'];
+  const imgIds = ['navAvatarImg', 'dropdownAvatarImg', 'previewAvatarImg'];
+
+  if (avatarUrl) {
+    letterIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    imgIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.src = avatarUrl; el.classList.remove('hidden'); }
+    });
+    tempAvatarBase64 = avatarUrl;
+  } else {
+    imgIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    letterIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = firstLetter; el.classList.remove('hidden'); }
+    });
+    tempAvatarBase64 = '';
+  }
+}
+
+// 2. 处理图片选择与 Base64 转换
+function handleAvatarSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // 限制图片大小 (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    return showToast('图片太大啦，请选择 2MB 以下的图片', 'error');
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    tempAvatarBase64 = e.target.result;
+    const previewImg = document.getElementById('previewAvatarImg');
+    if (previewImg) {
+      previewImg.src = tempAvatarBase64;
+      previewImg.classList.remove('hidden');
+    }
+    const previewLetter = document.getElementById('previewAvatarLetter');
+    if (previewLetter) previewLetter.classList.add('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
+// 3. 提交资料修改
+document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveProfileBtn');
+  const orgText = btn.textContent;
+  btn.textContent = '保存中...';
+  btn.disabled = true;
+
+  const signature = document.getElementById('signatureInput').value.trim();
+
+  try {
+    const updatedUser = await api('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ 
+        avatar: tempAvatarBase64, 
+        signature: signature 
+      })
+    });
+
+    // 更新本地状态
+    state.user = updatedUser;
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    // 重新渲染UI
+    renderUserInfo();
+    showToast('个人资料已更新', 'success');
+    closeModal('profileModal');
+  } catch (err) {
+    showToast('保存失败: ' + err.message, 'error');
+  } finally {
+    btn.textContent = orgText;
+    btn.disabled = false;
+  }
+});
+
 /* ================= API ================= */
 const api = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
@@ -1625,14 +1781,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     state.user = data.user;
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    const uname = data.user.username;
-    document.getElementById('welcomeUser').textContent = uname;
-    document.getElementById('dropdownUsername').textContent = uname;
     
-    // 提取首字母作为临时头像
-    const firstLetter = uname.charAt(0).toUpperCase();
-    document.getElementById('avatarLetter').textContent = firstLetter;
-    document.getElementById('dropdownAvatarLetter').textContent = firstLetter;
+    // 使用新的渲染函数
+    renderUserInfo();
+    
     showToast('登录成功', 'success');
     startBackgroundPolling();
     loadNotifySettings();
@@ -2673,17 +2825,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
   if (token && user) {
     state.token = token; state.user = JSON.parse(user);
-    const uname = state.user.username;
-    document.getElementById('welcomeUser').textContent = uname;
     
-    const ddUsername = document.getElementById('dropdownUsername');
-    if (ddUsername) {
-        ddUsername.textContent = uname;
-        const firstLetter = uname.charAt(0).toUpperCase();
-        document.getElementById('avatarLetter').textContent = firstLetter;
-        document.getElementById('dropdownAvatarLetter').textContent = firstLetter;
-    }
-
+    // 👇 替换掉原本的手动渲染逻辑
+    renderUserInfo();
+    // 👆 替换结束
+    
     if ('Notification' in window && Notification.permission === 'granted') {
       state.notificationsEnabled = true;
       const btn = document.getElementById('notifyBtn');

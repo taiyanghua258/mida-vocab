@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, username, email }
+      user: { id: user._id, username, email, avatar: user.avatar, signature: user.signature }
     });
   } catch (err) {
     console.error('Register error:', err.message, err.code);
@@ -70,7 +70,7 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, username: user.username, email: user.email }
+      user: { id: user._id, username: user.username, email: user.email, avatar: user.avatar, signature: user.signature }
     });
   } catch (err) {
     console.error(err);
@@ -150,6 +150,30 @@ exports.deleteUser = async (req, res) => {
     await User.findByIdAndDelete(user._id);
 
     res.json({ message: `用户 ${username} 及其所有词库数据已彻底删除` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { avatar, signature } = req.body;
+    const updates = {};
+    if (avatar !== undefined) updates.avatar = avatar;
+    if (signature !== undefined) updates.signature = signature.substring(0, 50);
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-password'); // 返回除密码外的所有最新信息
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

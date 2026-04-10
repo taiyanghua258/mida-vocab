@@ -53,6 +53,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  avatar: {
+    type: String,
+    default: '' // 留空代表使用默认的首字母头像
+  },
+  signature: {
+    type: String,
+    default: '保持纯粹，专注语言。', // 默认签名
+    maxLength: 50 // 限制一下长度
+  },
   fsrsSettings: {
     type: fsrsSettingsSchema,
     default: () => ({})
