@@ -310,6 +310,34 @@ exports.getStats = async (req, res) => {
       due: { $gt: now, $lte: oneHourLater }
     }).select('_id due').sort({ due: 1 }).lean();
 
+    // 今日预估：汇总今日所有可能的复习轮次
+    // 今天还在冷却中的所有单词（包含超出1小时的短期记忆步骤）
+    const endOfDay = dayjs().tz(TIMEZONE).endOf('day').toDate();
+    const allCoolingToday = await Word.countDocuments({
+      userId: req.userId,
+      language,
+      state: { $in: [1, 3] }, // Learning / Relearning
+      due: { $gt: now, $lte: endOfDay }
+    });
+
+    // 估算每词平均耗时（基于最近50条ReviewLog的responseTime，兜底15秒）
+    const recentLogs = await ReviewLog.find({
+      userId: req.userId,
+      language,
+      responseTime: { $gt: 0 }
+    }).sort({ createdAt: -1 }).limit(50).select('responseTime').lean();
+
+    let avgResponseTime = 15; // 默认15秒/词
+    if (recentLogs.length > 0) {
+      const totalTime = recentLogs.reduce((sum, l) => sum + l.responseTime, 0);
+      avgResponseTime = Math.round(totalTime / recentLogs.length / 1000); // ms → s
+      if (avgResponseTime < 5) avgResponseTime = 5;
+      if (avgResponseTime > 60) avgResponseTime = 60;
+    }
+
+    const todayRemainingWords = dueWords + allCoolingToday;
+    const estimatedMinutes = Math.ceil((todayRemainingWords * avgResponseTime) / 60);
+
     res.json({
       totalWords,
       dueWords,
@@ -318,7 +346,15 @@ exports.getStats = async (req, res) => {
       reviewWords,
       masteredWords,
       todayReviews,
-      upcomingWords
+      upcomingWords,
+      dailyNewLimit,
+      remainingNew,
+      todayForecast: {
+        totalRemainingWords: todayRemainingWords,
+        coolingWords: allCoolingToday,
+        estimatedMinutes,
+        avgSecondsPerWord: avgResponseTime
+      }
     });
   } catch (err) {
     console.error(err);
