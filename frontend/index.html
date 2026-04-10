@@ -3203,17 +3203,24 @@ function reviewLastSession() {
 }
 
 function checkAndStartOnboarding() {
-  if (localStorage.getItem('hasSeenOnboarding')) return;
-  
-  // Make sure we only run on dashboard
-  const driverObj = window.driver.js.driver;
-  const driver = driverObj({
-    showProgress: true,
-    allowClose: false, // Prevent dismissing by clicking outside (mobile friendly)
-    nextBtnText: '下一步',
-    prevBtnText: '上一步',
-    doneBtnText: '完成设置',
-    steps: [
+  try {
+    if (localStorage.getItem('hasSeenOnboarding')) return;
+
+    // 等待 Driver.js 加载完成
+    if (!window.driver || !window.driver.js || !window.driver.js.driver) {
+      console.warn('[Onboarding] Driver.js 尚未加载，1秒后重试...');
+      setTimeout(checkAndStartOnboarding, 1000);
+      return;
+    }
+
+    // 确认当前在 dashboard 视图
+    const dashView = document.getElementById('view-dashboard');
+    if (!dashView || !dashView.classList.contains('active')) return;
+
+    const isMobile = window.innerWidth < 640;
+
+    // 基础步骤（桌面和手机通用）
+    const steps = [
       {
         popover: {
           title: '欢迎来到 見だ | 记忆召唤！',
@@ -3225,7 +3232,7 @@ function checkAndStartOnboarding() {
         element: '#ws-btn-ja',
         popover: {
           title: '双语工作区隔离',
-          description: '点击这里可以在日语（見だ）与英语（See）工作区之间无缝切换。您的词库、AI 提示词、复习配额和冷却池都完全物理隔离！',
+          description: '点击这里可以在日语（見だ）与英语（See）工作区之间无缝切换。您的词库、复习配额和冷却池都完全物理隔离！',
           side: 'bottom', align: 'start'
         }
       },
@@ -3260,31 +3267,54 @@ function checkAndStartOnboarding() {
           description: '当日新词和冷却完成的词在这里等您。点击此处即可马上开始召唤记忆！',
           side: 'top', align: 'end'
         }
-      },
-      {
+      }
+    ];
+
+    // 最后一步：桌面端指向用户菜单，手机端指向设置齿轮按钮
+    if (isMobile) {
+      // 手机上 #userMenuContainer 是 hidden 的，改为指向齿轮按钮
+      steps.push({
+        popover: {
+          title: '最后一步：个性化设置',
+          description: '点击顶部导航栏的 ⚙️ 齿轮按钮进入「系统设置」，可以独立调整【英语 / 日语】每天的新词上限和记忆算法参数。设置完成后就可以开始学习啦！',
+          align: 'center'
+        }
+      });
+    } else {
+      steps.push({
         element: '#userMenuContainer',
         popover: {
           title: '最后一步：个性化设置',
-          description: '点击您的头像进入「系统设置」，可以独立调整【英语 / 日语】两门语言每天的 **新词上限** 和记忆算法。设置完成后就可以开始学习啦！',
+          description: '点击您的头像进入「系统设置」，可以独立调整【英语 / 日语】两门语言每天的新词上限和记忆算法。设置完成后就可以开始学习啦！',
           side: 'left', align: 'start'
         }
-      }
-    ],
-    onDestroyStarted: () => {
-      localStorage.setItem('hasSeenOnboarding', 'true');
-      driver.destroy();
-      setTimeout(() => {
-        openModal('settingsModal');
-      }, 300);
+      });
     }
-  });
 
-  setTimeout(() => {
-    // Only drive if they are still on dashboard
-    if (document.getElementById('view-dashboard').classList.contains('hidden') === false) {
-      driver.drive();
-    }
-  }, 800);
+    const driverInstance = window.driver.js.driver({
+      showProgress: true,
+      allowClose: true,
+      overlayColor: 'rgba(26, 47, 43, 0.55)',
+      nextBtnText: '下一步 →',
+      prevBtnText: '← 上一步',
+      doneBtnText: '✓ 完成设置',
+      steps: steps,
+      onDestroyStarted: () => {
+        localStorage.setItem('hasSeenOnboarding', 'true');
+        driverInstance.destroy();
+        setTimeout(() => {
+          openModal('settingsModal');
+        }, 400);
+      }
+    });
+
+    setTimeout(() => {
+      driverInstance.drive();
+    }, 600);
+
+  } catch (err) {
+    console.error('[Onboarding] 引导流程启动失败：', err);
+  }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
