@@ -5,7 +5,6 @@ const auth = require('../middleware/auth');
 // 1. 引入限流器
 const aiRateLimiter = require('../middleware/aiRateLimiter');
 
-
 // 单个单词生成
 router.post('/generate', auth, aiRateLimiter, async (req, res) => {
   try {
@@ -22,6 +21,7 @@ router.post('/generate', auth, aiRateLimiter, async (req, res) => {
 - meaning: 中文释义
 - partOfSpeech: 词性（名词/动词/形容词/副词/助词/连词/感叹词/代词/数词/接尾词/接头词/其他）
 - tags: 相关标签数组，必须包含 JLPT 等级（N5/N4/N3/N2/N1），以及词性、领域等。例如：["N5", "动词", "日常"]
+- language: "ja"
 只返回 JSON，不要其他文字。`
       : `给定一个英语单词 "${japanese}"，请返回一个 JSON 对象，包含以下字段：
 - japanese: 原单词（必须使用 japanese 作为键名）
@@ -29,14 +29,20 @@ router.post('/generate', auth, aiRateLimiter, async (req, res) => {
 - meaning: 中文释义
 - partOfSpeech: 词性（名词/动词/形容词/副词/代词/介词/连词/冠词/感叹词/数词/其他）
 - tags: 相关标签数组（如 CET4, 雅思等）。
+- language: "en"
 只返回 JSON，不要其他文字。`;
+
+    // 动态设置系统人设
+    const systemContent = language === 'ja' 
+      ? '你是一个日语学习助手，只返回 JSON 格式的数据。' 
+      : '你是一个英语学习助手，只返回 JSON 格式的数据。';
 
     const response = await axios.post(
       'https://api.deepseek.com/chat/completions',
       {
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: '你是一个日语学习助手，只返回 JSON 格式的数据。' },
+          { role: 'system', content: systemContent },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
@@ -85,6 +91,7 @@ router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
       return res.status(400).json({ message: '文本过长，请分批次生成（限制 3000 字符以内）' });
     }
 
+    // 修复：补全了英语分支中的 \n${text}\n 以及语言标识
     const prompt = language === 'ja'
       ? `从以下文本中提取所有日语单词（日语汉字、平假名、片假名组成的词），并为每个单词生成信息。
 文本内容：\n${text}\n
@@ -99,17 +106,29 @@ router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
    - language: "ja"
 请只返回一个 JSON 数组，不要其他文字。`
       : `从以下文本中提取所有英语单词，并为每个单词生成信息。
+文本内容：\n${text}\n
 要求：
 1. 识别所有的英语单词并去重（恢复为单数/原形等）
-2. 每个单词生成：japanese(原单词), reading(音标), meaning, partOfSpeech, tags
+2. 每个单词生成：
+   - japanese: 原单词（必须使用 japanese 作为键名）
+   - reading: 音标 (IPA)
+   - meaning: 中文释义
+   - partOfSpeech: 词性
+   - tags: 相关标签数组
+   - language: "en"
 请只返回一个 JSON 数组，不要其他文字。`;
+
+    // 动态设置系统人设
+    const systemContent = language === 'ja' 
+      ? '你是一个日语学习助手，只返回 JSON 数组格式的数据。' 
+      : '你是一个英语学习助手，只返回 JSON 数组格式的数据。';
 
     const response = await axios.post(
       'https://api.deepseek.com/chat/completions',
       {
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: '你是一个日语学习助手，只返回 JSON 数组格式的数据。' },
+          { role: 'system', content: systemContent },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
