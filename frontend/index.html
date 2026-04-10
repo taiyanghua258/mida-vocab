@@ -1803,7 +1803,6 @@ async function handleAiGenerate() {
       headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
       body: JSON.stringify({ japanese, language: state.currentLang })
     });
-    });
 
     if (!res.ok) throw new Error('生成失败');
 
@@ -1829,10 +1828,9 @@ let batchGeneratedWords = [];
 
 async function handleBatchGenerate() {
   const text = document.getElementById('importWordsText').value.trim();
-  const language = state.currentLang; // 修改为使用全局状态
+  const language = state.currentLang; 
   if (!text) return showToast('请输入单词内容', 'error');
 
-  // 将输入的文本按换行符拆分，并过滤掉空行
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) return showToast('请输入有效的单词', 'error');
 
@@ -1840,7 +1838,6 @@ async function handleBatchGenerate() {
   btn.disabled = true;
   btn.innerHTML = 'AI 解析中...';
 
-  // 展开进度条 UI
   const pb = document.getElementById('aiProgressBar');
   const pCount = document.getElementById('aiProgressCount');
   const pFill = document.getElementById('aiProgressFill');
@@ -1848,7 +1845,6 @@ async function handleBatchGenerate() {
 
   batchGeneratedWords = [];
   const total = lines.length;
-  // 【核心】每次发给 AI 3 个词，进度条反馈更细腻
   const chunkSize = 3; 
   let processed = 0;
 
@@ -1865,19 +1861,16 @@ async function handleBatchGenerate() {
         headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
         body: JSON.stringify({ text: chunkText, language: state.currentLang })
       });
-      });
 
       if (!res.ok) throw new Error('AI 解析中断');
       const chunkResult = await res.json();
       batchGeneratedWords.push(...chunkResult);
 
-      // 计算真实进度并推给进度条
       processed += chunkLines.length;
       pCount.textContent = `${processed}/${total}`;
       pFill.style.width = `${(processed / total) * 100}%`;
     }
 
-    // 成功后：隐藏步骤1，进入步骤2（核对列表）
     document.getElementById('importStep1').classList.add('hidden');
     document.getElementById('importStep2').classList.remove('hidden');
     document.getElementById('batchCount').textContent = batchGeneratedWords.length;
@@ -1899,7 +1892,7 @@ async function handleBatchGenerate() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'AI 补全';
-    pb.classList.add('hidden'); // 收起进度条
+    pb.classList.add('hidden'); 
   }
 }
 
