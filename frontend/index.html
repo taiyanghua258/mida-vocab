@@ -852,15 +852,15 @@
 
         <!-- 每日新卡片上限 -->
         <div>
-          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">📚 每日新词上限</label>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-bold">🇯🇵 日语</span>
-              <input type="number" id="settingsNewCardsJa" min="1" max="200" value="20" class="aesthetic-input w-full pl-12 pr-2 py-3 text-charcoal font-mono">
+          <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-3">📚 每日新词上限</label>
+          <div class="grid grid-cols-2 gap-5">
+            <div>
+              <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">🇯🇵 日语配额</label>
+              <input type="number" id="settingsNewCardsJa" min="1" max="200" value="20" class="aesthetic-input w-full px-3 py-3 text-charcoal font-mono">
             </div>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-bold">🇬🇧 英语</span>
-              <input type="number" id="settingsNewCardsEn" min="1" max="200" value="20" class="aesthetic-input w-full pl-12 pr-2 py-3 text-charcoal font-mono">
+            <div>
+              <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">🇬🇧 英语配额</label>
+              <input type="number" id="settingsNewCardsEn" min="1" max="200" value="20" class="aesthetic-input w-full px-3 py-3 text-charcoal font-mono">
             </div>
           </div>
           <p class="text-xs text-muted mt-2 leading-relaxed">分别设置不同语种每天新加入学习的单词数量。建议量力而行，少而有规律的学习比偶尔的突击记忆更有效。</p>
