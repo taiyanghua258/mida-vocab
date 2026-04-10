@@ -1107,21 +1107,33 @@ function playGentleDing() {
 function toggleNotifications() {
   if (!('Notification' in window)) return showToast('您的浏览器不支持桌面通知', 'error');
 
+  // 如果已经获取了系统通知权限，则进行自由开关切换
   if (Notification.permission === 'granted') {
-    state.notificationsEnabled = true;
-    document.getElementById('notifyBtn').classList.add('text-ochre');
-    showToast('复习提醒已开启', 'success');
-  } else if (Notification.permission !== 'denied') {
+    state.notificationsEnabled = !state.notificationsEnabled; // 反转当前状态
+    
+    const btn = document.getElementById('notifyBtn');
+    if (state.notificationsEnabled) {
+      btn.classList.add('text-ochre');
+      showToast('桌面复习提醒已开启', 'success');
+    } else {
+      btn.classList.remove('text-ochre');
+      showToast('桌面复习提醒已关闭', 'info');
+    }
+  } 
+  // 如果还未请求过权限，则向用户发起请求
+  else if (Notification.permission !== 'denied') {
     Notification.requestPermission().then(perm => {
       if (perm === 'granted') {
         state.notificationsEnabled = true;
         document.getElementById('notifyBtn').classList.add('text-ochre');
-        showToast('复习提醒已开启', 'success');
+        showToast('桌面复习提醒已开启', 'success');
       } else {
         showToast('通知权限被拒绝，将仅使用声音提醒', 'info');
       }
     });
-  } else {
+  } 
+  // 如果用户之前在浏览器设置里彻底禁用了通知
+  else {
     showToast('请在浏览器设置中手动允许通知', 'error');
   }
 }
