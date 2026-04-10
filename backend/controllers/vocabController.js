@@ -370,113 +370,35 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-// 处理 apkg 转换并导入
+// 处理 apkg 转换并抛出下载
 exports.uploadAndConvertApkg = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: '请选择文件' });
 
     const inputPath = req.file.path;
     const outputPath = inputPath + '.json';
-    // 这里的路径指向放置脚本的位置
     const scriptPath = path.join(__dirname, '../../tools/anki_converter.py');
 
-    // 调用 Python 脚本进行转换
-    exec(`python3 "${scriptPath}" "${inputPath}" --output "${outputPath}"`, async (error) => {
+    exec(`python3 "${scriptPath}" "${inputPath}" --output "${outputPath}"`, (error) => {
       if (error) {
         console.error('转换失败:', error);
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
         return res.status(500).json({ message: '词书解析失败' });
       }
 
-      try {
-        // 读取转换后的 JSON 数据
-        if (!fs.existsSync(outputPath)) {
-          throw new Error('转换输出文件不存在');
+      if (!fs.existsSync(outputPath)) {
+        if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+        return res.status(500).json({ message: '转换输出文件不存在' });
+      }
+
+      res.download(outputPath, 'converted_vocab.json', (err) => {
+        if (err) {
+          console.error('下载失败:', err);
         }
-        const rawData = fs.readFileSync(outputPath);
-        const words = JSON.parse(rawData);
-
-        // 批量存入数据库 (整合到本控制器的 importWords 相同的逻辑处理)
-        if (!Array.isArray(words) || words.length === 0) {
-           throw new Error('转换后的数据为空');
-        }
-
-        const importLang = req.body.language || 'ja';
-        const wordsToInsertRaw = words.map(w => ({
-          userId: req.userId,
-          language: importLang,
-          japanese: w.japanese || w.word,
-          reading: w.reading || w.kana || '',
-          meaning: w.meaning || w.translation || '',
-          partOfSpeech: w.partOfSpeech || w.pos || '名词',
-          tags: w.tags || [],
-          due: new Date()
-        }));
-
-        // 内部去重
-        const uniqueMap = new Map();
-        wordsToInsertRaw.forEach(w => {
-            if (w.japanese) uniqueMap.set(w.japanese, w);
-        });
-        const wordsToInsert = Array.from(uniqueMap.values());
-
-        // 数据库查重
-        const newJapaneseWords = wordsToInsert.map(w => w.japanese);
-        const existingWords = await Word.find({ 
-          userId: req.userId, 
-          language: importLang,
-          japanese: { $in: newJapaneseWords } 
-        }).select('japanese language').lean();
-
-        const existingSet = new Set(existingWords.map(w => `${w.language}_${w.japanese}`));
-        const finalInsert = wordsToInsert.filter(w => !existingSet.has(`${w.language}_${w.japanese}`));
-
-        // 额度计算 (简化版，复用逻辑)
-        if (finalInsert.length > 0) {
-          const user = await User.findById(req.userId).select('fsrsSettings');
-          const dailyNewLimit = importLang === 'en' 
-            ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
-            : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
-
-          const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
-          const todayNewReviews = await ReviewLog.countDocuments({
-            userId: req.userId,
-            language: importLang,
-            reviewDate: { $gte: todayStart },
-            state: 0
-          });
-
-          const queuedNew = await Word.countDocuments({
-            userId: req.userId,
-            language: importLang,
-            state: 0,
-            due: { $lte: new Date() }
-          });
-
-          const usedQuota = todayNewReviews + queuedNew;
-          const remainingQuota = Math.max(0, dailyNewLimit - usedQuota);
-          const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
-
-          finalInsert.forEach((w, i) => {
-            if (i >= remainingQuota) {
-              w.due = tomorrowStart;
-            }
-          });
-
-          const result = await Word.insertMany(finalInsert);
-          res.json({ message: `成功导入 ${result.length} 个单词`, count: result.length });
-        } else {
-          res.json({ message: '所有单词已在库中', count: 0 });
-        }
-
-      } catch (innerErr) {
-        console.error('导入逻辑失败:', innerErr);
-        res.status(500).json({ message: '数据存入失败: ' + innerErr.message });
-      } finally {
         // 清理临时文件
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
         if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-      }
+      });
     });
   } catch (err) {
     console.error(err);

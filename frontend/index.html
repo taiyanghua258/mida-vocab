@@ -934,24 +934,20 @@
               <p class="text-[0.65rem] text-muted mt-2 tracking-wide uppercase font-bold">支持 .json / .csv 格式</p>
             </div>
             
-            <div class="mt-8 border-t border-borderline/40 pt-6">
-              <div class="bg-parchment/50 border border-borderline rounded-2xl p-4 flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-charcoal/5 flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/60"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
+            <div class="relative group mt-8 border-t border-borderline/40 pt-6">
+              <input type="file" id="apkgFileInput" accept=".apkg" class="hidden" onchange="handleApkgConvert(event)">
+              <div onclick="document.getElementById('apkgFileInput').click()" id="apkgDropZone" class="bg-parchment/50 border border-borderline border-dashed rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:bg-parchment hover:border-ochre/30 transition-all">
+                <div class="w-12 h-12 rounded-xl bg-charcoal/5 flex items-center justify-center flex-shrink-0 group-hover:bg-ochre/10 group-hover:text-ochre transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/60 group-hover:text-ochre transition-colors"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <h4 class="text-[0.75rem] font-bold text-charcoal uppercase tracking-wider mb-1">提示：拥有 .apkg 词书？</h4>
+                  <h4 class="text-[0.8rem] font-bold text-charcoal mb-1">拥有 .apkg 词书？拖到这里清洗</h4>
                   <p class="text-[0.7rem] text-muted leading-relaxed">
-                    系统目前仅支持标准的 <b class="text-charcoal">.json / .csv</b>。为了获得最佳体验并清洗语音/图片残留，请使用我们提供的转换脚本。
+                    自动剔除冗余信息，由于 Anki 格式差异，我们将会在云端清洗转化成标准 <b class="text-charcoal">.json</b> 文件供您下载，然后即可导入上方主入口。
                   </p>
-                  <div class="mt-3 flex items-center gap-4">
-                    <a href="https://github.com/taiyanghua258/mida-vocab/tree/main/tools" target="_blank" class="flex items-center gap-1.5 text-[0.65rem] font-bold text-charcoal hover:underline underline-offset-4 transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208V208Zm-48-80a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16h48A8,8,0,0,1,160,128Zm0,32a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16h48A8,8,0,0,1,160,160Zm0-64a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16h48A8,8,0,0,1,160,96Z"></path></svg>
-                      获取 Python 转换脚本
-                    </a>
-                    <span class="w-[1px] h-3 bg-borderline"></span>
-                    <button onclick="showQuickGuide()" class="text-[0.65rem] font-bold text-muted hover:text-charcoal transition-colors">使用教程</button>
-                  </div>
+                </div>
+                <div id="apkgConvertIndicator" class="hidden flex-shrink-0 flex items-center justify-center ml-2">
+                  <svg class="animate-spin h-5 w-5 text-ochre" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
               </div>
             </div>
@@ -1177,23 +1173,13 @@ function closeUserMenu() {
 }
 
 // 点击外部区域自动关闭菜单
-document.addEventListener('click', (e) => {
-  const container = document.getElementById('userMenuContainer');
-  if (container && !container.contains(e.target)) {
-    closeUserMenu();
-  }
-});
-
+// .apkg 转换工具教程
 function showQuickGuide() {
   const guide = `
-    使用步骤：
-    1. 确保安装了 Python 环境。
-    2. 下载 tools/anki_converter.py 脚本。
-    3. 在终端运行：python anki_converter.py 你的词书.apkg
-    4. 脚本将自动剔除 HTML、图片和语音标签。
-    5. 上传生成的 converted_vocab.json 即可！
+    已升级为全自动云端清洗！
+    只需将 .apkg 文件拖入下方的专门虚线框区域，系统会自动将其转换为标准的 .json 文件并下载到您的设备。
+    转换完成后，您只需将下载的 json 文件拖入主上传区域即可。
   `;
-  // 你可以根据现有 UI 风格替换为自定义的 Modal，这里先用 alert 示意
   alert(guide.replace(/^\s+/gm, ''));
 }
 
@@ -2252,31 +2238,11 @@ async function handleAiGenerate() {
 }
 
 /* ================= 词书导入逻辑 ================= */
-let dictBatchWords = [];
-
 function handleDictFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
+  event.target.value = ''; // 重置以支持重复上传
 
-  // 如果是 .apkg 文件，前端无法解析，直接跳到准备上传状态
-  if (file.name.endsWith('.apkg')) {
-    dictBatchWords = []; // 清空之前的解析库
-    document.getElementById('dictStep1').classList.add('hidden');
-    document.getElementById('dictStep2').classList.remove('hidden');
-    document.getElementById('dictBatchCount').textContent = '-';
-    
-    document.getElementById('dictBatchPreviewList').innerHTML = `
-      <div class="flex flex-col items-center justify-center p-12 text-center">
-        <div class="w-16 h-16 bg-ochre/10 rounded-full flex items-center justify-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#DF9F28" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
-        </div>
-        <p class="text-[0.85rem] font-bold text-charcoal">Anki 词书已就绪</p>
-        <p class="text-[0.7rem] text-muted mt-2">由于是加密格式，系统将在上传后进行云端解析并自动清洗数据。</p>
-      </div>
-    `;
-    showToast('Anki 词书已就绪，点击开始导入即可触发云端转换', 'info');
-    return;
-  }
 
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -2338,48 +2304,11 @@ function handleDictFileSelect(event) {
 
 // 复用 handleBatchImport 的核心逻辑，但对应到新的 UI 组件 ID
 async function handleDictBatchImport() {
-  const fileInput = document.getElementById('dictFileInput');
-  const file = fileInput.files[0];
   const btn = document.getElementById('dictBatchConfirmBtn');
   const pb = document.getElementById('dictImportProgressBar');
   const fill = document.getElementById('dictImportProgressFill');
   const count = document.getElementById('dictImportProgressCount');
 
-  // 如果是 .apkg 文件，直接走后端转换接口
-  if (file && file.name.endsWith('.apkg')) {
-    const formData = new FormData();
-    formData.append('dictFile', file);
-    formData.append('language', state.currentLang);
-
-    try {
-      btn.disabled = true;
-      showToast('正在上传并转换词书，请稍候...', 'info');
-      
-      const response = await fetch(`${CONFIG.API_BASE}/words/upload-apkg`, {
-        method: 'POST',
-        headers: {
-          'x-auth-token': localStorage.getItem('token')
-        },
-        body: formData
-      });
-      
-      const result = await response.json();
-      if (response.ok) {
-        showToast(result.message, 'success');
-        closeModal('dictImportModal');
-        loadWords(1); loadStats();
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (err) {
-      showToast(err.message || '上传失败', 'error');
-    } finally {
-      btn.disabled = false;
-    }
-    return;
-  }
-
-  // 以下是原有的 JSON/CSV 导入逻辑
   btn.disabled = true;
   pb.classList.remove('hidden');
   
@@ -2402,6 +2331,58 @@ async function handleDictBatchImport() {
     showToast('导入中断', 'error');
   } finally {
     btn.disabled = false;
+  }
+}
+
+// 独立的 APKG 云端转换逻辑
+async function handleApkgConvert(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+
+  const indicator = document.getElementById('apkgConvertIndicator');
+  
+  if (!file.name.endsWith('.apkg')) {
+    showToast('请上传标准 .apkg 格式的文件', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('dictFile', file);
+
+  try {
+    indicator.classList.remove('hidden');
+    showToast('正在云端清洗转换，请稍候...', 'info');
+    
+    // 我们必须手动 fetch，因为 api 函数强制转为 JSON
+    const response = await fetch(`${CONFIG.API_BASE}/words/upload-apkg`, {
+      method: 'POST',
+      headers: {
+        'x-auth-token': localStorage.getItem('token')
+      },
+      body: formData
+    });
+    
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace('.apkg', '_converted.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      showToast('转换成功！文件已开始下载，完成后拖入上方主区域即可导入', 'success');
+    } else {
+      const result = await response.json();
+      throw new Error(result.message);
+    }
+  } catch (err) {
+    showToast(err.message || '转换失败，请检查文件有效性', 'error');
+  } finally {
+    indicator.classList.add('hidden');
   }
 }
 
