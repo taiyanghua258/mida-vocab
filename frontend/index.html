@@ -745,14 +745,16 @@
       <div id="studyCardContainer" class="w-full max-w-md mx-auto relative">
         <div id="cardStack" class="w-full h-[55vh] sm:h-[400px] relative card-stack-container z-30"></div>
 
-        <div id="answerSection" class="w-full grid grid-cols-2 sm:flex sm:justify-between gap-2.5 z-10 mt-6 relative">
-          <button onclick="submitReview('again')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+        <div id="answerSection" class="w-full flex overflow-x-auto gap-2.5 z-10 mt-6 relative pb-2 snap-x" style="scrollbar-width: none;">
+          <style>#answerSection::-webkit-scrollbar { display: none; }</style>
+          
+          <button onclick="submitReview('again')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-3 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
             <span class="text-[10px] text-muted">1</span><span>重来</span>
           </button>
-          <button onclick="submitReview('hard')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+          <button onclick="submitReview('hard')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-3 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
             <span class="text-[10px] text-muted">2</span><span>困难</span>
           </button>
-          <button onclick="submitReview('good')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
+          <button onclick="submitReview('good')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-3 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
             <span class="text-[10px] text-muted">3</span><span>良好</span>
           </button>
           <button onclick="submitReview('easy')" class="answer-btn flex-1 py-3 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal font-medium text-sm flex flex-col items-center gap-1">
