@@ -253,23 +253,23 @@ exports.importWords = async (req, res) => {
     const normalizePos = (pos) => {
       if (!pos) return '名词';
       if (pos === '其它') return '其他';
-      // 扩充英文词性
       const validPos = ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '介词', '冠词', '其他'];
       return validPos.includes(pos) ? pos : '名词';
     };
 
+    // 【修改核心】：增强过滤与兜底，防止数据库因为空值触发 required: true 报错卡死
     const wordsToInsertRaw = wordsToImport.map(w => ({
       userId: req.userId,
-      language: w.language || 'ja', // 映射传入的语种
-      japanese: w.japanese || w.word,
-      reading: w.reading || w.kana || '',
-      meaning: w.meaning || w.translation || '',
+      language: w.language || 'ja', 
+      japanese: (w.japanese || w.word || '').trim(),
+      reading: (w.reading || w.kana || '').trim(),
+      meaning: (w.meaning || w.translation || '').trim() || '暂无释义', // 核心兜底
       partOfSpeech: normalizePos(w.partOfSpeech || w.pos),
       tags: w.tags || [],
       due: new Date()
-    }));
+    })).filter(w => w.japanese); // 再次过滤掉连假名本体都没有的废卡
 
-    // 【新增修复】：先进行 payload 内部去重，保留最后一个出现的重复项
+    // 先进行 payload 内部去重，保留最后一个出现的重复项
     const uniqueMap = new Map();
     wordsToInsertRaw.forEach(w => {
         if (w.japanese) uniqueMap.set(w.japanese, w);

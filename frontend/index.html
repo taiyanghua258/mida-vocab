@@ -2313,7 +2313,7 @@ function handleDictFileSelect(event) {
   reader.readAsText(file);
 }
 
-// 复用 handleBatchImport 的核心逻辑，但对应到新的 UI 组件 ID
+// 词书批量导入（加入容错与 UI 解锁）
 async function handleDictBatchImport() {
   const btn = document.getElementById('dictBatchConfirmBtn');
   const pb = document.getElementById('dictImportProgressBar');
@@ -2326,6 +2326,7 @@ async function handleDictBatchImport() {
   const total = dictBatchWords.length;
   const chunkSize = 50;
   let processed = 0;
+  let hasError = false;
 
   try {
     for (let i = 0; i < total; i += chunkSize) {
@@ -2339,9 +2340,16 @@ async function handleDictBatchImport() {
     closeModal('dictImportModal');
     loadWords(1); loadStats();
   } catch (e) {
-    showToast('导入中断', 'error');
+    hasError = true;
+    showToast('导入中断: ' + (e.message || '发现无法解析的脏数据'), 'error');
   } finally {
     btn.disabled = false;
+    // 【修改核心】：不论成功失败，最后都要把进度条藏起来，防止卡死视觉
+    if (hasError) {
+      setTimeout(() => { pb.classList.add('hidden'); }, 1500);
+    } else {
+      pb.classList.add('hidden');
+    }
   }
 }
 
