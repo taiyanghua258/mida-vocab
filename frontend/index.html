@@ -1179,7 +1179,8 @@ async function startBackgroundPolling() {
 async function checkDueUpdates() {
   if (!state.token) return;
   try {
-    const data = await api('/study/stats');
+    // 👇 修改这一行：带上当前语种参数，防止后台轮询全部默认拉取日语数据
+    const data = await api(`/study/stats?language=${state.currentLang}`);
     const newDue = data.dueWords;
     const oldDue = state.lastDueCount;
 
@@ -1693,6 +1694,10 @@ async function loadStats() {
   document.getElementById('totalWords').textContent = data.totalWords;
   document.getElementById('dueWords').textContent = data.dueWords;
   state.lastDueCount = data.dueWords;
+
+  // 👇 新增以下两行：在切换语种或回到主页时，立刻同步并渲染冷却池
+  state.upcomingWords = data.upcomingWords || [];
+  renderUpcomingWidget();
 }
 
 async function loadWords(page = 1) {
