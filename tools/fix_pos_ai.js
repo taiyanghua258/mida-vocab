@@ -6,6 +6,9 @@
  */
 
 const path = require('path');
+// 让 require 能找到 backend/node_modules 里的依赖
+module.paths.unshift(path.resolve(__dirname, '../backend/node_modules'));
+
 require('dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
 const mongoose = require('mongoose');
 const axios = require('axios');
