@@ -435,30 +435,45 @@
   <div id="view-dashboard" class="view-section flex-1 flex-col">
     <nav class="bg-surface/80 backdrop-blur-md border-b border-borderline sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
-        <div class="flex items-center gap-3.5 group cursor-pointer select-none">
-          <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
-            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-borderline rounded-[3px] -rotate-6 translate-x-[-3px] translate-y-[2px] bg-parchment transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[16deg] group-hover:translate-x-[-6px] group-hover:translate-y-[4px]"></div>
-            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-muted/30 rounded-[3px] rotate-2 translate-x-[0px] translate-y-[0px] bg-surface transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0"></div>
-            <div class="absolute w-[20px] h-[26px] border-[1.5px] border-charcoal rounded-[3px] rotate-[10deg] translate-x-[3px] translate-y-[-2px] bg-surface shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[18deg] group-hover:translate-x-[6px] group-hover:translate-y-[-4px] flex flex-col items-center justify-center gap-1">
-              <div class="w-2.5 h-[1.5px] bg-charcoal rounded-full transition-transform duration-500 group-hover:w-3"></div>
-              <div class="w-[4px] h-[1.5px] bg-terracotta rounded-full transition-transform duration-500 group-hover:w-[6px]"></div>
+        
+        <div class="flex items-center gap-6">
+          
+          <div class="flex items-center gap-3.5 group cursor-pointer select-none">
+            <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-borderline rounded-[3px] -rotate-6 translate-x-[-3px] translate-y-[2px] bg-parchment transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[16deg] group-hover:translate-x-[-6px] group-hover:translate-y-[4px]"></div>
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-muted/30 rounded-[3px] rotate-2 translate-x-[0px] translate-y-[0px] bg-surface transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0"></div>
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-charcoal rounded-[3px] rotate-[10deg] translate-x-[3px] translate-y-[-2px] bg-surface shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[18deg] group-hover:translate-x-[6px] group-hover:translate-y-[-4px] flex flex-col items-center justify-center gap-1">
+                <div class="w-2.5 h-[1.5px] bg-charcoal rounded-full transition-transform duration-500 group-hover:w-3"></div>
+                <div class="w-[4px] h-[1.5px] bg-terracotta rounded-full transition-transform duration-500 group-hover:w-[6px]"></div>
+              </div>
+            </div>
+            
+            <div class="flex flex-col justify-center leading-none mt-[3px] relative h-[36px] w-[56px] overflow-hidden">
+              <div id="brand-ja" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-0 opacity-100">
+                <div class="flex items-baseline">
+                  <span class="font-jp text-[1.25rem] font-bold text-charcoal tracking-tighter">見だ</span>
+                  <span class="w-1 h-1 bg-terracotta rounded-full ml-[3px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
+                </div>
+                <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+              </div>
+    
+              <div id="brand-en" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-8 opacity-0">
+                <div class="flex items-baseline">
+                  <span class="font-sans text-[1.25rem] font-bold text-charcoal tracking-tight">See</span>
+                  <span class="w-1 h-1 bg-terracotta rounded-full ml-[2px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
+                </div>
+                <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[1px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+              </div>
             </div>
           </div>
-          <div class="flex flex-col justify-center leading-none mt-[3px]">
-            <div class="flex items-baseline">
-              <span class="font-jp text-[1.25rem] font-bold text-charcoal tracking-tighter transition-colors duration-300">見だ</span>
-              <span class="w-1 h-1 bg-terracotta rounded-full ml-[3px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
-            </div>
-            <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+
+          <div class="flex items-center bg-parchment border border-borderline rounded-full p-1 shadow-sm">
+            <button onclick="switchWorkspace('ja')" id="ws-btn-ja" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm">日</button>
+            <button onclick="switchWorkspace('en')" id="ws-btn-en" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal">英</button>
           </div>
         </div>
         
         <div class="flex items-center gap-2 sm:gap-4">
-          <div class="flex items-center bg-parchment border border-borderline rounded-full p-1 shadow-sm mr-2">
-            <button onclick="switchWorkspace('ja')" id="ws-btn-ja" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm">日</button>
-            <button onclick="switchWorkspace('en')" id="ws-btn-en" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal">英</button>
-          </div>
-          
           <button onclick="toggleNotifications()" id="notifyBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-ochre transition-colors active:scale-95 group" title="开启复习提醒">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-[15deg] group-active:-rotate-[10deg] duration-300">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -1640,6 +1655,27 @@ function showLogin() {
 function switchWorkspace(lang) {
   state.currentLang = lang;
   localStorage.setItem('appLang', lang);
+
+  // 👇 新增：Logo 丝滑滚动切换动效
+  const brandJa = document.getElementById('brand-ja');
+  const brandEn = document.getElementById('brand-en');
+  if (brandJa && brandEn) {
+    if (lang === 'ja') {
+      // 日文切回：见だ 降落回原位，See 沉入下方隐藏
+      brandJa.classList.remove('-translate-y-8', 'translate-y-8', 'opacity-0');
+      brandJa.classList.add('translate-y-0', 'opacity-100');
+      
+      brandEn.classList.remove('translate-y-0', '-translate-y-8', 'opacity-100');
+      brandEn.classList.add('translate-y-8', 'opacity-0');
+    } else {
+      // 英文切换：见だ 向上飞出隐藏，See 从下方浮现
+      brandJa.classList.remove('translate-y-0', 'translate-y-8', 'opacity-100');
+      brandJa.classList.add('-translate-y-8', 'opacity-0');
+      
+      brandEn.classList.remove('translate-y-8', '-translate-y-8', 'opacity-0');
+      brandEn.classList.add('translate-y-0', 'opacity-100');
+    }
+  }
 
   // 1. 切换按钮样式
   const btnJa = document.getElementById('ws-btn-ja');
