@@ -724,7 +724,7 @@
         </div>
         <div class="grid grid-cols-2 gap-5 mt-2">
           <div>
-            <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">读音</label>
+            <label id="readingLabel" class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">读音</label>
             <input type="text" id="reading" class="aesthetic-input w-full px-2 py-2 text-charcoal font-jp" placeholder="さくら">
           </div>
           <div>
@@ -1671,6 +1671,9 @@ function switchWorkspace(lang) {
       inputEl.classList.remove('font-jp');
     }
   }
+  
+  const readingLabel = document.getElementById('readingLabel');
+  if (readingLabel) readingLabel.textContent = lang === 'ja' ? '读音' : '音标 (IPA)';
 
   // 4. 清空之前可能选中的多选框
   clearWordSelection();
@@ -1890,10 +1893,11 @@ async function handleBatchGenerate() {
     document.getElementById('batchCount').textContent = batchGeneratedWords.length;
 
     const list = document.getElementById('batchPreviewList');
+    const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
     list.innerHTML = batchGeneratedWords.map((w, i) => `
       <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
         <div>
-          <span class="font-semibold font-jp">${w.japanese}</span>
+          <span class="font-semibold ${fontClass}">${w.japanese}</span>
           <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
         </div>
         <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
@@ -1914,10 +1918,11 @@ function removeBatchWord(index) {
   batchGeneratedWords.splice(index, 1);
   document.getElementById('batchCount').textContent = batchGeneratedWords.length;
   const list = document.getElementById('batchPreviewList');
+  const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
   list.innerHTML = batchGeneratedWords.map((w, i) => `
-    <div class="flex justify-between items-center p-3 bg-parchment rounded-xl">
+    <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
       <div>
-        <span class="font-semibold font-jp">${w.japanese}</span>
+        <span class="font-semibold ${fontClass}">${w.japanese}</span>
         <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
       </div>
       <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>

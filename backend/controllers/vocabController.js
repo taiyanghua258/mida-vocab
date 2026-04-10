@@ -279,17 +279,18 @@ exports.importWords = async (req, res) => {
     // 提取所有准备导入的日语单词
     const newJapaneseWords = wordsToInsert.map(w => w.japanese);
     
-    // 从数据库查询当前用户已有的单词
+    // 从数据库查询当前用户已有的单词，增加 language 条件
     const existingWords = await Word.find({ 
       userId: req.userId, 
+      language: { $in: [...new Set(wordsToInsert.map(w => w.language))] }, // 修复：加入语种隔离
       japanese: { $in: newJapaneseWords } 
-    }).select('japanese').lean();
-    
-    // 构建 Set 用于快速查重
-    const existingSet = new Set(existingWords.map(w => w.japanese));
-    
+    }).select('japanese language').lean();
+
+    // 构建 Set 用于快速查重，联合语种与单词本身
+    const existingSet = new Set(existingWords.map(w => `${w.language}_${w.japanese}`));
+
     // 过滤掉已存在的单词
-    const finalInsert = wordsToInsert.filter(w => !existingSet.has(w.japanese));
+    const finalInsert = wordsToInsert.filter(w => !existingSet.has(`${w.language}_${w.japanese}`));
 
     // 计算今日剩余新词额度，超出的词推到明天
     if (finalInsert.length > 0) {
