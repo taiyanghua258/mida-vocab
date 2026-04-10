@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
   <title>見だ</title>
-  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="icon" href="favicon.png?v=2" type="image/png">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1500,7 +1500,7 @@ function triggerDueNotification(count) {
     if (state.notifyDesktop && state.notificationsEnabled && Notification.permission === 'granted') {
       new Notification("見だ | 记忆召唤", {
         body: `时间到！有 ${count} 个单词加入待复习队列，趁热打铁吧。`,
-        icon: "favicon.png"
+        icon: "favicon.png?v=2"
       });
     }
 
