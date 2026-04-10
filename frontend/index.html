@@ -366,7 +366,7 @@
   <div id="toast-container" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
   <!-- ========== AUTH VIEW ========== -->
-  <div id="view-auth" class="view-section active h-screen flex-col items-center justify-center p-4">
+  <div id="view-auth" class="view-section h-screen flex-col items-center justify-center p-4">
     <div class="max-w-md w-full bg-surface rounded-[2rem] shadow-lg p-10 border border-borderline">
       <div class="text-center mb-10 brand-hover-container">
         <!-- 左右对齐结构 -->
@@ -669,7 +669,7 @@
 
       <div class="bg-surface rounded-3xl border border-borderline overflow-hidden flex-1 flex flex-col">
         <div class="overflow-x-auto flex-1">
-          <table class="min-w-full border-collapse">
+          <table class="w-full min-w-[800px] border-collapse">
             <thead class="bg-surface">
               <tr>
                 <th class="px-5 py-5 w-10 border-b border-borderline/40">
@@ -2026,7 +2026,7 @@ function showLogin() {
   if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
 }
 
-function switchWorkspace(lang) {
+function switchWorkspace(lang, isInitial = false) {
   state.currentLang = lang;
   localStorage.setItem('appLang', lang);
 
@@ -2034,20 +2034,30 @@ function switchWorkspace(lang) {
   const brandJa = document.getElementById('brand-ja');
   const brandEn = document.getElementById('brand-en');
   if (brandJa && brandEn) {
+    if (isInitial) {
+      brandJa.style.transition = 'none';
+      brandEn.style.transition = 'none';
+    }
+
     if (lang === 'ja') {
-      // 日文切回：见だ 降落回原位，See 沉入下方隐藏
       brandJa.classList.remove('-translate-y-8', 'translate-y-8', 'opacity-0');
       brandJa.classList.add('translate-y-0', 'opacity-100');
       
       brandEn.classList.remove('translate-y-0', '-translate-y-8', 'opacity-100');
       brandEn.classList.add('translate-y-8', 'opacity-0');
     } else {
-      // 英文切换：见だ 向上飞出隐藏，See 从下方浮现
       brandJa.classList.remove('translate-y-0', 'translate-y-8', 'opacity-100');
       brandJa.classList.add('-translate-y-8', 'opacity-0');
       
       brandEn.classList.remove('translate-y-8', '-translate-y-8', 'opacity-0');
       brandEn.classList.add('translate-y-0', 'opacity-100');
+    }
+
+    if (isInitial) {
+      setTimeout(() => {
+        brandJa.style.transition = '';
+        brandEn.style.transition = '';
+      }, 50);
     }
   }
 
@@ -2114,7 +2124,7 @@ async function loadWords(page = 1) {
   state.pagination.page = page;
   const search = document.getElementById('searchInput').value, pos = document.getElementById('partOfSpeechFilter').value;
   const tbody = document.getElementById('wordTableBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-muted">加载中...</td></tr>';
+  // Removed destructive tbody clear to prevent layout flicker
   try {
     let endpoint = `/words?page=${page}&limit=${state.pagination.limit}&language=${state.currentLang}`;
     if (search) endpoint += `&search=${encodeURIComponent(search)}`;
@@ -3159,7 +3169,7 @@ function reviewLastSession() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  switchWorkspace(state.currentLang);
+  switchWorkspace(state.currentLang, true);
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
   if (token && user) {
     state.token = token; state.user = JSON.parse(user);
