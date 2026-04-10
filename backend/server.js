@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -11,6 +11,21 @@ const aiRoutes = require('./routes/ai');
 
 const app = express();
 app.set('trust proxy', 1); // 信任 Nginx 代理，获取真实客户端 IP
+
+// 启动时清理 uploads 临时目录，防止上次崩溃残留的文件占用磁盘
+const uploadsDir = path.join(__dirname, 'uploads');
+const fs = require('fs');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} else {
+  const staleFiles = fs.readdirSync(uploadsDir);
+  if (staleFiles.length > 0) {
+    staleFiles.forEach(f => {
+      try { fs.unlinkSync(path.join(uploadsDir, f)); } catch (e) { /* ignore */ }
+    });
+    console.log(`Cleaned ${staleFiles.length} stale file(s) from uploads/`);
+  }
+}
 
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {

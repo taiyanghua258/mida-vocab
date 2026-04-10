@@ -48,7 +48,6 @@ function romajiToHiragana(text) {
     if (romajiMap[text[i]]) { result += romajiMap[text[i]]; } else { result += text[i]; }
     i++;
   }
-  result = result.replace(/([kstnhmyrw])/g, '$1っ');
   return result;
 }
 
@@ -295,38 +294,47 @@ exports.importWords = async (req, res) => {
     // 计算今日剩余新词额度，超出的词推到明天
     if (finalInsert.length > 0) {
       const user = await User.findById(req.userId).select('fsrsSettings');
-      const importLang = finalInsert[0].language || 'ja';
-      // 【修改】：根据语种选择额度
-      const dailyNewLimit = importLang === 'en' 
-        ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
-        : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
 
-      const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
-
-      const todayNewReviews = await ReviewLog.countDocuments({
-        userId: req.userId,
-        language: importLang, // 【修复】：加入语种隔离
-        reviewDate: { $gte: todayStart },
-        state: 0
+      // 按语种分组计算配额，而不是只用第一个词的语种
+      const langGroups = {};
+      finalInsert.forEach(w => {
+        const lang = w.language || 'ja';
+        if (!langGroups[lang]) langGroups[lang] = [];
+        langGroups[lang].push(w);
       });
 
-      // 当前还在排队的新词（state: 0, due <= now）也算占用额度
-      const queuedNew = await Word.countDocuments({
-        userId: req.userId,
-        language: importLang, // 【修复】：加入语种隔离
-        state: 0,
-        due: { $lte: new Date() }
-      });
+      for (const [importLang, groupWords] of Object.entries(langGroups)) {
+        const dailyNewLimit = importLang === 'en' 
+          ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
+          : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
 
-      const usedQuota = todayNewReviews + queuedNew;
-      const remainingQuota = Math.max(0, dailyNewLimit - usedQuota);
+        const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
 
-      const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
-      finalInsert.forEach((w, i) => {
-        if (i >= remainingQuota) {
-          w.due = tomorrowStart;
-        }
-      });
+        const todayNewReviews = await ReviewLog.countDocuments({
+          userId: req.userId,
+          language: importLang,
+          reviewDate: { $gte: todayStart },
+          state: 0
+        });
+
+        // 当前还在排队的新词（state: 0, due <= now）也算占用额度
+        const queuedNew = await Word.countDocuments({
+          userId: req.userId,
+          language: importLang,
+          state: 0,
+          due: { $lte: new Date() }
+        });
+
+        const usedQuota = todayNewReviews + queuedNew;
+        const remainingQuota = Math.max(0, dailyNewLimit - usedQuota);
+
+        const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
+        groupWords.forEach((w, i) => {
+          if (i >= remainingQuota) {
+            w.due = tomorrowStart;
+          }
+        });
+      }
     }
 
     if (finalInsert.length === 0) {
@@ -366,7 +374,7 @@ exports.batchDeleteWords = async (req, res) => {
   }
 };
 
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -379,7 +387,7 @@ exports.uploadAndConvertApkg = async (req, res) => {
     const outputPath = inputPath + '.json';
     const scriptPath = path.join(__dirname, '../../tools/anki_converter.py');
 
-    exec(`python3 "${scriptPath}" "${inputPath}" --output "${outputPath}"`, (error) => {
+    execFile('python3', [scriptPath, inputPath, '--output', outputPath], (error) => {
       if (error) {
         console.error('转换失败:', error);
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);

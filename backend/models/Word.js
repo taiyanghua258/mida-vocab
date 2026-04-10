@@ -82,7 +82,7 @@ const wordSchema = new mongoose.Schema({
   timestamps: true
 });
 
-wordSchema.index({ userId: 1, japanese: 1 });
+wordSchema.index({ userId: 1, language: 1, japanese: 1 });
 // 新增以下两行索引
 wordSchema.index({ userId: 1, due: 1 }); // 优化：加速按到期时间排序的查询
 wordSchema.index({ userId: 1, state: 1, due: 1 }); // 优化：加速抓取特定状态复习词的查询

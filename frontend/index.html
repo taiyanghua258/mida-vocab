@@ -1186,6 +1186,13 @@ function closeUserMenu() {
 }
 
 // 点击外部区域自动关闭菜单
+document.addEventListener('click', (e) => {
+  const container = document.getElementById('userMenuContainer');
+  if (container && !container.contains(e.target)) {
+    closeUserMenu();
+  }
+});
+
 // .apkg 转换工具教程
 function showQuickGuide() {
   const guide = `
@@ -1666,8 +1673,6 @@ function romajiToHiragana(text) {
       i++;
     }
   }
-  // 还原促音
-  result = result.replace(/([kstnhmyrw])/g, '$1っ');
   return result;
 }
 
@@ -2195,18 +2200,21 @@ document.getElementById('wordForm').addEventListener('submit', async (e) => {
 });
 
 async function editWord(id) {
-  const data = await api(`/words?limit=1000`);
-  const word = data.words.find(w => w._id === id);
-  if (!word) return;
-  document.getElementById('modalTitle').textContent = '编辑单词';
-  document.getElementById('wordId').value = id;
+  try {
+    const word = await api(`/words/${id}`);
+    if (!word) return;
+    document.getElementById('modalTitle').textContent = '编辑单词';
+    document.getElementById('wordId').value = id;
 
-  document.getElementById('japanese').value = word.japanese;
-  document.getElementById('reading').value = word.reading || '';
-  document.getElementById('meaning').value = word.meaning;
-  document.getElementById('partOfSpeech').value = word.partOfSpeech || '名词';
-  document.getElementById('tags').value = (word.tags || []).join(', ');
-  openModal('wordModal');
+    document.getElementById('japanese').value = word.japanese;
+    document.getElementById('reading').value = word.reading || '';
+    document.getElementById('meaning').value = word.meaning;
+    document.getElementById('partOfSpeech').value = word.partOfSpeech || '名词';
+    document.getElementById('tags').value = (word.tags || []).join(', ');
+    openModal('wordModal');
+  } catch (e) {
+    showToast('加载单词数据失败', 'error');
+  }
 }
 
 async function deleteWord(id) {
@@ -2458,6 +2466,7 @@ function removeDictBatchWord(index) {
 }
 
 /* ================= BATCH IMPORT ================= */
+let dictBatchWords = [];
 let batchGeneratedWords = [];
 
 async function handleBatchGenerate() {
@@ -2589,7 +2598,9 @@ async function handleBatchImport() {
     // 稍微等待 300 毫秒让用户看清 100% 满状态的动画
     await new Promise(r => setTimeout(r, 300));
     const userSettings = await api('/auth/settings');
-    const limit = userSettings.dailyNewLimit || 20;
+    const limit = state.currentLang === 'en'
+      ? (userSettings.dailyNewLimitEn || 20)
+      : (userSettings.dailyNewLimitJa || 20);
     if (successCount > limit) {
         showToast(`导入 ${successCount} 词。超出今日上限的部分已自动加入明日计划`, 'info');
     } else {
@@ -2801,7 +2812,7 @@ async function initStudy() {
     document.getElementById('studyCardContainer').classList.add('hidden');
 
     // 动态抓取真实冷却状态，而非错误展示任务达成
-    const stats = await api('/study/stats');
+    const stats = await api(`/study/stats?language=${state.currentLang}`);
     if (stats.upcomingWords && stats.upcomingWords.length > 0) {
        showCoolingState(stats.upcomingWords);
     } else {
@@ -3063,7 +3074,7 @@ function showStudyComplete() {
   document.getElementById('studyCardContainer').classList.add('hidden');
 
   // 每次学完不靠旧状态，直接找后端要最新倒计时
-  api('/study/stats').then(stats => {
+  api(`/study/stats?language=${state.currentLang}`).then(stats => {
       if (stats.upcomingWords && stats.upcomingWords.length > 0) {
           showCoolingState(stats.upcomingWords);
       } else {
