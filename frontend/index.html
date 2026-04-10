@@ -436,20 +436,14 @@
     <nav class="bg-surface/80 backdrop-blur-md border-b border-borderline sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
         <div class="flex items-center gap-3.5 group cursor-pointer select-none">
-          <!-- Stacked Flashcards Logo -->
           <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
-            <!-- Back Card (Parchment) -->
             <div class="absolute w-[20px] h-[26px] border-[1.5px] border-borderline rounded-[3px] -rotate-6 translate-x-[-3px] translate-y-[2px] bg-parchment transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[16deg] group-hover:translate-x-[-6px] group-hover:translate-y-[4px]"></div>
-            <!-- Middle Card (Muted) -->
             <div class="absolute w-[20px] h-[26px] border-[1.5px] border-muted/30 rounded-[3px] rotate-2 translate-x-[0px] translate-y-[0px] bg-surface transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0"></div>
-            <!-- Front Card (Charcoal, Elevate) -->
             <div class="absolute w-[20px] h-[26px] border-[1.5px] border-charcoal rounded-[3px] rotate-[10deg] translate-x-[3px] translate-y-[-2px] bg-surface shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[18deg] group-hover:translate-x-[6px] group-hover:translate-y-[-4px] flex flex-col items-center justify-center gap-1">
               <div class="w-2.5 h-[1.5px] bg-charcoal rounded-full transition-transform duration-500 group-hover:w-3"></div>
               <div class="w-[4px] h-[1.5px] bg-terracotta rounded-full transition-transform duration-500 group-hover:w-[6px]"></div>
             </div>
           </div>
-
-          <!-- Logo Text -->
           <div class="flex flex-col justify-center leading-none mt-[3px]">
             <div class="flex items-baseline">
               <span class="font-jp text-[1.25rem] font-bold text-charcoal tracking-tighter transition-colors duration-300">見だ</span>
@@ -458,72 +452,86 @@
             <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
           </div>
         </div>
-        <div class="flex items-center gap-6">
-          <span class="text-sm text-muted hidden sm:flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>
-            <span id="welcomeUser" class="font-medium"></span>
-          </span>
-          <button onclick="toggleNotifications()" id="notifyBtn" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-parchment text-muted transition-all active:scale-90 group" title="开启复习提醒">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:rotate-[15deg] duration-300">
-              <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Zm-80-32c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+        
+        <div class="flex items-center gap-2 sm:gap-4">
+          <button onclick="toggleNotifications()" id="notifyBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-ochre transition-colors active:scale-95 group" title="开启复习提醒">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-[15deg] group-active:-rotate-[10deg] duration-300">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
           </button>
-          <button onclick="openModal('settingsModal')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all active:scale-90 group" title="记忆算法设置">
-            <!-- 调节滑块图标 (SlidersHorizontal)，替代原本的齿轮以保持极简感 -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:rotate-90 duration-300">
-              <path d="M112,136H32a8,8,0,0,1,0-16h80a8,8,0,0,1,0,16Zm112-16H160a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16ZM88,64a8,8,0,0,0-8-8H32a8,8,0,0,0,0,16H80A8,8,0,0,0,88,64ZM224,56H128a8,8,0,0,0,0,16h96a8,8,0,0,0,0-16Zm0,136H176a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16ZM128,192H32a8,8,0,0,0,0,16h96a8,8,0,0,0,0-16ZM144,48a24,24,0,1,0,24,24A24,24,0,0,0,144,48Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,144,80ZM144,176a24,24,0,1,0,24,24A24,24,0,0,0,144,176Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,144,208Zm-40-96A24,24,0,1,0,80,136,24,24,0,0,0,104,112Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,104,144Z"></path>
+          
+          <button onclick="openModal('settingsModal')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-colors active:scale-95 group" title="记忆算法设置">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-45 duration-500">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
-          <button onclick="handleLogout()" class="ghost-underline-btn text-[0.85rem] font-medium text-muted hover:text-terracotta ml-3">退出</button>
+          
+          <div class="w-[1px] h-5 bg-borderline mx-1 hidden sm:block"></div>
+          
+          <div class="hidden sm:flex items-center gap-3 bg-surface border border-borderline/80 rounded-full pl-4 pr-1.5 py-1.5 shadow-[0_2px_10px_rgba(26,47,43,0.02)]">
+            <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase"></span>
+            <button onclick="handleLogout()" class="w-7 h-7 flex items-center justify-center rounded-full bg-parchment text-muted hover:bg-terracotta hover:text-white transition-colors active:scale-90" title="退出登录">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
-      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-10">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div class="flex gap-4 w-full lg:w-auto">
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[130px] flex flex-col">
-            <span class="text-[2rem] font-bold text-charcoal mb-1" id="totalWords">0</span>
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors">
+            <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight" id="totalWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
           </div>
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[130px] flex flex-col relative overflow-hidden">
-            <!-- 柔和侧发光替代原本的顶部死板实线 -->
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors">
             <div class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-ochre/80 to-terracotta/80 shadow-[4px_0_12px_rgba(223,159,40,0.3)]"></div>
-            <span class="text-[2rem] font-bold text-ochre mb-1 pl-2" id="dueWords">0</span>
+            <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight" id="dueWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2">待复习</span>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-3 w-full lg:w-auto">
-          <button onclick="navigate('study')" class="magnetic-btn px-6 py-3.5 tracking-widest text-[0.9rem] flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path></svg>
-            开始学习
-          </button>
-          <button onclick="openModal('wordModal')" class="flex-1 sm:flex-none glass-card bg-surface hover:bg-parchment/60 text-charcoal px-6 py-3.5 rounded-full font-medium active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
-            添加单词
-          </button>
-          <div class="flex items-center glass-card bg-surface/50 rounded-full px-1.5 py-1 ml-1">
-            <button onclick="openModal('importModal')" class="w-[42px] h-[42px] flex items-center justify-center rounded-full hover:bg-parchment/80 text-charcoal transition-all active:scale-90 group relative" title="导入词库">
-              <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-charcoal overflow-visible">
-                <path d="M 6,15 L 6,18 C 6,18.5 6.5,19 7,19 L 17,19 C 17.5,19 18,18.5 18,18 L 18,15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 transition-opacity group-hover:opacity-100"/>
-                <g class="group-hover:translate-y-[4px] transition-transform duration-500" style="transition-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);">
-                  <line x1="12" y1="3" x2="12" y2="12" stroke="#DF9F28" stroke-width="1.8" stroke-dasharray="2 2" stroke-linecap="round"/>
-                  <path d="M 8.5,9.5 L 12,13 L 15.5,9.5" fill="none" stroke="#DF9F28" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </g>
+        <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto">
+          <div class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto">
+            <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
+                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
+              <span>单个添加</span>
             </button>
-            <div class="w-[1px] h-4 bg-borderline/60 mx-1"></div>
-            <button onclick="exportWords()" class="w-[42px] h-[42px] flex items-center justify-center rounded-full hover:bg-parchment/80 text-charcoal transition-all active:scale-90 group relative" title="导出词库">
-              <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-charcoal overflow-visible">
-                <path d="M 6,15 L 6,18 C 6,18.5 6.5,19 7,19 L 17,19 C 17.5,19 18,18.5 18,18 L 18,15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 transition-opacity group-hover:opacity-100"/>
-                <g class="group-hover:-translate-y-[4px] transition-transform duration-500" style="transition-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);">
-                  <line x1="12" y1="13" x2="12" y2="4" stroke="#D16B4A" stroke-width="1.8" stroke-dasharray="2 2" stroke-linecap="round"/>
-                  <path d="M 8.5,6.5 L 12,3 L 15.5,6.5" fill="none" stroke="#D16B4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </g>
+            <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
+            <button onclick="openModal('importModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-ochre/5 hover:bg-ochre/15 text-[0.85rem] font-medium text-ochre transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-y-0.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
+              <span>批量导入</span>
+            </button>
+            <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
+            <button onclick="exportWords()" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>导出库</span>
             </button>
           </div>
+
+          <button onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ochre">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            开始学习
+          </button>
         </div>
       </div>
 
