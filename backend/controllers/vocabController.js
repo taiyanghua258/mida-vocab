@@ -202,8 +202,8 @@ exports.deleteWord = async (req, res) => {
 
 exports.exportWords = async (req, res) => {
   try {
-    const { format = 'json' } = req.query;
-    const words = await Word.find({ userId: req.userId }).sort({ createdAt: -1 });
+    const { format = 'json', language = 'ja' } = req.query;
+    const words = await Word.find({ userId: req.userId, language }).sort({ createdAt: -1 });
 
     if (format === 'csv') {
       const escapeCsvField = (str) => {

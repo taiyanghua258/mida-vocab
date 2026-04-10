@@ -708,19 +708,7 @@
       <form id="wordForm" class="p-8 space-y-5">
         <input type="hidden" id="wordId">
         
-        <div class="mb-2">
-          <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-3">选择语种</label>
-          <div class="flex gap-6">
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="radio" name="wordLanguage" value="ja" checked class="w-4 h-4 accent-ochre cursor-pointer"> 
-              <span class="text-[0.85rem] font-medium text-charcoal group-hover:text-ochre transition-colors">日语 🌸</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="radio" name="wordLanguage" value="en" class="w-4 h-4 accent-ochre cursor-pointer"> 
-              <span class="text-[0.85rem] font-medium text-charcoal group-hover:text-ochre transition-colors">英语 🗽</span>
-            </label>
-          </div>
-        </div>
+
 
         <div class="grid grid-cols-3 gap-3">
           <div class="col-span-2">
@@ -788,16 +776,7 @@
       <div class="p-8">
         <!-- Step 1: 输入文本 -->
         <div id="importStep1">
-          <div class="mb-4 flex gap-6 border-b border-borderline/40 pb-5">
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="radio" name="importLanguage" value="ja" checked class="w-4 h-4 accent-ochre cursor-pointer"> 
-              <span class="text-[0.85rem] font-medium text-charcoal group-hover:text-ochre transition-colors">解析为 日语 🌸</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="radio" name="importLanguage" value="en" class="w-4 h-4 accent-ochre cursor-pointer"> 
-              <span class="text-[0.85rem] font-medium text-charcoal group-hover:text-ochre transition-colors">解析为 英语 🗽</span>
-            </label>
-          </div>
+
           <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
           <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-sans text-[0.8rem]" placeholder="每行一个单词：&#10;桜 / apple&#10;花 / library&#10;&#10;AI 自动提取..."></textarea>
           
@@ -1794,12 +1773,7 @@ async function editWord(id) {
   if (!word) return;
   document.getElementById('modalTitle').textContent = '编辑单词';
   document.getElementById('wordId').value = id;
-  // 补充回填语种
-  if (word.language === 'en') {
-    document.querySelector('input[name="wordLanguage"][value="en"]').checked = true;
-  } else {
-    document.querySelector('input[name="wordLanguage"][value="ja"]').checked = true;
-  }
+
   document.getElementById('japanese').value = word.japanese;
   document.getElementById('reading').value = word.reading || '';
   document.getElementById('meaning').value = word.meaning;
@@ -1855,7 +1829,7 @@ let batchGeneratedWords = [];
 
 async function handleBatchGenerate() {
   const text = document.getElementById('importWordsText').value.trim();
-  const language = document.querySelector('input[name="importLanguage"]:checked').value; // 新增取值
+  const language = state.currentLang; // 修改为使用全局状态
   if (!text) return showToast('请输入单词内容', 'error');
 
   // 将输入的文本按换行符拆分，并过滤掉空行
@@ -2027,7 +2001,7 @@ function resetImport() {
 
 async function exportWords() {
   try {
-    const data = await api('/words/export');
+    const data = await api(`/words/export?language=${state.currentLang}`);
     const blob = new Blob([JSON.stringify(data.data || data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'my-vocab-words.json'; a.click();
@@ -2142,7 +2116,7 @@ async function batchExportSelected() {
     btn.disabled = true;
 
     // 拉取用户所有单词（突破当前页限制）
-    const data = await api('/words?limit=10000');
+    const data = await api(`/words?limit=10000&language=${state.currentLang}`);
     const allWords = data.words || [];
 
     // 根据选中的 ID 跨页过滤出需要导出的词
