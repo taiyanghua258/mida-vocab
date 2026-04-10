@@ -310,15 +310,35 @@ exports.getStats = async (req, res) => {
       due: { $gt: now, $lte: oneHourLater }
     }).select('_id due').sort({ due: 1 }).lean();
 
-    // 今日预估：汇总今日所有可能的复习轮次
-    // 今天还在冷却中的所有单词（包含超出1小时的短期记忆步骤）
+    // ===== 级联感知的今日预估 =====
+    // 考虑 FSRS learning steps 的完整级联效应：
+    // 一个新词需经历 初始复习 → 1min冷却 → 复习 → 10min冷却 → 复习 → 毕业
+    // 冷却池里的词复习后也可能再次进入冷却
+
     const endOfDay = dayjs().tz(TIMEZONE).endOf('day').toDate();
-    const allCoolingToday = await Word.countDocuments({
+    const userSettings = user?.fsrsSettings || {};
+    const configSteps = (userSettings.learningSteps?.length
+      ? userSettings.learningSteps
+      : [1, 10]); // 用户配置的学习步骤（分钟）
+    const totalConfigSteps = configSteps.length;
+    const fullCascadeMinutes = configSteps.reduce((a, b) => a + b, 0); // e.g. 11 for [1,10]
+
+    // 冷却中的词（带 learning_steps 用于计算剩余级联）
+    const coolingWordsToday = await Word.find({
       userId: req.userId,
       language,
       state: { $in: [1, 3] }, // Learning / Relearning
       due: { $gt: now, $lte: endOfDay }
-    });
+    }).select('due learning_steps').sort({ due: -1 }).lean();
+    const allCoolingToday = coolingWordsToday.length;
+
+    // 当前已到期的 Learning/Relearning 词（它们也会触发后续级联）
+    const dueLearningWords = await Word.find({
+      userId: req.userId,
+      language,
+      state: { $in: [1, 3] },
+      due: { $lte: now }
+    }).select('learning_steps').lean();
 
     // 估算每词平均耗时（基于最近50条ReviewLog的responseTime，兜底15秒）
     const recentLogs = await ReviewLog.find({
@@ -335,8 +355,55 @@ exports.getStats = async (req, res) => {
       if (avgResponseTime > 60) avgResponseTime = 60;
     }
 
+    const dueNewCount = Math.min(remainingNew, dueNewWords);
+    const dueReviewOnlyCount = dueReviewCount - dueLearningWords.length; // 纯 Review(state=2) 词
     const todayRemainingWords = dueWords + allCoolingToday;
-    const estimatedMinutes = Math.ceil((todayRemainingWords * avgResponseTime) / 60);
+
+    // --- 计算每类词的级联完成时间 & 总复习轮数 ---
+    let maxCascadeEnd = 0; // 距现在最长的级联结束时间（秒）
+    let totalReviewRounds = 0; // 总复习交互次数
+
+    // (a) 纯 Review 词（state=2，已到期）：只需 1 轮复习，无级联
+    totalReviewRounds += Math.max(0, dueReviewOnlyCount);
+
+    // (b) 新词（state=0）：完整级联 → 初始复习 + 每个 step 冷却 + 复习
+    //     例 [1,10]：review → 1min → review → 10min → review → 毕业
+    //     cascade = (steps+1)*avgResp + sum(steps)*60
+    if (dueNewCount > 0) {
+      const newCascadeSeconds = (totalConfigSteps + 1) * avgResponseTime + fullCascadeMinutes * 60;
+      maxCascadeEnd = Math.max(maxCascadeEnd, newCascadeSeconds);
+      totalReviewRounds += dueNewCount * (totalConfigSteps + 1);
+    }
+
+    // (c) 已到期的 Learning/Relearning 词：从当前 step 继续级联
+    //     step=0 → 还需 review + steps[1:]冷却 + 对应复习
+    //     step=1 → 复习后毕业
+    for (const w of dueLearningWords) {
+      const step = w.learning_steps || 0;
+      const remainingReviews = Math.max(1, totalConfigSteps - step);
+      const remainingCoolingSeconds = configSteps.slice(step + 1).reduce((a, b) => a + b, 0) * 60;
+      const cascade = remainingReviews * avgResponseTime + remainingCoolingSeconds;
+      maxCascadeEnd = Math.max(maxCascadeEnd, cascade);
+      totalReviewRounds += remainingReviews;
+    }
+
+    // (d) 冷却中的词：等待到期 + 复习 + 剩余 steps 冷却 + 复习
+    //     例 step=0, due=+3min → 等3min + review + 10min冷却 + review
+    for (const w of coolingWordsToday) {
+      const waitSeconds = Math.max(0, (new Date(w.due).getTime() - now.getTime()) / 1000);
+      const step = w.learning_steps || 0;
+      const remainingReviews = Math.max(1, totalConfigSteps - step);
+      const remainingCoolingSeconds = configSteps.slice(step + 1).reduce((a, b) => a + b, 0) * 60;
+      const cascade = waitSeconds + remainingReviews * avgResponseTime + remainingCoolingSeconds;
+      maxCascadeEnd = Math.max(maxCascadeEnd, cascade);
+      totalReviewRounds += remainingReviews;
+    }
+
+    // 总纯答题时间 vs 最长级联时间线，取较大值
+    // 因为答题和冷却并行进行（答这个词时另一个词在冷却）
+    const totalReviewSeconds = totalReviewRounds * avgResponseTime;
+    const totalSeconds = Math.max(maxCascadeEnd, totalReviewSeconds);
+    const estimatedMinutes = Math.ceil(totalSeconds / 60);
 
     res.json({
       totalWords,
