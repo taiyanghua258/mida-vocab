@@ -360,6 +360,39 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+  <style>
+    .driver-popover {
+      font-family: inherit !important;
+      border-radius: 1.5rem !important;
+      padding: 1.5rem !important;
+      border: 1px solid rgba(229, 225, 216, 0.4) !important;
+      box-shadow: 0 12px 40px rgba(26,47,43,0.12) !important;
+    }
+    .driver-popover-title {
+      font-size: 1.1rem !important;
+      color: #1A2F2B !important;
+      font-weight: 700 !important;
+      margin-bottom: 0.5rem !important;
+      letter-spacing: 0.05em !important;
+    }
+    .driver-popover-description {
+      font-size: 0.85rem !important;
+      color: #79766F !important;
+      line-height: 1.6 !important;
+    }
+    .driver-popover-footer button {
+      background-color: #1A2F2B !important;
+      color: #F9F7F1 !important;
+      border-radius: 100px !important;
+      padding: 0.5rem 1rem !important;
+      font-size: 0.8rem !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.05em !important;
+      text-shadow: none !important;
+      border: none !important;
+    }
+  </style>
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col">
 
@@ -545,7 +578,7 @@
 
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
-        <div class="flex gap-4 w-full lg:w-auto">
+        <div id="tour-stats-area" class="flex gap-4 w-full lg:w-auto">
           <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors">
             <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight" id="totalWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
@@ -558,7 +591,7 @@
         </div>
 
         <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto">
-          <div class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto">
+          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto">
             <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -598,7 +631,7 @@
             </button>
           </div>
 
-          <button onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem]">
+          <button id="tour-study-btn" onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem]">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ochre">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -3168,6 +3201,91 @@ function reviewLastSession() {
   updateStudyProgress();
 }
 
+function checkAndStartOnboarding() {
+  if (localStorage.getItem('hasSeenOnboarding')) return;
+  
+  // Make sure we only run on dashboard
+  const driverObj = window.driver.js.driver;
+  const driver = driverObj({
+    showProgress: true,
+    allowClose: false, // Prevent dismissing by clicking outside (mobile friendly)
+    nextBtnText: '下一步',
+    prevBtnText: '上一步',
+    doneBtnText: '完成设置',
+    steps: [
+      {
+        popover: {
+          title: '欢迎来到 見だ | 记忆召唤！',
+          description: '这是一个基于纯粹 FSRS 算法打造的极简双语记忆系统。让我们花 1 分钟熟悉环境，掌握高分复习的诀窍。',
+          align: 'center'
+        }
+      },
+      {
+        element: '#ws-btn-ja',
+        popover: {
+          title: '双语工作区隔离',
+          description: '点击这里可以在日语（見だ）与英语（See）工作区之间无缝切换。您的词库、AI 提示词、复习配额和冷却池都完全物理隔离！',
+          side: 'bottom', align: 'start'
+        }
+      },
+      {
+        element: '#tour-action-bar',
+        popover: {
+          title: '建立您的专属词库',
+          description: '一键导入外部词书、通过 AI 批量解析生词，或手动单个添加。这是每天复习的第一步。',
+          side: 'bottom', align: 'center'
+        }
+      },
+      {
+        element: '#tour-stats-area',
+        popover: {
+          title: '记忆冷却与统计',
+          description: '严格遵循 FSRS 最新算法。复习时每个单词都会进入专属「冷却池」，您将直观地看到今天还有多少新词和旧词「待复习」。',
+          side: 'bottom', align: 'start'
+        }
+      },
+      {
+        element: '#notifyBtn',
+        popover: {
+          title: '千万别漏掉冷却提醒！',
+          description: '强烈建议开启桌面通知（🔔）！即使页面挂在后台，系统仍会在短冷却（如1分钟、10分钟）倒计时结束后准时唤醒您。',
+          side: 'bottom', align: 'end'
+        }
+      },
+      {
+        element: '#tour-study-btn',
+        popover: {
+          title: '沉浸复习',
+          description: '当日新词和冷却完成的词在这里等您。点击此处即可马上开始召唤记忆！',
+          side: 'top', align: 'end'
+        }
+      },
+      {
+        element: '#userMenuContainer',
+        popover: {
+          title: '最后一步：个性化设置',
+          description: '点击您的头像进入「系统设置」，可以独立调整【英语 / 日语】两门语言每天的 **新词上限** 和记忆算法。设置完成后就可以开始学习啦！',
+          side: 'left', align: 'start'
+        }
+      }
+    ],
+    onDestroyStarted: () => {
+      localStorage.setItem('hasSeenOnboarding', 'true');
+      driver.destroy();
+      setTimeout(() => {
+        openModal('settingsModal');
+      }, 300);
+    }
+  });
+
+  setTimeout(() => {
+    // Only drive if they are still on dashboard
+    if (document.getElementById('view-dashboard').classList.contains('hidden') === false) {
+      driver.drive();
+    }
+  }, 800);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   switchWorkspace(state.currentLang, true);
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
@@ -3187,11 +3305,14 @@ window.addEventListener('DOMContentLoaded', () => {
     startBackgroundPolling();
     loadNotifySettings();
     navigate('dashboard');
+    checkAndStartOnboarding(); // <-- 触发新手指引
   }
   else navigate('auth');
 });
 </script>
 
+<!-- Driver.js (Zero dependency product tour) -->
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 <!-- Confetti (按需加载) -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
 </body>
