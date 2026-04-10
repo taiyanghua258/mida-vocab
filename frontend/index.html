@@ -842,7 +842,36 @@
             </div>
           </div>
           <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-sans text-[0.8rem]" placeholder="每行一个单词：&#10;桜 / apple&#10;花 / library&#10;&#10;AI 自动提取..."></textarea>
-          
+
+          <div class="mb-5 p-4 bg-ochre/5 border border-ochre/20 rounded-2xl">
+            <div class="flex items-center gap-2 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DF9F28" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
+              <span class="text-xs font-bold text-ochre uppercase tracking-wider">词书资源下载指引</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div class="text-[10px] font-bold text-muted uppercase mb-1">🇯🇵 日语推荐</div>
+                <div class="flex flex-col gap-1">
+                  <a href="https://ankiweb.net/shared/decks/japanese" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">AnkiWeb 日语共享库</a>
+                  <a href="https://mojidict.com" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">MOJI 辞书 (支持导出)</a>
+                </div>
+              </div>
+
+              <div>
+                <div class="text-[10px] font-bold text-muted uppercase mb-1">🇬🇧 英语推荐</div>
+                <div class="flex flex-col gap-1">
+                  <a href="https://ankiweb.net/shared/decks/english" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">AnkiWeb 英语共享库</a>
+                  <a href="https://quizlet.com" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">Quizlet (搜关键词导出)</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-ochre/10 text-[0.65rem] text-muted italic">
+              * 技巧：下载 .apkg 或在线词单后，导出为 <b>CSV</b> 或 <b>JSON</b> 即可直接上传。
+            </div>
+          </div>
+
           <div id="aiProgressBar" class="hidden mt-4">
             <div class="flex items-center justify-between text-xs text-muted mb-1.5">
               <span id="aiProgressText">AI 解析中，请勿关闭...</span>
