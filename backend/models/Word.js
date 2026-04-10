@@ -6,7 +6,14 @@ const wordSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  japanese: {
+  // --- 新增：语种字段 ---
+  language: {
+    type: String,
+    enum: ['ja', 'en'],
+    default: 'ja'
+  },
+  // ----------------------
+  japanese: { // 保持此字段名不变，英语也存在这里
     type: String,
     required: true,
     trim: true
@@ -22,7 +29,8 @@ const wordSchema = new mongoose.Schema({
   },
   partOfSpeech: {
     type: String,
-    enum: ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '其他'],
+    // 修改：扩充英语词性
+    enum: ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '介词', '冠词', '其他'],
     default: '名词'
   },
   tags: [{

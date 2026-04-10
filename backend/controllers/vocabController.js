@@ -116,7 +116,7 @@ exports.getWord = async (req, res) => {
 
 exports.addWord = async (req, res) => {
   try {
-    const { japanese, reading, meaning, partOfSpeech, tags } = req.body;
+    const { language, japanese, reading, meaning, partOfSpeech, tags } = req.body;
 
     if (!japanese || !meaning) {
       return res.status(400).json({ message: 'Japanese word and meaning are required' });
@@ -143,6 +143,7 @@ exports.addWord = async (req, res) => {
 
     const word = new Word({
       userId: req.userId,
+      language: language || 'ja', // 记录语种
       japanese,
       reading,
       meaning,
@@ -167,8 +168,9 @@ exports.updateWord = async (req, res) => {
       return res.status(404).json({ message: 'Word not found' });
     }
 
-    const { japanese, reading, meaning, partOfSpeech, tags } = req.body;
+    const { language, japanese, reading, meaning, partOfSpeech, tags } = req.body;
 
+    if (language) word.language = language; // 允许修改语种
     if (japanese) word.japanese = japanese;
     if (reading !== undefined) word.reading = reading;
     if (meaning) word.meaning = meaning;
@@ -242,12 +244,14 @@ exports.importWords = async (req, res) => {
     const normalizePos = (pos) => {
       if (!pos) return '名词';
       if (pos === '其它') return '其他';
-      const validPos = ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '其他'];
+      // 扩充英文词性
+      const validPos = ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '介词', '冠词', '其他'];
       return validPos.includes(pos) ? pos : '名词';
     };
 
     const wordsToInsertRaw = wordsToImport.map(w => ({
       userId: req.userId,
+      language: w.language || 'ja', // 映射传入的语种
       japanese: w.japanese || w.word,
       reading: w.reading || w.kana || '',
       meaning: w.meaning || w.translation || '',

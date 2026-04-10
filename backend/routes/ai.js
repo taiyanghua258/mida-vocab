@@ -9,19 +9,26 @@ const aiRateLimiter = require('../middleware/aiRateLimiter');
 // 单个单词生成
 router.post('/generate', auth, aiRateLimiter, async (req, res) => {
   try {
-    const { japanese } = req.body;
+    const { japanese, language = 'ja' } = req.body; // 接收语种
 
     if (!japanese) {
-      return res.status(400).json({ message: '请输入日语单词' });
+      return res.status(400).json({ message: '请输入单词' });
     }
 
-    const prompt = `给定一个日语单词 "${japanese}"，请返回一个 JSON 对象，包含以下字段：
+    const prompt = language === 'ja'
+      ? `给定一个日语单词 "${japanese}"，请返回一个 JSON 对象，包含以下字段：
 - japanese: 原单词
 - reading: 假名读音
 - meaning: 中文释义
 - partOfSpeech: 词性（名词/动词/形容词/副词/助词/连词/感叹词/代词/数词/接尾词/接头词/其他）
-- tags: 相关标签数组，必须包含 JLPT 等级（N5/N4/N3/N2/N1），以及词性、领域等相关标签。例如：["N5", "动词", "日常"]
-
+- tags: 相关标签数组，必须包含 JLPT 等级（N5/N4/N3/N2/N1），以及词性、领域等。例如：["N5", "动词", "日常"]
+只返回 JSON，不要其他文字。`
+      : `给定一个英语单词 "${japanese}"，请返回一个 JSON 对象，包含以下字段：
+- japanese: 原单词（必须使用 japanese 作为键名）
+- reading: 音标 (IPA)
+- meaning: 中文释义
+- partOfSpeech: 词性（名词/动词/形容词/副词/代词/介词/连词/冠词/感叹词/数词/其他）
+- tags: 相关标签数组，必须包含等级（如 CET4/CET6/考研/雅思/托福等）。例如：["CET4", "名词", "日常"]
 只返回 JSON，不要其他文字。`;
 
     const response = await axios.post(
@@ -68,7 +75,7 @@ router.post('/generate', auth, aiRateLimiter, async (req, res) => {
 // 批量生成
 router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, language = 'ja' } = req.body; // 接收语种
 
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ message: '请提供文本内容' });
@@ -78,23 +85,31 @@ router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
       return res.status(400).json({ message: '文本过长，请分批次生成（限制 3000 字符以内）' });
     }
 
-    const prompt = `从以下文本中提取所有日语单词（日语汉字、平假名、片假名组成的词），并为每个单词生成信息。
-
-文本内容：
-${text}
-
+    const prompt = language === 'ja'
+      ? `从以下文本中提取所有日语单词（日语汉字、平假名、片假名组成的词），并为每个单词生成信息。
+文本内容：\n${text}\n
 要求：
-1. 识别文本中所有的日语单词（日语汉字、平假名、片假名）
-2. 单词去重
-3. 每个单词生成：
+1. 识别所有的日语单词去重
+2. 每个单词生成：
    - japanese: 原单词
    - reading: 假名读音
    - meaning: 中文释义
-   - partOfSpeech: 词性（名词/动词/形容词/副词/助词/连词/感叹词/代词/数词/接尾词/接头词/其他）
-   - tags: 相关标签数组（如 N5、N4、常用等）
-
-请只返回一个 JSON 数组，不要其他文字。例如：
-[{"japanese":"桜","reading":"さくら","meaning":"樱花","partOfSpeech":"名词","tags":["N5","植物"]}]`;
+   - partOfSpeech: 词性
+   - tags: 相关标签数组（如 N5、N4等）
+   - language: "ja"
+请只返回一个 JSON 数组，不要其他文字。`
+      : `从以下文本中提取所有英语单词，并为每个单词生成信息。
+文本内容：\n${text}\n
+要求：
+1. 识别所有的英语单词并去重（恢复为单数/原形等）
+2. 每个单词生成：
+   - japanese: 英语原单词（必须使用 japanese 键名）
+   - reading: 音标 (IPA)
+   - meaning: 中文释义
+   - partOfSpeech: 词性
+   - tags: 相关标签（如 CET4、雅思等）
+   - language: "en"
+请只返回一个 JSON 数组，不要其他文字。`;
 
     const response = await axios.post(
       'https://api.deepseek.com/chat/completions',
