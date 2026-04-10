@@ -565,16 +565,27 @@
               </svg>
               <span>单个添加</span>
             </button>
+            
             <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
-            <button onclick="openModal('importModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-ochre/5 hover:bg-ochre/15 text-[0.85rem] font-medium text-ochre transition-all group active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-y-0.5">
+            
+            <button onclick="openModal('importModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
               <span>批量导入</span>
             </button>
+
             <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
+
+            <button onclick="openModal('dictImportModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-ochre/5 hover:bg-ochre/15 text-[0.85rem] font-medium text-ochre transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256" class="transition-transform group-hover:-translate-y-0.5"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"></path></svg>
+              <span>上传词书</span>
+            </button>
+
+            <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
+            
             <button onclick="exportWords()" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -831,46 +842,8 @@
         <!-- Step 1: 输入文本 -->
         <div id="importStep1">
 
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-[0.7rem] font-bold tracking-wider text-muted">每行输入一个单词，AI 自动识别：</p>
-            <div>
-              <input type="file" id="dictUpload" accept=".json,.csv" class="hidden" onchange="handleFileImport(event)">
-              <button type="button" onclick="document.getElementById('dictUpload').click()" class="text-[0.75rem] font-bold text-ochre flex items-center gap-1 hover:underline transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"></path></svg>
-                上传词书 (JSON/CSV)
-              </button>
-            </div>
-          </div>
+          <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
           <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-sans text-[0.8rem]" placeholder="每行一个单词：&#10;桜 / apple&#10;花 / library&#10;&#10;AI 自动提取..."></textarea>
-
-          <div class="mb-5 p-4 bg-ochre/5 border border-ochre/20 rounded-2xl">
-            <div class="flex items-center gap-2 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DF9F28" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
-              <span class="text-xs font-bold text-ochre uppercase tracking-wider">词书资源下载指引</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <div class="text-[10px] font-bold text-muted uppercase mb-1">🇯🇵 日语推荐</div>
-                <div class="flex flex-col gap-1">
-                  <a href="https://ankiweb.net/shared/decks/japanese" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">AnkiWeb 日语共享库</a>
-                  <a href="https://mojidict.com" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">MOJI 辞书 (支持导出)</a>
-                </div>
-              </div>
-
-              <div>
-                <div class="text-[10px] font-bold text-muted uppercase mb-1">🇬🇧 英语推荐</div>
-                <div class="flex flex-col gap-1">
-                  <a href="https://ankiweb.net/shared/decks/english" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">AnkiWeb 英语共享库</a>
-                  <a href="https://quizlet.com" target="_blank" class="text-[0.7rem] text-charcoal/70 hover:text-ochre underline underline-offset-2 decoration-borderline">Quizlet (搜关键词导出)</a>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-3 pt-2 border-t border-ochre/10 text-[0.65rem] text-muted italic">
-              * 技巧：下载 .apkg 或在线词单后，导出为 <b>CSV</b> 或 <b>JSON</b> 即可直接上传。
-            </div>
-          </div>
 
           <div id="aiProgressBar" class="hidden mt-4">
             <div class="flex items-center justify-between text-xs text-muted mb-1.5">
@@ -909,6 +882,79 @@
           <div class="flex justify-end gap-6 items-center mt-6">
             <button type="button" onclick="closeModal('importModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
             <button type="button" onclick="handleBatchImport()" id="batchImportBtn" class="magnetic-btn px-8 py-3 tracking-widest text-[0.9rem]">确认导入</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dictImportModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[1.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-[0_12px_40px_rgba(26,47,43,0.12)] border border-borderline">
+      <div class="px-8 py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
+        <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">上传词书</h3>
+        <button onclick="closeModal('dictImportModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+      
+      <div class="p-8">
+        <div id="dictStep1">
+          <div class="mb-6 p-5 bg-ochre/5 border border-ochre/20 rounded-2xl">
+            <div class="flex items-center gap-2 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#DF9F28" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm-40,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h56A8,8,0,0,1,144,160Z"></path></svg>
+              <span class="text-[0.7rem] font-bold text-ochre uppercase tracking-[0.2em]">词书资源推荐</span>
+            </div>
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <div class="text-[10px] font-bold text-muted uppercase mb-1.5 opacity-60">🇯🇵 日本语专区</div>
+                <div class="flex flex-col gap-1.5">
+                  <a href="https://ankiweb.net/shared/decks/japanese" target="_blank" class="text-[0.75rem] text-charcoal/80 hover:text-ochre underline underline-offset-4 decoration-borderline/60">AnkiWeb 共享库</a>
+                  <a href="https://mojidict.com" target="_blank" class="text-[0.75rem] text-charcoal/80 hover:text-ochre underline underline-offset-4 decoration-borderline/60">MOJI 辞书</a>
+                </div>
+              </div>
+              <div>
+                <div class="text-[10px] font-bold text-muted uppercase mb-1.5 opacity-60">🇬🇧 英语专区</div>
+                <div class="flex flex-col gap-1.5">
+                  <a href="https://ankiweb.net/shared/decks/english" target="_blank" class="text-[0.75rem] text-charcoal/80 hover:text-ochre underline underline-offset-4 decoration-borderline/60">AnkiWeb 共享库</a>
+                  <a href="https://quizlet.com" target="_blank" class="text-[0.75rem] text-charcoal/80 hover:text-ochre underline underline-offset-4 decoration-borderline/60">Quizlet 导出</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative group">
+            <input type="file" id="dictFileInput" accept=".json,.csv" class="hidden" onchange="handleDictFileSelect(event)">
+            <div onclick="document.getElementById('dictFileInput').click()" class="border-2 border-dashed border-borderline rounded-[1.5rem] p-10 flex flex-col items-center justify-center cursor-pointer group-hover:bg-parchment/40 group-hover:border-ochre/30 transition-all">
+              <div class="w-14 h-14 bg-parchment rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256" class="text-muted group-hover:text-ochre"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"></path></svg>
+              </div>
+              <p class="text-[0.85rem] font-medium text-charcoal">点击或拖拽上传词书文件</p>
+              <p class="text-[0.65rem] text-muted mt-2 tracking-wide uppercase font-bold">支持 .json / .csv 格式</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="dictStep2" class="hidden">
+          <div id="dictImportProgressBar" class="hidden mb-6">
+            <div class="flex items-center justify-between text-xs text-muted mb-2">
+              <span id="dictImportProgressText">正在处理词书...</span>
+              <span id="dictImportProgressCount">0/0</span>
+            </div>
+            <div class="w-full h-1.5 bg-borderline rounded-full overflow-hidden">
+              <div id="dictImportProgressFill" class="h-full bg-ochre transition-all duration-300 ease-out rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-sm text-muted">解析到 <span id="dictBatchCount" class="font-semibold text-charcoal">0</span> 个项目，请核对：</p>
+            <button onclick="resetDictImport()" class="text-xs text-ochre font-bold hover:underline">重新选择文件</button>
+          </div>
+          
+          <div id="dictBatchPreviewList" class="space-y-2 max-h-60 overflow-y-auto mb-6 pr-2"></div>
+          
+          <div class="flex justify-end gap-6 items-center">
+            <button type="button" onclick="closeModal('dictImportModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
+            <button type="button" onclick="handleDictBatchImport()" id="dictBatchConfirmBtn" class="magnetic-btn px-8 py-3 tracking-widest text-[0.9rem]">确认导入库</button>
           </div>
         </div>
       </div>
@@ -2168,85 +2214,130 @@ async function handleAiGenerate() {
   }
 }
 
-/* ================= 词书文件上传 ================= */
-function handleFileImport(event) {
+/* ================= 词书导入逻辑 ================= */
+let dictBatchWords = [];
+
+function handleDictFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  // 重置 input 的值，确保重复上传同名文件也能触发 onchange
-  event.target.value = '';
+  event.target.value = ''; // 重置以支持重复上传
 
   const reader = new FileReader();
   reader.onload = (e) => {
     const content = e.target.result;
-    let parsedWords = [];
-
     try {
       if (file.name.endsWith('.json')) {
-        const jsonData = JSON.parse(content);
-        // 兼容当前系统的导出格式 (有时包裹在 { data: [...] } 中)
-        parsedWords = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);
-      } else if (file.name.endsWith('.csv')) {
-        const lines = content.split('\n').filter(l => l.trim() !== '');
-        // 假设第一行是表头，从第二行开始解析 (跳过索引 0)
-        parsedWords = lines.slice(1).map(line => {
-          // 正则：按逗号分割，但忽略引号内的逗号
-          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+        const raw = JSON.parse(content);
+        dictBatchWords = Array.isArray(raw) ? raw : (raw.data || []);
+      } else {
+        // CSV 解析逻辑
+        const lines = content.split('\n').filter(l => l.trim());
+        dictBatchWords = lines.slice(1).map(line => {
+          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
           return {
-            language: state.currentLang,
             japanese: (cols[0] || '').replace(/^"|"$/g, '').trim(),
             reading: (cols[1] || '').replace(/^"|"$/g, '').trim(),
             meaning: (cols[2] || '').replace(/^"|"$/g, '').trim(),
             partOfSpeech: (cols[3] || '').replace(/^"|"$/g, '').trim() || '名词',
-            tags: cols[4] ? cols[4].replace(/^"|"$/g, '').split(';').map(t => t.trim()).filter(Boolean) : []
+            tags: cols[4] ? cols[4].replace(/^"|"$/g, '').split(';').map(t => t.trim()) : []
           };
         });
-      } else {
-        return showToast('仅支持 .json 或 .csv 格式的文件', 'error');
       }
 
-      // 格式基础校验
-      if (parsedWords.length === 0) {
-        return showToast('文件内容为空或格式无法识别', 'error');
-      }
-      if (!parsedWords[0].japanese && !parsedWords[0].word) {
-        return showToast('未找到合法的单词字段', 'error');
-      }
-
-      // 强行覆盖语种为当前工作区语种，并装载到全局队列
-      batchGeneratedWords = parsedWords.map(w => ({
+      // 自动注入当前语种并校验
+      dictBatchWords = dictBatchWords.map(w => ({
         ...w,
         japanese: w.japanese || w.word,
         language: state.currentLang
-      })).filter(w => w.japanese); // 过滤掉无效空行
+      })).filter(w => w.japanese);
 
-      // 隐藏输入区，显示预览区 (复用 Step 2 的 UI)
-      document.getElementById('importStep1').classList.add('hidden');
-      document.getElementById('importStep2').classList.remove('hidden');
-      document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+      if (!dictBatchWords.length) throw new Error('未识别到有效单词');
 
-      // 渲染列表
-      const list = document.getElementById('batchPreviewList');
-      const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
-      list.innerHTML = batchGeneratedWords.map((w, i) => `
-        <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
-          <div>
-            <span class="font-semibold ${fontClass}">${w.japanese}</span>
-            <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning || w.translation || ''}</span>
+      // 切换视图
+      document.getElementById('dictStep1').classList.add('hidden');
+      document.getElementById('dictStep2').classList.remove('hidden');
+      document.getElementById('dictBatchCount').textContent = dictBatchWords.length;
+      
+      const list = document.getElementById('dictBatchPreviewList');
+      const isEn = state.currentLang === 'en';
+      list.innerHTML = dictBatchWords.map((w, i) => `
+        <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40">
+          <div class="flex-1 min-w-0 pr-4">
+            <span class="font-bold text-charcoal truncate block ${isEn ? 'font-sans' : 'font-jp'}">${w.japanese}</span>
+            <span class="text-[10px] text-muted block mt-0.5 truncate">${w.reading || ''} · ${w.meaning}</span>
           </div>
-          <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+          <button onclick="removeDictBatchWord(${i})" class="text-muted/40 hover:text-terracotta transition-colors flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          </button>
         </div>
       `).join('');
 
-      showToast(`成功解析 ${batchGeneratedWords.length} 个单词，请确认导入`, 'success');
-
+      showToast(`已解析 ${dictBatchWords.length} 个单词`, 'success');
     } catch (err) {
-      console.error(err);
-      showToast('文件解析失败，请检查格式是否正确', 'error');
+      showToast('文件解析失败，请检查格式', 'error');
     }
   };
-  
   reader.readAsText(file);
+}
+
+// 复用 handleBatchImport 的核心逻辑，但对应到新的 UI 组件 ID
+async function handleDictBatchImport() {
+  const btn = document.getElementById('dictBatchConfirmBtn');
+  const pb = document.getElementById('dictImportProgressBar');
+  const fill = document.getElementById('dictImportProgressFill');
+  const count = document.getElementById('dictImportProgressCount');
+
+  btn.disabled = true;
+  pb.classList.remove('hidden');
+  
+  const total = dictBatchWords.length;
+  const chunkSize = 50;
+  let processed = 0;
+
+  try {
+    for (let i = 0; i < total; i += chunkSize) {
+      const chunk = dictBatchWords.slice(i, i + chunkSize);
+      await api('/words/import', { method: 'POST', body: JSON.stringify({ words: chunk }) });
+      processed += chunk.length;
+      count.textContent = `${processed}/${total}`;
+      fill.style.width = `${(processed / total) * 100}%`;
+    }
+    showToast('词书导入成功', 'success');
+    closeModal('dictImportModal');
+    loadWords(1); loadStats();
+  } catch (e) {
+    showToast('导入中断', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function resetDictImport() {
+  dictBatchWords = [];
+  document.getElementById('dictStep1').classList.remove('hidden');
+  document.getElementById('dictStep2').classList.add('hidden');
+}
+
+function removeDictBatchWord(index) {
+  dictBatchWords.splice(index, 1);
+  document.getElementById('dictBatchCount').textContent = dictBatchWords.length;
+  if (!dictBatchWords.length) resetDictImport();
+  else {
+    // 重新渲染列表
+    const list = document.getElementById('dictBatchPreviewList');
+    const isEn = state.currentLang === 'en';
+    list.innerHTML = dictBatchWords.map((w, i) => `
+      <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40">
+        <div class="flex-1 min-w-0 pr-4">
+          <span class="font-bold text-charcoal truncate block ${isEn ? 'font-sans' : 'font-jp'}">${w.japanese}</span>
+          <span class="text-[10px] text-muted block mt-0.5 truncate">${w.reading || ''} · ${w.meaning}</span>
+        </div>
+        <button onclick="removeDictBatchWord(${i})" class="text-muted/40 hover:text-terracotta transition-colors flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+    `).join('');
+  }
 }
 
 /* ================= BATCH IMPORT ================= */
