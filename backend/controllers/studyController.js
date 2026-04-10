@@ -102,13 +102,13 @@ exports.getDueWords = async (req, res) => {
       language,
       state: 0,
       due: { $lte: now }
-    }).sort({ createdAt: 1 }).limit(remainingNew).select('_id');
+    }).sort({ createdAt: -1 }).limit(remainingNew).select('_id');
 
     const quotaIds = quotaNewWords.map(w => w._id);
 
     // 完全遵从用户设置的新词配额，不再被复习量强行拦截
     if (remainingNew > 0) {
-      newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: 1 });
+      newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: -1 });
     }
 
     // 推迟的只是"配额之外"的词
