@@ -695,7 +695,7 @@
   </div>
 
   <!-- ========== STUDY VIEW ========== -->
-  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative">
+  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative overflow-y-auto">
     <nav class="p-6 flex justify-between items-center max-w-4xl mx-auto w-full absolute top-0 left-1/2 -translate-x-1/2 z-10">
       <button onclick="navigate('dashboard')" class="text-muted hover:text-charcoal flex items-center gap-2 transition-colors font-medium">
         <div class="w-10 h-10 rounded-full bg-surface border border-borderline flex items-center justify-center">
@@ -717,7 +717,7 @@
         </div>
       </div>
 
-      <div id="studyComplete" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+      <div id="studyComplete" class="hidden text-center bg-surface border border-borderline rounded-3xl p-8 sm:p-12 w-full max-w-md mx-auto flex-shrink-0">
         <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
           <span class="text-4xl">🎓</span>
         </div>
@@ -730,7 +730,7 @@
         </div>
       </div>
 
-      <div id="noWords" class="hidden text-center bg-surface border border-borderline rounded-3xl p-12 w-full max-w-md mx-auto">
+      <div id="noWords" class="hidden text-center bg-surface border border-borderline rounded-3xl p-8 sm:p-12 w-full max-w-md mx-auto flex-shrink-0">
         <div class="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mx-auto mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#DF9F28" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.56,87.56,0,0,1-5.42,30.67L148.15,96.24A40,40,0,0,0,127.41,85l-12.47,51.06a16,16,0,0,1-20.24,11.52L55.45,131A40,40,0,0,0,80,194.13l57.47-34.86,17.82,66.74A16,16,0,0,0,168,232a15.93,15.93,0,0,0,4.53-.65l32-12A88,88,0,0,1,216,128ZM128,168a40,40,0,0,1-40-40c0-17.26,11.07-35.74,28-47.33a8,8,0,0,1,9.66,12.66C113.07,103.57,96,122.69,96,136a24,24,0,0,0,24,24,8,8,0,0,1,8,8Z"></path></svg>
         </div>
