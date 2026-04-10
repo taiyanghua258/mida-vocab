@@ -5,10 +5,11 @@
  * 将所有 partOfSpeech='名词' 的单词批量发给 DeepSeek 重新判定词性
  */
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
 const mongoose = require('mongoose');
 const axios = require('axios');
-const Word = require('./models/Word');
+const Word = require(path.resolve(__dirname, '../backend/models/Word'));
 
 const VALID_POS_JA = ['名词','动词','形容词','副词','助词','连词','感叹词','代词','数词','接尾词','接头词','其他'];
 const VALID_POS_EN = ['名词','动词','形容词','副词','代词','介词','连词','冠词','感叹词','数词','其他'];
