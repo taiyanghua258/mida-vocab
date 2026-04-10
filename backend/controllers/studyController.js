@@ -325,3 +325,91 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.undoReview = async (req, res) => {
+  try {
+    const { wordId } = req.body;
+    if (!wordId) return res.status(400).json({ message: 'wordId is required' });
+
+    // 找到该词最近的一条复习记录
+    const lastLog = await ReviewLog.findOne({ userId: req.userId, wordId }).sort({ createdAt: -1 });
+    if (!lastLog) return res.status(404).json({ message: '没有可撤回的复习记录' });
+
+    const word = await Word.findOne({ _id: wordId, userId: req.userId });
+    if (!word) return res.status(404).json({ message: 'Word not found' });
+
+    // 找到该词倒数第二条复习记录（如果存在），来恢复上一次状态
+    const prevLog = await ReviewLog.findOne({
+      userId: req.userId, wordId,
+      _id: { $ne: lastLog._id }
+    }).sort({ createdAt: -1 });
+
+    if (prevLog) {
+      // 还原到上一次复习后的状态：利用 FSRS 重新计算
+      // 但更简单的方式是：用 lastLog 中记录的 prev 字段还原
+      word.stability = lastLog.prevStability || 0;
+      word.difficulty = lastLog.prevDifficulty || 0;
+      word.elapsed_days = lastLog.elapsed_days || 0;
+      word.scheduled_days = lastLog.scheduled_days || 0;
+      word.state = lastLog.state != null ? lastLog.state : 0;
+      word.last_review = prevLog.reviewDate;
+      word.due = lastLog.reviewDate; // 恢复到复习前的到期时间
+      word.reps = Math.max(0, (word.reps || 1) - 1);
+      word.lapses = lastLog.rating === 1 ? Math.max(0, (word.lapses || 1) - 1) : word.lapses;
+    } else {
+      // 没有前一条记录，说明是第一次复习，恢复到新卡状态
+      word.stability = 0;
+      word.difficulty = 0;
+      word.elapsed_days = 0;
+      word.scheduled_days = 0;
+      word.state = 0;
+      word.reps = 0;
+      word.lapses = 0;
+      word.last_review = null;
+      word.due = new Date();
+      word.learning_steps = 0;
+    }
+
+    await word.save();
+    await ReviewLog.deleteOne({ _id: lastLog._id });
+
+    res.json({ message: '已撤回', word });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.addExtraNewWords = async (req, res) => {
+  try {
+    const { count = 5, language = 'ja' } = req.body;
+    const safeCount = Math.min(Math.max(1, parseInt(count) || 5), 50);
+
+    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
+    const now = new Date();
+
+    // 找到被推迟到明天的新词（state=0, due 在明天凌晨）
+    const postponedWords = await Word.find({
+      userId: req.userId,
+      language,
+      state: 0,
+      due: { $gt: now }
+    }).sort({ createdAt: -1 }).limit(safeCount).select('_id');
+
+    if (postponedWords.length === 0) {
+      return res.json({ message: '没有更多可释放的新词', released: 0 });
+    }
+
+    const ids = postponedWords.map(w => w._id);
+    await Word.updateMany(
+      { _id: { $in: ids } },
+      { $set: { due: now } }
+    );
+
+    res.json({ message: `已释放 ${ids.length} 个新词`, released: ids.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

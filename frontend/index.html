@@ -642,9 +642,13 @@
       </div>
 
       <div id="upcomingWidget" class="hidden mb-6 glass-card p-4 rounded-2xl border border-borderline flex flex-wrap gap-3 items-center">
-        <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2">
+        <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
           记忆冷却池
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
+          <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-charcoal text-surface text-[10px] leading-relaxed rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+            仅显示未来 1 小时内即将到期的短期记忆步骤（如 1 分钟、10 分钟冷却）。表格中显示的「2 小时后」等较长间隔是 FSRS 算法安排的正常复习周期，不在冷却池中。
+          </div>
         </div>
         <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
       </div>
@@ -737,7 +741,12 @@
         </div>
         <span class="hidden sm:block">返回词库</span>
       </button>
-      <div class="text-[11px] font-bold tracking-widest uppercase text-muted">复习中</div>
+      <div class="flex items-center gap-3">
+        <button id="undoBtn" onclick="undoLastReview()" class="w-10 h-10 rounded-full bg-surface border border-borderline flex items-center justify-center text-muted hover:text-ochre transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none" title="撤回上一步" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M232,128A104,104,0,0,1,58.34,197.67a8,8,0,0,1,11.32-11.32A88,88,0,0,0,216,128,88.1,88.1,0,0,0,128,40a87.53,87.53,0,0,0-63.84,27.44L88,91.31A8,8,0,0,1,82.34,104H32a8,8,0,0,1-8-8V45.66A8,8,0,0,1,37.66,40L60.28,62.63A103.53,103.53,0,0,1,128,24,104.11,104.11,0,0,1,232,128Z"></path></svg>
+        </button>
+        <div class="text-[11px] font-bold tracking-widest uppercase text-muted">复习中</div>
+      </div>
     </nav>
 
     <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 justify-center relative pt-20">
@@ -770,9 +779,17 @@
         </div>
         <h2 class="text-2xl font-semibold text-charcoal mb-2">任务达成！</h2>
         <p class="text-sm text-muted mb-8">当前没有需要复习的单词，休息一下吧。</p>
+        <div id="coolingCountdown" class="hidden mb-6 text-left"></div>
         <div class="flex gap-3">
           <button onclick="navigate('dashboard')" class="flex-1 bg-surface border border-borderline text-charcoal px-6 py-3.5 rounded-xl font-medium hover:bg-parchment transition-all active:scale-[0.98]">返回控制台</button>
           <button onclick="reviewLastSession()" class="flex-1 bg-charcoal text-surface px-6 py-3.5 rounded-xl font-medium hover:bg-charcoal/90 transition-all active:scale-[0.98]">再练一次</button>
+        </div>
+        <div id="extraStudySection" class="mt-6 pt-5 border-t border-borderline/40">
+          <p class="text-xs text-muted mb-3">想多背一些？释放被推迟的新词：</p>
+          <div class="flex items-center justify-center gap-2">
+            <input type="number" id="extraCountInput" min="1" max="50" value="5" class="aesthetic-input w-20 px-2 py-2 text-charcoal text-center font-mono text-sm">
+            <button onclick="handleExtraStudy()" id="extraStudyBtn" class="px-5 py-2 bg-ochre/10 border border-ochre/30 text-ochre rounded-xl text-sm font-bold hover:bg-ochre/20 transition-all active:scale-95">加量学习</button>
+          </div>
         </div>
       </div>
 
@@ -1646,7 +1663,9 @@ const state = {
   localTimer: null, 
   notifySound: true, 
   notifyDesktop: true, 
-  notifyVibrate: true 
+  notifyVibrate: true,
+  batchAbortController: null, // Bug 2: AI 批量请求中断控制器
+  studyHistory: [] // Bug 3: 复习撤回历史栈
 };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */
@@ -2521,6 +2540,11 @@ async function handleBatchGenerate() {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) return showToast('请输入有效的单词', 'error');
 
+  // Bug 2: 创建 AbortController 以支持中断
+  if (state.batchAbortController) state.batchAbortController.abort();
+  state.batchAbortController = new AbortController();
+  const signal = state.batchAbortController.signal;
+
   const btn = document.getElementById('batchGenerateBtn');
   btn.disabled = true;
   btn.innerHTML = 'AI 解析中...';
@@ -2540,13 +2564,17 @@ async function handleBatchGenerate() {
 
   try {
     for (let i = 0; i < total; i += chunkSize) {
+      // Bug 2: 每次迭代前检查是否已被中断
+      if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
       const chunkLines = lines.slice(i, i + chunkSize);
       const chunkText = chunkLines.join('\n');
 
       const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
-        body: JSON.stringify({ text: chunkText, language: state.currentLang })
+        body: JSON.stringify({ text: chunkText, language: state.currentLang }),
+        signal // Bug 2: 传入 signal 以支持 fetch 级别中断
       });
 
       if (!res.ok) throw new Error('AI 解析中断');
@@ -2576,8 +2604,13 @@ async function handleBatchGenerate() {
 
     showToast('全部生成成功', 'success');
   } catch (e) {
-    showToast('生成过程中发生网络错误', 'error');
+    if (e.name === 'AbortError') {
+      console.log('AI 批量生成已被用户中断');
+    } else {
+      showToast('生成过程中发生网络错误', 'error');
+    }
   } finally {
+    state.batchAbortController = null;
     btn.disabled = false;
     btn.innerHTML = 'AI 补全';
     pb.classList.add('hidden'); 
@@ -2664,6 +2697,12 @@ async function handleBatchImport() {
 }
 
 function resetImport() {
+  // Bug 2: 中断正在进行的 AI 解析请求
+  if (state.batchAbortController) {
+    state.batchAbortController.abort();
+    state.batchAbortController = null;
+  }
+
   batchGeneratedWords = [];
   document.getElementById('importStep1').classList.remove('hidden');
   document.getElementById('importStep2').classList.add('hidden');
@@ -2836,14 +2875,19 @@ async function batchExportSelected() {
 }
 
 /* ================= STUDY ================= */
+let coolingTimer = null; // Bug 5: 冷却界面倒计时定时器
+
 async function initStudy() {
   state.isCramMode = false;
   state.coolingWords = [];
+  state.studyHistory = []; // Bug 3: 重置撤回历史
+  if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
 
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
   document.getElementById('studyCardContainer').classList.remove('hidden');
   document.getElementById('answerSection').classList.remove('show');
+  document.getElementById('undoBtn').disabled = true; // Bug 3: 重置撤回按钮
   revealAllowed = false;
 
   const words = await api(`/study/due?language=${state.currentLang}`);
@@ -2869,29 +2913,86 @@ async function initStudy() {
 }
 
 function showCoolingState(upcomingWords) {
+  if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
   el.classList.add('pop-in');
 
   el.querySelector('h2').textContent = '记忆冷却中 ⏳';
-  el.querySelector('p').textContent = `还有 ${upcomingWords.length} 个单词正在记忆冷却中，请休息几分钟后继续。`;
 
-  const rightBtn = el.querySelectorAll('button')[1];
-  rightBtn.textContent = '刷新复习';
-  rightBtn.onclick = () => { initStudy(); };
+  // Bug 5: 显示具体倒计时
+  const countdownEl = document.getElementById('coolingCountdown');
+  countdownEl.classList.remove('hidden');
+
+  function updateCoolingCountdown() {
+    const now = Date.now();
+    const remaining = upcomingWords.filter(w => new Date(w.due).getTime() > now);
+    
+    if (remaining.length === 0) {
+      // 所有单词都已到期，自动刷新
+      if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+      countdownEl.classList.add('hidden');
+      initStudy();
+      return;
+    }
+
+    // 按到期时间分组
+    const groups = {};
+    remaining.forEach(w => {
+      const diffMs = new Date(w.due).getTime() - now;
+      const diffSec = Math.ceil(diffMs / 1000);
+      const min = Math.floor(diffSec / 60);
+      const sec = diffSec % 60;
+      const key = min > 0 ? `${min}分${sec.toString().padStart(2, '0')}秒` : `${diffSec}秒`;
+      groups[key] = (groups[key] || 0) + 1;
+    });
+
+    // 找到最近的单词
+    const nearest = remaining.reduce((a, b) => new Date(a.due) < new Date(b.due) ? a : b);
+    const nearestDiff = Math.ceil((new Date(nearest.due).getTime() - now) / 1000);
+    const nearestMin = Math.floor(nearestDiff / 60);
+    const nearestSec = nearestDiff % 60;
+    const nearestStr = nearestMin > 0 ? `${nearestMin}分${nearestSec.toString().padStart(2, '0')}秒` : `${nearestDiff}秒`;
+
+    el.querySelector('p').textContent = `还有 ${remaining.length} 个单词正在冷却中，最近一个将在 ${nearestStr} 后到期。`;
+
+    countdownEl.innerHTML = remaining.sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0, 8).map(w => {
+      const d = Math.ceil((new Date(w.due).getTime() - now) / 1000);
+      const m = Math.floor(d / 60);
+      const s = d % 60;
+      return `<div class="flex items-center gap-2 px-3 py-1.5 bg-ochre/8 border border-ochre/15 rounded-lg text-xs mb-1.5">
+        <span class="font-mono font-bold text-ochre">${m > 0 ? m + ':' + s.toString().padStart(2,'0') : s + 's'}</span>
+        <span class="text-muted">后复习</span>
+      </div>`;
+    }).join('');
+  }
+
+  updateCoolingCountdown();
+  coolingTimer = setInterval(updateCoolingCountdown, 1000);
+
+  const rightBtn = el.querySelectorAll('.flex.gap-3 > button')[1];
+  if (rightBtn) {
+    rightBtn.textContent = '刷新复习';
+    rightBtn.onclick = () => { initStudy(); };
+  }
 }
 
 function showTaskAccomplished() {
+  if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
   el.classList.add('pop-in');
 
   el.querySelector('h2').textContent = '任务达成！';
   el.querySelector('p').textContent = '当前没有需要复习的单词，休息一下吧。';
+  document.getElementById('coolingCountdown').classList.add('hidden');
 
-  const rightBtn = el.querySelectorAll('button')[1];
-  rightBtn.textContent = '再练一次';
-  rightBtn.onclick = () => reviewLastSession();
+  const rightBtn = el.querySelectorAll('.flex.gap-3 > button')[1];
+  if (rightBtn) {
+    rightBtn.textContent = '再练一次';
+    rightBtn.onclick = () => reviewLastSession();
+  }
 }
 
 function renderCardStack() {
@@ -3027,6 +3128,15 @@ async function submitReview(result) {
     if (!state.isCramMode) {
       const resData = await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
 
+      // Bug 3: 记录撤回历史
+      state.studyHistory.push({
+        wordId: word._id,
+        index: state.studyIndex,
+        result,
+        word: { ...word }
+      });
+      document.getElementById('undoBtn').disabled = false;
+
       // 修复4：捕获 1 分钟 / 10 分钟短时记忆！
       if (resData.scheduled_days < 1) {
         const dueTime = new Date(resData.due).getTime();
@@ -3117,6 +3227,17 @@ function updateStudyProgress() {
 function showStudyComplete() {
   document.getElementById('studyCardContainer').classList.add('hidden');
 
+  // Bug 7: 无论走哪个分支，都先保存本次学习的单词（按 _id 去重）
+  const uniqueForSave = [];
+  const seenSave = new Set();
+  for (const w of state.studyWords) {
+    if (!seenSave.has(w._id)) {
+      uniqueForSave.push(w);
+      seenSave.add(w._id);
+    }
+  }
+  localStorage.setItem('lastStudyWords', JSON.stringify(uniqueForSave));
+
   // 每次学完不靠旧状态，直接找后端要最新倒计时
   api(`/study/stats?language=${state.currentLang}`).then(stats => {
       if (stats.upcomingWords && stats.upcomingWords.length > 0) {
@@ -3145,15 +3266,27 @@ function showStudyComplete() {
           if (typeof confetti === 'function') {
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#DF9F28', '#D16B4A', '#1A2F2B', '#4B7365'] });
           }
-          localStorage.setItem('lastStudyWords', JSON.stringify(state.studyWords));
       }
   });
 }
 
 function reviewAgain() {
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
-  // 恢复学习状态，只取最初的那批单词（去除上一轮选了“重来”追加到尾部的重复项）
-  state.studyWords = state.studyWords.slice(0, state.originalTotal);
+  state.studyHistory = [];
+  if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+
+  // Bug 7: 使用 _id 去重而非 slice，确保获取完整去重后的单词集
+  const uniqueWords = [];
+  const seenIds = new Set();
+  for (const w of state.studyWords) {
+    if (!seenIds.has(w._id)) {
+      uniqueWords.push(w);
+      seenIds.add(w._id);
+    }
+  }
+
+  state.studyWords = uniqueWords;
+  state.originalTotal = uniqueWords.length;
   state.studyIndex = 0;
   state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   revealAllowed = false;
@@ -3162,6 +3295,7 @@ function reviewAgain() {
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
   document.getElementById('studyCardContainer').classList.remove('hidden');
+  document.getElementById('undoBtn').disabled = true;
 
   // 重新渲染卡片堆叠
   renderCardStack();
@@ -3200,6 +3334,88 @@ function reviewLastSession() {
 
   renderCardStack();
   updateStudyProgress();
+}
+
+// Bug 3: 撤回上一步复习
+async function undoLastReview() {
+  if (state.studyHistory.length === 0 || state.isCramMode) {
+    showToast('没有可撤回的操作', 'error');
+    return;
+  }
+
+  const last = state.studyHistory.pop();
+  const undoBtn = document.getElementById('undoBtn');
+  undoBtn.disabled = true;
+
+  try {
+    await api('/study/undo', { method: 'POST', body: JSON.stringify({ wordId: last.wordId }) });
+
+    // 回退统计
+    state.studyStats.reviewed = Math.max(0, state.studyStats.reviewed - 1);
+    state.studyStats[last.result] = Math.max(0, state.studyStats[last.result] - 1);
+
+    // 如果该单词因为 "again" 被追加到末尾，移除末尾的副本
+    if (last.result === 'again') {
+      for (let i = state.studyWords.length - 1; i >= state.studyIndex; i--) {
+        if (state.studyWords[i]._id === last.wordId) {
+          const tailGroup = document.getElementById(`word-group-${i}`);
+          if (tailGroup) tailGroup.remove();
+          state.studyWords.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    // 回退 index
+    state.studyIndex--;
+
+    // 恢复卡片 DOM
+    addCardToDOM(last.index, last.word);
+    const restoredGroup = document.getElementById(`word-group-${last.index}`);
+    if (restoredGroup) {
+      restoredGroup.classList.remove('discarded');
+    }
+
+    updateStackDepths();
+    updateStudyProgress();
+
+    // 重置答案区域
+    document.getElementById('answerSection').classList.remove('show');
+    revealAllowed = false;
+
+    showToast('已撤回上一步', 'success');
+  } catch (err) {
+    showToast('撤回失败: ' + err.message, 'error');
+  }
+
+  undoBtn.disabled = state.studyHistory.length === 0;
+}
+
+// Bug 4: 加量学习 - 释放被推迟的新词
+async function handleExtraStudy() {
+  const count = parseInt(document.getElementById('extraCountInput').value) || 5;
+  const btn = document.getElementById('extraStudyBtn');
+  btn.disabled = true;
+  btn.textContent = '释放中...';
+
+  try {
+    const result = await api('/study/extra', {
+      method: 'POST',
+      body: JSON.stringify({ count, language: state.currentLang })
+    });
+
+    if (result.released > 0) {
+      showToast(`已释放 ${result.released} 个新词，重新加载中...`, 'success');
+      setTimeout(() => initStudy(), 500);
+    } else {
+      showToast('没有更多被推迟的新词可释放', 'info');
+    }
+  } catch (err) {
+    showToast('释放失败: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '加量学习';
+  }
 }
 
 function checkAndStartOnboarding() {

@@ -248,12 +248,41 @@ exports.importWords = async (req, res) => {
     const MAX_IMPORT = 500;
     const wordsToImport = words.slice(0, MAX_IMPORT);
 
-    // 规范化 partOfSpeech，'其它' -> '其他'
+    // 规范化 partOfSpeech，支持日文、英文、缩写等格式
+    const posMap = {
+      // 日文词性
+      '名詞':'名词','動詞':'动词','形容詞':'形容词','形容動詞':'形容词',
+      '副詞':'副词','助詞':'助词','接続詞':'连词','感動詞':'感叹词','感嘆詞':'感叹词',
+      '代名詞':'代词','数詞':'数词','接尾詞':'接尾词','接尾辞':'接尾词',
+      '接頭詞':'接头词','接頭辞':'接头词','連体詞':'其他','助動詞':'其他',
+      // 英文词性
+      'noun':'名词','n':'名词','n.':'名词',
+      'verb':'动词','v':'动词','v.':'动词','vt':'动词','vi':'动词','vt.':'动词','vi.':'动词',
+      'adjective':'形容词','adj':'形容词','adj.':'形容词','a.':'形容词',
+      'adverb':'副词','adv':'副词','adv.':'副词',
+      'pronoun':'代词','pron':'代词','pron.':'代词',
+      'preposition':'介词','prep':'介词','prep.':'介词',
+      'conjunction':'连词','conj':'连词','conj.':'连词',
+      'interjection':'感叹词','interj':'感叹词','interj.':'感叹词',
+      'article':'冠词','art':'冠词','art.':'冠词',
+      'numeral':'数词','num':'数词','num.':'数词',
+      'determiner':'冠词','det':'冠词',
+      // 中文变体
+      '其它':'其他','名':'名词','动':'动词','形':'形容词','副':'副词',
+    };
     const normalizePos = (pos) => {
       if (!pos) return '名词';
-      if (pos === '其它') return '其他';
+      const trimmed = pos.trim();
+      const lower = trimmed.toLowerCase();
+      if (posMap[lower]) return posMap[lower];
+      if (posMap[trimmed]) return posMap[trimmed];
       const validPos = ['名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '介词', '冠词', '其他'];
-      return validPos.includes(pos) ? pos : '名词';
+      if (validPos.includes(trimmed)) return trimmed;
+      // 子串匹配
+      for (const [key, val] of Object.entries(posMap)) {
+        if (lower.includes(key)) return val;
+      }
+      return '名词';
     };
 
     // 【修改核心】：增强过滤与兜底，防止数据库因为空值触发 required: true 报错卡死

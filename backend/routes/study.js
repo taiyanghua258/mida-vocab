@@ -8,6 +8,8 @@ router.use(auth);
 router.get('/due', studyController.getDueWords);
 router.get('/scheduling', studyController.getSchedulingInfo);
 router.post('/review', studyController.reviewWord);
+router.post('/undo', studyController.undoReview);
+router.post('/extra', studyController.addExtraNewWords);
 router.get('/stats', studyController.getStats);
 
 module.exports = router;

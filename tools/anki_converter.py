@@ -66,6 +66,63 @@ def extract_core_meaning_and_tags(text):
     return core_meaning[:50], valid_tags # 强制最高 50 字，保证卡片绝对清爽
 
 
+POS_MAP = {
+    # 日文词性 → 中文
+    '名詞': '名词', 'めいし': '名词',
+    '動詞': '动词', 'どうし': '动词',
+    '形容詞': '形容词', 'けいようし': '形容词',
+    '形容動詞': '形容词', 'けいようどうし': '形容词',
+    'い形容詞': '形容词', 'な形容詞': '形容词',
+    'イ形容詞': '形容词', 'ナ形容詞': '形容词',
+    '副詞': '副词', 'ふくし': '副词',
+    '助詞': '助词', 'じょし': '助词',
+    '接続詞': '连词', 'せつぞくし': '连词',
+    '感動詞': '感叹词', 'かんどうし': '感叹词', '感嘆詞': '感叹词',
+    '代名詞': '代词', 'だいめいし': '代词',
+    '数詞': '数词', 'すうし': '数词',
+    '接尾詞': '接尾词', '接尾辞': '接尾词',
+    '接頭詞': '接头词', '接頭辞': '接头词',
+    '連体詞': '其他', '助動詞': '其他',
+    # 英文词性 → 中文
+    'noun': '名词', 'n': '名词', 'n.': '名词',
+    'verb': '动词', 'v': '动词', 'v.': '动词', 'vt': '动词', 'vi': '动词',
+    'vt.': '动词', 'vi.': '动词',
+    'adjective': '形容词', 'adj': '形容词', 'adj.': '形容词', 'a.': '形容词',
+    'adverb': '副词', 'adv': '副词', 'adv.': '副词',
+    'pronoun': '代词', 'pron': '代词', 'pron.': '代词',
+    'preposition': '介词', 'prep': '介词', 'prep.': '介词',
+    'conjunction': '连词', 'conj': '连词', 'conj.': '连词',
+    'interjection': '感叹词', 'interj': '感叹词', 'interj.': '感叹词',
+    'article': '冠词', 'art': '冠词', 'art.': '冠词',
+    'numeral': '数词', 'num': '数词', 'num.': '数词',
+    'determiner': '冠词', 'det': '冠词',
+    # 中文变体
+    '名': '名词', '动': '动词', '形': '形容词', '副': '副词',
+    '其它': '其他',
+}
+
+VALID_POS = {'名词', '动词', '形容词', '副词', '助词', '连词', '感叹词', '代词', '数词', '接尾词', '接头词', '介词', '冠词', '其他'}
+
+def normalize_pos(raw_pos):
+    """将各种格式的词性统一映射到系统白名单"""
+    if not raw_pos:
+        return '名词'
+    cleaned = raw_pos.strip().lower()
+    # 先精确匹配
+    if cleaned in POS_MAP:
+        return POS_MAP[cleaned]
+    # 原文匹配（日文不区分大小写无意义，但中文可能直接命中）
+    if raw_pos.strip() in POS_MAP:
+        return POS_MAP[raw_pos.strip()]
+    if raw_pos.strip() in VALID_POS:
+        return raw_pos.strip()
+    # 子串匹配
+    for key, val in POS_MAP.items():
+        if key in cleaned:
+            return val
+    return '名词'
+
+
 def process_apkg(input_file, output_file):
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
@@ -107,10 +164,11 @@ def process_apkg(input_file, output_file):
                 raw_meaning = fields[2] if len(fields) > 2 else reading
                 meaning, extracted_tags = extract_core_meaning_and_tags(raw_meaning)
                 
-                # 3. 词性
-                pos = extract_basic_text(fields[3]) if len(fields) > 3 else ""
-                if not pos and extracted_tags:
-                    pos = extracted_tags[0] # 经常有人把词性写在【】里，我们借用给词性字段
+                # 3. 词性：使用智能映射
+                raw_pos = extract_basic_text(fields[3]) if len(fields) > 3 else ""
+                if not raw_pos and extracted_tags:
+                    raw_pos = extracted_tags[0]
+                pos = normalize_pos(raw_pos)
                 
                 # 4. 组装最终标签
                 final_tags = ["Anki清洗"]
