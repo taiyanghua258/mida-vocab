@@ -54,12 +54,12 @@ function romajiToHiragana(text) {
 
 exports.getWords = async (req, res) => {
   try {
-    let { page = 1, limit = 50, partOfSpeech, tag, search } = req.query;
+    let { page = 1, limit = 50, partOfSpeech, tag, search, language = 'ja' } = req.query; // 接收 language
 
     page = Math.max(1, parseInt(page) || 1);
     limit = Math.max(1, Math.min(100, parseInt(limit) || 50));
 
-    const query = { userId: req.userId };
+    const query = { userId: req.userId, language }; // 将 language 加入查询条件
 
     if (partOfSpeech) query.partOfSpeech = partOfSpeech;
     if (tag) query.tags = tag;

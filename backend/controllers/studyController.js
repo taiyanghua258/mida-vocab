@@ -66,12 +66,14 @@ function formatInterval(dueDate, now) {
 exports.getDueWords = async (req, res) => {
   try {
     const now = new Date();
+    const language = req.query.language || 'ja';
     const user = await User.findById(req.userId).select('fsrsSettings');
     const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
 
     // 性能隐患修复：加入 limit(100) 拦截超大数组，实现单次会话的"分页打断"
     const reviewWords = await Word.find({
       userId: req.userId,
+      language,
       state: { $ne: 0 },
       due: { $lte: now }
     }).sort({ due: 1 }).limit(100);
@@ -84,6 +86,7 @@ exports.getDueWords = async (req, res) => {
 
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
+      language, // 隔离每日新词上限
       reviewDate: { $gte: todayStart, $lt: tomorrowStart },
       state: 0
     });
@@ -93,6 +96,7 @@ exports.getDueWords = async (req, res) => {
     // 无论是否达到 50 的阈值，先预留出今日配额保护的单词 ID
     const quotaNewWords = await Word.find({
       userId: req.userId,
+      language,
       state: 0,
       due: { $lte: now }
     }).sort({ createdAt: 1 }).limit(remainingNew).select('_id');
@@ -107,6 +111,7 @@ exports.getDueWords = async (req, res) => {
     // 推迟的只是"配额之外"的词
     await Word.updateMany({
       userId: req.userId,
+      language,
       state: 0,
       due: { $lte: now },
       _id: { $nin: quotaIds }
@@ -198,6 +203,7 @@ exports.reviewWord = async (req, res) => {
     const reviewLog = new ReviewLog({
       userId: req.userId,
       wordId,
+      language: word.language, // 继承被复习单词的语种
       reviewDate: now,
       result,
       responseTime: responseTime || 0,
@@ -229,15 +235,17 @@ exports.reviewWord = async (req, res) => {
 exports.getStats = async (req, res) => {
   try {
     const now = new Date();
+    const language = req.query.language || 'ja';
     // 时区修复：统一日切线
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
-    const totalWords = await Word.countDocuments({ userId: req.userId });
+    const totalWords = await Word.countDocuments({ userId: req.userId, language });
 
     // 1. 查找必须复习的旧词
     const dueReviewCount = await Word.countDocuments({
       userId: req.userId,
+      language,
       state: { $ne: 0 },
       due: { $lte: now }
     });
@@ -245,6 +253,7 @@ exports.getStats = async (req, res) => {
     // 2. 查找还没背过且今日到期的新词（与 getDueWords 查询条件完全一致）
     const dueNewWords = await Word.countDocuments({
       userId: req.userId,
+      language,
       state: 0,
       due: { $lte: now }
     });
@@ -252,6 +261,7 @@ exports.getStats = async (req, res) => {
     // 3. 计算今天还剩下的新词额度
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
+      language,
       reviewDate: { $gte: todayStart, $lt: tomorrowStart },
       state: 0
     });
@@ -265,19 +275,23 @@ exports.getStats = async (req, res) => {
 
     const learningWords = await Word.countDocuments({
       userId: req.userId,
+      language,
       state: { $in: [1, 3] }
     });
     const reviewWords = await Word.countDocuments({
       userId: req.userId,
+      language,
       state: 2
     });
     const masteredWords = await Word.countDocuments({
       userId: req.userId,
+      language,
       state: 2,
       reps: { $gte: 5 }
     });
     const todayReviews = await ReviewLog.countDocuments({
       userId: req.userId,
+      language,
       reviewDate: { $gte: todayStart, $lt: tomorrowStart }
     });
 
@@ -285,6 +299,7 @@ exports.getStats = async (req, res) => {
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
     const upcomingWords = await Word.find({
       userId: req.userId,
+      language,
       state: { $ne: 0 },
       due: { $gt: now, $lte: oneHourLater }
     }).select('_id due').sort({ due: 1 }).lean();

@@ -11,6 +11,11 @@ const reviewLogSchema = new mongoose.Schema({
     ref: 'Word',
     required: true
   },
+  language: { 
+    type: String, 
+    enum: ['ja', 'en'], 
+    default: 'ja' 
+  }, // 新增
   reviewDate: {
     type: Date,
     default: Date.now

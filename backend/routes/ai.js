@@ -28,7 +28,7 @@ router.post('/generate', auth, aiRateLimiter, async (req, res) => {
 - reading: 音标 (IPA)
 - meaning: 中文释义
 - partOfSpeech: 词性（名词/动词/形容词/副词/代词/介词/连词/冠词/感叹词/数词/其他）
-- tags: 相关标签数组，必须包含等级（如 CET4/CET6/考研/雅思/托福等）。例如：["CET4", "名词", "日常"]
+- tags: 相关标签数组（如 CET4, 雅思等）。
 只返回 JSON，不要其他文字。`;
 
     const response = await axios.post(
@@ -99,16 +99,9 @@ router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
    - language: "ja"
 请只返回一个 JSON 数组，不要其他文字。`
       : `从以下文本中提取所有英语单词，并为每个单词生成信息。
-文本内容：\n${text}\n
 要求：
 1. 识别所有的英语单词并去重（恢复为单数/原形等）
-2. 每个单词生成：
-   - japanese: 英语原单词（必须使用 japanese 键名）
-   - reading: 音标 (IPA)
-   - meaning: 中文释义
-   - partOfSpeech: 词性
-   - tags: 相关标签（如 CET4、雅思等）
-   - language: "en"
+2. 每个单词生成：japanese(原单词), reading(音标), meaning, partOfSpeech, tags
 请只返回一个 JSON 数组，不要其他文字。`;
 
     const response = await axios.post(
