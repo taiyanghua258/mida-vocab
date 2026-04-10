@@ -2140,7 +2140,7 @@ function switchWorkspace(lang, isInitial = false) {
 }
 
 /* ================= DASHBOARD ================= */
-async function initDashboard() { await loadStats(); loadWords(1); }
+async function initDashboard() { await loadStats(); loadWords(1); checkAndStartOnboarding(); }
 
 async function loadStats() {
   const data = await api(`/study/stats?language=${state.currentLang}`);
@@ -3305,7 +3305,6 @@ window.addEventListener('DOMContentLoaded', () => {
     startBackgroundPolling();
     loadNotifySettings();
     navigate('dashboard');
-    checkAndStartOnboarding(); // <-- 触发新手指引
   }
   else navigate('auth');
 });
