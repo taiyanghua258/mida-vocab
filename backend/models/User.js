@@ -21,7 +21,14 @@ const fsrsSettingsSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  dailyNewLimit: {
+  // 【修改】：废弃原本统一的 dailyNewLimit，拆分成日/英两个字段
+  dailyNewLimitJa: {
+    type: Number,
+    default: 20,
+    min: 1,
+    max: 200
+  },
+  dailyNewLimitEn: {
     type: Number,
     default: 20,
     min: 1,

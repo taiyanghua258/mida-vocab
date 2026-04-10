@@ -124,12 +124,14 @@ exports.addWord = async (req, res) => {
 
     // 计算今日剩余新词额度
     const user = await User.findById(req.userId).select('fsrsSettings');
-    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+    const currentLang = language || 'ja'; 
+    // 【修改】：根据语种选择额度
+    const dailyNewLimit = currentLang === 'en' 
+      ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
+      : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
+
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const now = new Date();
-
-    // 【新增】：提取当前单词语种
-    const currentLang = language || 'ja'; 
 
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
@@ -292,11 +294,13 @@ exports.importWords = async (req, res) => {
     // 计算今日剩余新词额度，超出的词推到明天
     if (finalInsert.length > 0) {
       const user = await User.findById(req.userId).select('fsrsSettings');
-      const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
-      const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
-
-      // 【新增】：提取本次批量导入的语种（绝大部分情况同一批次语种相同）
       const importLang = finalInsert[0].language || 'ja';
+      // 【修改】：根据语种选择额度
+      const dailyNewLimit = importLang === 'en' 
+        ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
+        : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
+
+      const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
 
       const todayNewReviews = await ReviewLog.countDocuments({
         userId: req.userId,

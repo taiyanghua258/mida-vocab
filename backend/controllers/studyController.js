@@ -68,7 +68,10 @@ exports.getDueWords = async (req, res) => {
     const now = new Date();
     const language = req.query.language || 'ja';
     const user = await User.findById(req.userId).select('fsrsSettings');
-    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+    // 【修改】：根据当前语种加载上限
+    const dailyNewLimit = language === 'en' 
+      ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
+      : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
 
     // 性能隐患修复：加入 limit(100) 拦截超大数组，实现单次会话的"分页打断"
     const reviewWords = await Word.find({
@@ -267,7 +270,10 @@ exports.getStats = async (req, res) => {
     });
 
     const user = await User.findById(req.userId).select('fsrsSettings');
-    const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
+    // 【修改】：根据当前语种加载上限
+    const dailyNewLimit = language === 'en' 
+      ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
+      : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
     // 真实待复习总数 = 旧词 + min(剩余额度, 今日到期新词)

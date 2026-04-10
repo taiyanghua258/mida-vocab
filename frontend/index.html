@@ -853,8 +853,17 @@
         <!-- 每日新卡片上限 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-charcoal mb-1">📚 每日新词上限</label>
-          <input type="number" id="settingsNewCards" min="1" max="200" value="20" class="aesthetic-input w-full px-2 py-3 text-charcoal font-mono">
-          <p class="text-xs text-muted mt-2 leading-relaxed">每天新加入学习的单词数量。建议根据空闲时间量力而行，少而有规律的学习比偶尔的突击记忆更有效。</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-bold">🇯🇵 日语</span>
+              <input type="number" id="settingsNewCardsJa" min="1" max="200" value="20" class="aesthetic-input w-full pl-12 pr-2 py-3 text-charcoal font-mono">
+            </div>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-bold">🇬🇧 英语</span>
+              <input type="number" id="settingsNewCardsEn" min="1" max="200" value="20" class="aesthetic-input w-full pl-12 pr-2 py-3 text-charcoal font-mono">
+            </div>
+          </div>
+          <p class="text-xs text-muted mt-2 leading-relaxed">分别设置不同语种每天新加入学习的单词数量。建议量力而行，少而有规律的学习比偶尔的突击记忆更有效。</p>
         </div>
 
         <!-- 间隔随机化 -->
@@ -973,7 +982,7 @@ function closeModal(id) {
 }
 
 /* ================= FSRS SETTINGS ================= */
-const FSRS_DEFAULTS = { requestRetention: 0.9, maximumInterval: 365, learningSteps: [1, 10], enableFuzz: true, dailyNewLimit: 20 };
+const FSRS_DEFAULTS = { requestRetention: 0.9, maximumInterval: 365, learningSteps: [1, 10], enableFuzz: true, dailyNewLimitJa: 20, dailyNewLimitEn: 20 };
 
 async function loadFsrsSettings() {
   try {
@@ -982,7 +991,9 @@ async function loadFsrsSettings() {
     document.getElementById('settingsRetention').value = Math.round(s.requestRetention * 100);
     document.getElementById('retentionValue').textContent = Math.round(s.requestRetention * 100) + '%';
     document.getElementById('maximumInterval').value = s.maximumInterval;
-    document.getElementById('settingsNewCards').value = s.dailyNewLimit;
+    // 【修改点】：分拆读取
+    document.getElementById('settingsNewCardsJa').value = s.dailyNewLimitJa || s.dailyNewLimit || 20;
+    document.getElementById('settingsNewCardsEn').value = s.dailyNewLimitEn || s.dailyNewLimit || 20;
     document.getElementById('enableFuzz').checked = s.enableFuzz;
     document.getElementById('settingsSteps').value = (s.learningSteps || [1, 10]).join(', ');
   } catch (e) { console.error('Failed to load settings:', e); }
@@ -992,7 +1003,9 @@ function resetFsrsSettings() {
   document.getElementById('settingsRetention').value = 90;
   document.getElementById('retentionValue').textContent = '90%';
   document.getElementById('maximumInterval').value = 365;
-  document.getElementById('settingsNewCards').value = 20;
+  // 【修改点】：分拆重置
+  document.getElementById('settingsNewCardsJa').value = 20;
+  document.getElementById('settingsNewCardsEn').value = 20;
   document.getElementById('enableFuzz').checked = true;
   document.getElementById('settingsSteps').value = '1, 10';
   document.getElementById('notifySoundToggle').checked = true;
@@ -1015,7 +1028,8 @@ document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e)
   
   // 修复1: 严格对齐后端 User.js 的白名单字段
   const settings = {
-    dailyNewLimit: parseInt(document.getElementById('settingsNewCards').value) || 20, 
+    dailyNewLimitJa: parseInt(document.getElementById('settingsNewCardsJa').value) || 20, 
+    dailyNewLimitEn: parseInt(document.getElementById('settingsNewCardsEn').value) || 20, 
     requestRetention: (parseFloat(document.getElementById('settingsRetention').value) || 90) / 100,
     maximumInterval: parseInt(document.getElementById('maximumInterval').value) || 365,
     enableFuzz: document.getElementById('enableFuzz').checked,

@@ -106,7 +106,7 @@ exports.getSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
-    const allowedFields = ['requestRetention', 'maximumInterval', 'learningSteps', 'enableFuzz', 'dailyNewLimit'];
+    const allowedFields = ['requestRetention', 'maximumInterval', 'learningSteps', 'enableFuzz', 'dailyNewLimitJa', 'dailyNewLimitEn'];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
