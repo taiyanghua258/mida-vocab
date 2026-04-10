@@ -831,7 +831,16 @@
         <!-- Step 1: 输入文本 -->
         <div id="importStep1">
 
-          <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[0.7rem] font-bold tracking-wider text-muted">每行输入一个单词，AI 自动识别：</p>
+            <div>
+              <input type="file" id="dictUpload" accept=".json,.csv" class="hidden" onchange="handleFileImport(event)">
+              <button type="button" onclick="document.getElementById('dictUpload').click()" class="text-[0.75rem] font-bold text-ochre flex items-center gap-1 hover:underline transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"></path></svg>
+                上传词书 (JSON/CSV)
+              </button>
+            </div>
+          </div>
           <textarea id="importWordsText" rows="6" class="aesthetic-input w-full px-2 py-3 text-charcoal font-sans text-[0.8rem]" placeholder="每行一个单词：&#10;桜 / apple&#10;花 / library&#10;&#10;AI 自动提取..."></textarea>
           
           <div id="aiProgressBar" class="hidden mt-4">
@@ -2128,6 +2137,87 @@ async function handleAiGenerate() {
     btn.disabled = false;
     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg> AI 补全`;
   }
+}
+
+/* ================= 词书文件上传 ================= */
+function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 重置 input 的值，确保重复上传同名文件也能触发 onchange
+  event.target.value = '';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    let parsedWords = [];
+
+    try {
+      if (file.name.endsWith('.json')) {
+        const jsonData = JSON.parse(content);
+        // 兼容当前系统的导出格式 (有时包裹在 { data: [...] } 中)
+        parsedWords = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);
+      } else if (file.name.endsWith('.csv')) {
+        const lines = content.split('\n').filter(l => l.trim() !== '');
+        // 假设第一行是表头，从第二行开始解析 (跳过索引 0)
+        parsedWords = lines.slice(1).map(line => {
+          // 正则：按逗号分割，但忽略引号内的逗号
+          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+          return {
+            language: state.currentLang,
+            japanese: (cols[0] || '').replace(/^"|"$/g, '').trim(),
+            reading: (cols[1] || '').replace(/^"|"$/g, '').trim(),
+            meaning: (cols[2] || '').replace(/^"|"$/g, '').trim(),
+            partOfSpeech: (cols[3] || '').replace(/^"|"$/g, '').trim() || '名词',
+            tags: cols[4] ? cols[4].replace(/^"|"$/g, '').split(';').map(t => t.trim()).filter(Boolean) : []
+          };
+        });
+      } else {
+        return showToast('仅支持 .json 或 .csv 格式的文件', 'error');
+      }
+
+      // 格式基础校验
+      if (parsedWords.length === 0) {
+        return showToast('文件内容为空或格式无法识别', 'error');
+      }
+      if (!parsedWords[0].japanese && !parsedWords[0].word) {
+        return showToast('未找到合法的单词字段', 'error');
+      }
+
+      // 强行覆盖语种为当前工作区语种，并装载到全局队列
+      batchGeneratedWords = parsedWords.map(w => ({
+        ...w,
+        japanese: w.japanese || w.word,
+        language: state.currentLang
+      })).filter(w => w.japanese); // 过滤掉无效空行
+
+      // 隐藏输入区，显示预览区 (复用 Step 2 的 UI)
+      document.getElementById('importStep1').classList.add('hidden');
+      document.getElementById('importStep2').classList.remove('hidden');
+      document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+
+      // 渲染列表
+      const list = document.getElementById('batchPreviewList');
+      const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
+      list.innerHTML = batchGeneratedWords.map((w, i) => `
+        <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
+          <div>
+            <span class="font-semibold ${fontClass}">${w.japanese}</span>
+            <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning || w.translation || ''}</span>
+          </div>
+          <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+        </div>
+      `).join('');
+
+      showToast(`成功解析 ${batchGeneratedWords.length} 个单词，请确认导入`, 'success');
+
+    } catch (err) {
+      console.error(err);
+      showToast('文件解析失败，请检查格式是否正确', 'error');
+    }
+  };
+  
+  reader.readAsText(file);
 }
 
 /* ================= BATCH IMPORT ================= */
