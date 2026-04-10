@@ -128,16 +128,23 @@ exports.addWord = async (req, res) => {
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const now = new Date();
 
+    // 【新增】：提取当前单词语种
+    const currentLang = language || 'ja'; 
+
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
+      language: currentLang, // 【修复】：加入语种隔离
       reviewDate: { $gte: todayStart },
       state: 0
     });
+    
     const queuedNew = await Word.countDocuments({
       userId: req.userId,
+      language: currentLang, // 【修复】：加入语种隔离
       state: 0,
       due: { $lte: now }
     });
+    
     const remainingQuota = Math.max(0, dailyNewLimit - todayNewReviews - queuedNew);
     const dueDate = remainingQuota > 0 ? now : dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
 
@@ -288,8 +295,12 @@ exports.importWords = async (req, res) => {
       const dailyNewLimit = user?.fsrsSettings?.dailyNewLimit ?? 20;
       const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
 
+      // 【新增】：提取本次批量导入的语种（绝大部分情况同一批次语种相同）
+      const importLang = finalInsert[0].language || 'ja';
+
       const todayNewReviews = await ReviewLog.countDocuments({
         userId: req.userId,
+        language: importLang, // 【修复】：加入语种隔离
         reviewDate: { $gte: todayStart },
         state: 0
       });
@@ -297,6 +308,7 @@ exports.importWords = async (req, res) => {
       // 当前还在排队的新词（state: 0, due <= now）也算占用额度
       const queuedNew = await Word.countDocuments({
         userId: req.userId,
+        language: importLang, // 【修复】：加入语种隔离
         state: 0,
         due: { $lte: new Date() }
       });
