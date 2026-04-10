@@ -490,15 +490,45 @@
           
           <div class="w-[1px] h-5 bg-borderline mx-1 hidden sm:block"></div>
           
-          <div class="hidden sm:flex items-center gap-3 bg-surface border border-borderline/80 rounded-full pl-4 pr-1.5 py-1.5 shadow-[0_2px_10px_rgba(26,47,43,0.02)]">
-            <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase"></span>
-            <button onclick="handleLogout()" class="w-7 h-7 flex items-center justify-center rounded-full bg-parchment text-muted hover:bg-terracotta hover:text-white transition-colors active:scale-90" title="退出登录">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
+          <div class="relative hidden sm:block" id="userMenuContainer">
+            <button onclick="toggleUserMenu()" class="flex items-center gap-2 p-1 pr-3 bg-surface border border-borderline/80 rounded-full shadow-[0_2px_10px_rgba(26,47,43,0.02)] hover:shadow-sm hover:border-borderline transition-all active:scale-95 group">
+              <div class="w-8 h-8 rounded-full bg-charcoal text-surface flex items-center justify-center text-sm font-bold uppercase overflow-hidden shadow-inner transition-transform group-hover:scale-105">
+                <span id="avatarLetter">U</span>
+              </div>
+              <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase"></span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted transition-transform duration-300" id="userMenuArrow"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
             </button>
+
+            <div id="userDropdown" class="absolute right-0 mt-3 w-64 bg-surface/85 backdrop-blur-xl border border-borderline rounded-[1.5rem] shadow-[0_12px_40px_rgba(26,47,43,0.08)] opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-300 z-50 overflow-hidden">
+              <div class="p-5 border-b border-borderline/40 bg-parchment/30">
+                <div class="flex items-center gap-3.5 mb-1">
+                  <div class="w-12 h-12 rounded-full bg-charcoal text-surface flex items-center justify-center text-xl font-bold uppercase shadow-inner">
+                    <span id="dropdownAvatarLetter">U</span>
+                  </div>
+                  <div class="flex-1 overflow-hidden">
+                    <div id="dropdownUsername" class="font-bold text-charcoal tracking-tight truncate">Username</div>
+                    <div class="text-[0.65rem] text-muted mt-0.5 truncate">保持纯粹，专注语言。</div> </div>
+                </div>
+              </div>
+              
+              <div class="p-2.5 flex flex-col gap-1">
+                <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-charcoal hover:bg-parchment transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
+                  <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-charcoal/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/70"><path d="M120,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h64a8,8,0,0,1,0,16H48V208h64A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H104a8,8,0,0,0,0,16H204.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"></path></svg>
+                  </div>
+                  退出登录
+                </button>
+                
+                <div class="w-full h-[1px] bg-borderline/40 my-1"></div>
+                
+                <button onclick="handleDeleteAccount()" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-terracotta hover:bg-terracotta/10 transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
+                  <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-terracotta/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-terracotta"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+                  </div>
+                  彻底注销账户
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -967,6 +997,42 @@ function showToast(msg, type = 'info') {
 }
 
 /* ================= NAV ================= */
+/* ================= USER MENU ================= */
+function toggleUserMenu() {
+  const menu = document.getElementById('userDropdown');
+  const arrow = document.getElementById('userMenuArrow');
+  
+  if (menu.classList.contains('opacity-0')) {
+    // 展开
+    menu.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+    menu.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+    arrow.classList.add('rotate-180');
+  } else {
+    closeUserMenu();
+  }
+}
+
+function closeUserMenu() {
+  const menu = document.getElementById('userDropdown');
+  const arrow = document.getElementById('userMenuArrow');
+  
+  if (menu && !menu.classList.contains('opacity-0')) {
+    // 收起
+    menu.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+    menu.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+    arrow.classList.remove('rotate-180');
+  }
+}
+
+// 点击外部区域自动关闭菜单
+document.addEventListener('click', (e) => {
+  const container = document.getElementById('userMenuContainer');
+  if (container && !container.contains(e.target)) {
+    closeUserMenu();
+  }
+});
+
+
 function navigate(viewId) {
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
   document.getElementById(`view-${viewId}`).classList.add('active');
@@ -1559,7 +1625,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     state.user = data.user;
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    document.getElementById('welcomeUser').textContent = data.user.username;
+    const uname = data.user.username;
+    document.getElementById('welcomeUser').textContent = uname;
+    document.getElementById('dropdownUsername').textContent = uname;
+    
+    // 提取首字母作为临时头像
+    const firstLetter = uname.charAt(0).toUpperCase();
+    document.getElementById('avatarLetter').textContent = firstLetter;
+    document.getElementById('dropdownAvatarLetter').textContent = firstLetter;
     showToast('登录成功', 'success');
     startBackgroundPolling();
     loadNotifySettings();
@@ -1631,6 +1704,30 @@ function handleLogout() {
   const regBtn = document.querySelector('#registerForm button[type="submit"]');
   if (regBtn) { regBtn.disabled = false; regBtn.innerHTML = '注册账号'; }
   navigate('auth');
+}
+
+async function handleDeleteAccount() {
+  closeUserMenu(); // 先关闭菜单
+  
+  const isConfirmed = confirm('⚠️ 危险操作：\n\n您确定要彻底注销账户吗？此操作将永久删除您的账户、所有配置以及背诵过的数据（无法恢复）！');
+  if (!isConfirmed) return;
+  
+  const username = state.user.username;
+  
+  try {
+    // 调用后端 authController.js 里的 deleteUser 方法
+    await api(`/auth/user/${username}`, { method: 'DELETE' });
+    
+    showToast(`用户 ${username} 已彻底注销。江湖再见！`, 'success');
+    
+    // 借用登出逻辑清理本地状态并返回登录页
+    setTimeout(() => {
+      handleLogout();
+    }, 1500);
+    
+  } catch (err) {
+    showToast(err.message || '注销失败，请重试', 'error');
+  }
 }
 
 function showRegister() {
@@ -2576,7 +2673,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
   if (token && user) {
     state.token = token; state.user = JSON.parse(user);
-    document.getElementById('welcomeUser').textContent = state.user.username;
+    const uname = state.user.username;
+    document.getElementById('welcomeUser').textContent = uname;
+    
+    const ddUsername = document.getElementById('dropdownUsername');
+    if (ddUsername) {
+        ddUsername.textContent = uname;
+        const firstLetter = uname.charAt(0).toUpperCase();
+        document.getElementById('avatarLetter').textContent = firstLetter;
+        document.getElementById('dropdownAvatarLetter').textContent = firstLetter;
+    }
 
     if ('Notification' in window && Notification.permission === 'granted') {
       state.notificationsEnabled = true;
