@@ -878,21 +878,28 @@
         <div id="answerSection" class="w-full flex overflow-x-auto gap-2.5 z-10 mt-6 relative pb-2 snap-x" style="scrollbar-width: none;">
           <style>#answerSection::-webkit-scrollbar { display: none; }</style>
           
-          <button onclick="submitReview('again')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center gap-0.5 group">
+          <button onclick="submitReview('again')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center gap-0.5 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-terracotta/40 group-hover:text-terracotta transition-colors shadow-sm">1</kbd>
             <span class="text-[0.85rem] font-bold mt-1">重来</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-terracotta/10 group-hover:text-terracotta">1</span>
+            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-terracotta/10 group-hover:text-terracotta">-</span>
           </button>
-          <button onclick="submitReview('hard')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center gap-0.5 group">
+          
+          <button onclick="submitReview('hard')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center gap-0.5 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-ochre/40 group-hover:text-ochre transition-colors shadow-sm">2</kbd>
             <span class="text-[0.85rem] font-bold mt-1">困难</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-ochre/10 group-hover:text-ochre">2</span>
+            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-ochre/10 group-hover:text-ochre">-</span>
           </button>
-          <button onclick="submitReview('good')" class="answer-btn flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center gap-0.5 group">
+          
+          <button onclick="submitReview('good')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center gap-0.5 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-charcoal/40 group-hover:text-charcoal transition-colors shadow-sm">3</kbd>
             <span class="text-[0.85rem] font-bold mt-1">良好</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-charcoal/10 group-hover:text-charcoal">3</span>
+            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-charcoal/10 group-hover:text-charcoal">-</span>
           </button>
-          <button onclick="submitReview('easy')" class="answer-btn flex-1 py-2.5 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal flex flex-col items-center gap-0.5 group">
+          
+          <button onclick="submitReview('easy')" class="answer-btn relative flex-1 py-2.5 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal flex flex-col items-center gap-0.5 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-[#4B7365]/40 group-hover:text-[#4B7365] transition-colors shadow-sm">4</kbd>
             <span class="text-[0.85rem] font-bold mt-1">简单</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-[#4B7365]/10 group-hover:text-[#4B7365]">4</span>
+            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-[#4B7365]/10 group-hover:text-[#4B7365]">-</span>
           </button>
         </div>
       </div>
@@ -3323,9 +3330,15 @@ function getCardHTML(index, word) {
       <div class="paper-card front" onclick="revealAnswer()">
         <span class="text-[10px] font-bold tracking-widest text-muted uppercase mb-4 px-3 py-1 bg-parchment rounded">${word.partOfSpeech || '其他'}</span>
         <div class="${fontClass} font-semibold text-charcoal mb-2">${word.japanese}</div>
-        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center gap-2">
+        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center">
           <span>点击撕下便签</span>
-          <span class="px-1.5 py-0.5 bg-borderline/50 rounded text-[10px] shadow-sm">Space</span>
+          <div class="hidden sm:flex items-center ml-2">
+            <span class="text-[10px] opacity-50 mr-1.5">或按</span>
+            <kbd class="px-2 py-[2px] bg-surface border border-borderline border-b-[3px] rounded-[4px] text-[10px] font-mono text-charcoal font-bold flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M208,80v80H48V80a8,8,0,0,0-16,0v80a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80a8,8,0,0,0-16,0Z"></path></svg>
+              Space
+            </kbd>
+          </div>
         </div>
       </div>
     </div>
