@@ -68,6 +68,11 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* 进场序列错落感 */
+    .stagger-1 { animation-delay: 0.05s !important; }
+    .stagger-2 { animation-delay: 0.15s !important; }
+    .stagger-3 { animation-delay: 0.25s !important; }
+
     /* ========== Niche Aesthetics 组件化 CSS ========== */
     
     /* 1. 悬浮线输入框 (Floating Input) */
@@ -202,7 +207,15 @@
     .word-group[data-depth="1"] { transform: translateY(10px) scale(0.97); opacity: 1; }
     .word-group[data-depth="2"] { transform: translateY(20px) scale(0.94); opacity: 1; }
     .word-group[data-depth="hidden"] { transform: translateY(20px) scale(0.94); opacity: 0; pointer-events: none; }
-    .word-group.discarded { transform: translate(-30%, 40%) rotate(-10deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; z-index: 0 !important; }
+    
+    /* 1. 重学 (Again) - 沉入底部冷却池 */
+    .word-group.discarded-again { transform: translateY(100px) scale(0.8) !important; opacity: 0 !important; pointer-events: none; }
+    /* 2. 困难 (Hard) - 左侧滑出（阻力感，带一点旋转） */
+    .word-group.discarded-hard { transform: translate(-80%, 20%) rotate(-15deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; }
+    /* 3. 良好 (Good) - 右侧轻快滑出 */
+    .word-group.discarded-good { transform: translate(80%, -10%) rotate(10deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; }
+    /* 4. 简单 (Easy) - 向上飞入长期 memory 空间 */
+    .word-group.discarded-easy { transform: translateY(-100px) scale(1.1) !important; opacity: 0 !important; pointer-events: none; }
 
     /* Bug 3 fix: 隐藏非当前卡片的背面，防止相同读音单词的含义视觉穿透 */
     .word-group:not([data-depth="0"]) .paper-card.back { visibility: hidden; }
@@ -214,7 +227,10 @@
       border-radius: 1.5rem; background: #fff; border: 1px solid rgba(229, 225, 216, 0.5);
       display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
       transform-origin: bottom left;
-      transition: transform 0.6s cubic-bezier(0.75, 0, 0.25, 1), opacity 0.5s ease, box-shadow 0.6s ease;
+      /* 调整为：极快的初始加速度，加上柔和的末端阻尼震荡 (Spring-like easeOutBack) */
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                  opacity 0.4s ease, 
+                  box-shadow 0.6s ease;
       will-change: transform, opacity;
     }
     .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 4px 20px rgba(26,47,43,0.03); }
@@ -227,9 +243,24 @@
     /* ========== 答案按钮 ========== */
     #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; transform: translateY(10px); }
     #answerSection.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-    .answer-btn { transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid rgba(229, 225, 216, 0.4); }
-    .answer-btn:hover { border-color: rgba(223, 159, 40, 0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 47, 43, 0.03); }
-    .answer-btn:active { transform: translateY(1px) scale(0.95); }
+    /* 赋予按钮初始的硬阴影（Neo-brutalism 标志） */
+    .answer-btn { 
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* 缩短时间，让按压反馈更脆 */
+      border: 1px solid rgba(26, 47, 43, 0.8); /* 加深边框 */
+      box-shadow: 0 4px 0 rgba(26, 47, 43, 0.8); /* 实体黑色硬阴影 */
+      transform: translateY(0);
+    }
+    .answer-btn:hover { 
+      border-color: #1A2F2B;
+      /* 悬停时微微上浮，阴影加深 */
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 0 rgba(26, 47, 43, 0.8); 
+    }
+    .answer-btn:active { 
+       /* 按下时：位移等于阴影高度，阴影归零，完美模拟真实物理按键踩到底的感觉 */
+      transform: translateY(4px) scale(0.98); 
+      box-shadow: 0 0 0 rgba(26, 47, 43, 0.8);
+    }
 
     /* ========== Toast & Modal ========== */
     .toast { opacity: 0; transform: translateY(-12px) scale(0.95); transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -584,11 +615,11 @@
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div id="tour-stats-area" class="flex gap-4 w-full lg:w-auto">
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors">
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-1">
             <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight" id="totalWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
           </div>
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors">
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-2">
             <div class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-ochre/80 to-terracotta/80 shadow-[4px_0_12px_rgba(223,159,40,0.3)]"></div>
             <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight" id="dueWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2">待复习</span>
@@ -596,7 +627,7 @@
         </div>
 
         <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto">
-          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto">
+          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-3">
             <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -3359,7 +3390,7 @@ async function submitReview(result) {
 
   // 整组卡片飞走剥离
   if (currentGroup) {
-    currentGroup.classList.add('discarded');
+    currentGroup.classList.add(`discarded-${result}`);
     // 动画完成后彻底从 DOM 摘除，防止层叠崩溃
     setTimeout(() => {
       if (currentGroup.parentNode) {
