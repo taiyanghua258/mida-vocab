@@ -74,6 +74,19 @@
     .stagger-2 { animation-delay: 0.15s; }
     .stagger-3 { animation-delay: 0.25s; }
 
+    /* 静默状态的「呼吸浮游感」 (Idle Levitation) */
+    .idle-float { animation: levitate 4s ease-in-out infinite; }
+    @keyframes levitate {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* 进度条的「流体果冻」反馈 (Jelly Progress) */
+    #progressFill {
+      /* 覆盖 Tailwind 的 duration-300，换上强力的回弹曲线 */
+      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+
     /* ========== Niche Aesthetics 组件化 CSS ========== */
     
     /* 1. 悬浮线输入框 (Floating Input) */
@@ -238,7 +251,13 @@
     .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 2px 10px rgba(26,47,43,0.02); background: linear-gradient(135deg, #FAFAFA 0%, #F9F7F1 100%); }
     .word-group[data-depth="2"] .paper-card.front { box-shadow: 0 1px 4px rgba(26,47,43,0.01); background: linear-gradient(135deg, #F9F7F1 0%, #F4F2EC 100%); }
     .paper-card.back { z-index: 1; background: linear-gradient(145deg, #FAFAFA, #F9F7F1); transform: scale(0.97) translateY(4px); opacity: 1; box-shadow: 0 4px 16px rgba(26,47,43,0.04); }
-    .paper-card.front.peeled { transform: translate(60%, -50%) rotate(25deg) scale(0.9); opacity: 0; box-shadow: 20px 30px 40px rgba(0,0,0,0.05); pointer-events: none; }
+    .paper-card.front.peeled { 
+      transform-origin: top right; /* 支点移到右上角 */
+      transform: translate(-20%, -60%) rotate(25deg) scale(0.9); /* 向左上角撕开 */
+      opacity: 0; 
+      box-shadow: 20px 30px 40px rgba(0,0,0,0.1); 
+      pointer-events: none; 
+    }
     .paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: 0 12px 40px rgba(26,47,43,0.08); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; }
 
     /* ========== 答案按钮 ========== */
@@ -442,7 +461,7 @@
         <!-- 左右对齐结构 -->
         <div class="flex items-center justify-center gap-7 mb-6 group cursor-default">
           <!-- Stacked Flashcards Logo (Large Presentation) -->
-          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110">
+          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110 idle-float">
             <!-- Back Card (Parchment) -->
             <div class="absolute w-[44px] h-[58px] border-[2px] border-borderline rounded-[4px] -rotate-[8deg] translate-x-[-6px] translate-y-[4px] bg-parchment shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[22deg] group-hover:translate-x-[-14px] group-hover:translate-y-[8px]"></div>
             
@@ -1675,8 +1694,8 @@ function renderUpcomingWidget() {
   });
 
   const sortedKeys = Object.keys(groups).map(Number).sort((a,b)=>a-b);
-  timeline.innerHTML = sortedKeys.map(min => `
-    <div class="px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all">
+  timeline.innerHTML = sortedKeys.map((min, i) => `
+    <div class="px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all ${i === 0 ? 'pulse-ochre' : ''}">
        <span class="font-mono font-bold">${min}</span> 分钟后
        <span class="bg-surface text-charcoal px-1.5 py-0.5 rounded text-[10px] shadow-sm">${groups[min]} 词</span>
     </div>
