@@ -241,11 +241,10 @@
       border-radius: 1.5rem; background: #fff; border: 1px solid rgba(229, 225, 216, 0.5);
       display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
       transform-origin: bottom left;
-      /* 调整为：极快的初始加速度，加上柔和的末端阻尼震荡 (Spring-like easeOutBack) */
       transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                   opacity 0.4s ease, 
                   box-shadow 0.6s ease;
-      /* 修复 GPU 爆炸：已移除 will-change */
+      will-change: transform; /* 恢复硬件加速，只加速纸片层 */
     }
     .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 4px 20px rgba(26,47,43,0.03); }
     .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 2px 10px rgba(26,47,43,0.02); background: linear-gradient(135deg, #FAFAFA 0%, #F9F7F1 100%); }
@@ -808,7 +807,7 @@
       </div>
     </nav>
 
-    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 justify-center relative pt-20">
+    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 relative pt-20">
       <div class="w-full mb-10 max-w-md mx-auto">
         <div class="flex justify-between text-xs text-muted mb-2 font-medium">
           <span>进度</span>
@@ -3247,19 +3246,8 @@ function showTaskAccomplished(stats) {
   }
 }
 
-function renderCardStack() {
-  const stack = document.getElementById('cardStack');
-  stack.innerHTML = '';
-  state.studyWords.forEach((word, index) => {
-    addCardToDOM(index, word);
-  });
-  stack.classList.remove('incoming');
-  void stack.offsetWidth;
-  stack.classList.add('incoming');
-}
-
-function addCardToDOM(index, word) {
-  const stack = document.getElementById('cardStack');
+// 提取为一个纯粹返回 HTML 字符串的函数
+function getCardHTML(index, word) {
   const zIndex = 1000 - index;
   const relativeIndex = index - state.studyIndex;
   let depth = 'hidden';
@@ -3268,10 +3256,10 @@ function addCardToDOM(index, word) {
   else if (relativeIndex === 2) depth = '2';
 
   const fontClass = state.currentLang === 'en' 
-    ? 'font-sans text-4xl md:text-5xl tracking-tight' // 英语小号无衬线字体
-    : 'font-jp text-5xl md:text-6xl';                 // 日语大号字体
+    ? 'font-sans text-4xl md:text-5xl tracking-tight' 
+    : 'font-jp text-5xl md:text-6xl';                 
 
-  const groupHTML = `
+  return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
       <div class="paper-card back">
         <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
@@ -3288,7 +3276,30 @@ function addCardToDOM(index, word) {
       </div>
     </div>
   `;
-  stack.insertAdjacentHTML('beforeend', groupHTML);
+}
+
+// 修改原有的 addCardToDOM，仅用于动态追加单张卡片
+function addCardToDOM(index, word) {
+  const stack = document.getElementById('cardStack');
+  stack.insertAdjacentHTML('beforeend', getCardHTML(index, word));
+}
+
+// 核心优化：懒加载渲染（且最多渲染4张）
+function renderCardStack() {
+  const stack = document.getElementById('cardStack');
+  stack.innerHTML = '';
+  
+  let html = '';
+  // 最多只预渲染当前索引开始的 4 张卡片，彻底避免 DOM 爆炸
+  const limit = Math.min(state.studyWords.length, state.studyIndex + 4);
+  for (let i = state.studyIndex; i < limit; i++) {
+    html += getCardHTML(i, state.studyWords[i]);
+  }
+  stack.innerHTML = html;
+
+  stack.classList.remove('incoming');
+  void stack.offsetWidth;
+  stack.classList.add('incoming');
 }
 
 let revealTimeout;
@@ -3426,6 +3437,16 @@ async function submitReview(result) {
   }
 
   state.studyIndex++;
+  
+  // 懒加载优化：甩掉当前卡片后，悄悄把后面第 4 张卡片注入 DOM 底部备用
+  const upcomingIndex = state.studyIndex + 3;
+  if (upcomingIndex < state.studyWords.length) {
+    const existing = document.getElementById(`word-group-${upcomingIndex}`);
+    if (!existing) {
+      addCardToDOM(upcomingIndex, state.studyWords[upcomingIndex]);
+    }
+  }
+
   updateStackDepths();
   updateStudyProgress();
 
