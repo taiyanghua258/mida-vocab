@@ -68,12 +68,10 @@ exports.getDueWords = async (req, res) => {
     const now = new Date();
     const language = req.query.language || 'ja';
     const user = await User.findById(req.userId).select('fsrsSettings');
-    // 【修改】：根据当前语种加载上限
     const dailyNewLimit = language === 'en' 
       ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
       : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
 
-    // 性能隐患修复：加入 limit(100) 拦截超大数组，实现单次会话的"分页打断"
     const reviewWords = await Word.find({
       userId: req.userId,
       language,
@@ -83,53 +81,53 @@ exports.getDueWords = async (req, res) => {
 
     let newWords = [];
 
-    // 时区修复：使用 dayjs 获取严格意义上的"本地今日凌晨"
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
     const todayNewReviews = await ReviewLog.countDocuments({
       userId: req.userId,
-      language, // 隔离每日新词上限
+      language,
       reviewDate: { $gte: todayStart, $lt: tomorrowStart },
       state: 0
     });
 
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
-    // 无论是否达到 50 的阈值，先预留出今日配额保护的单词 ID
-    let quotaNewWords = await Word.find({
-      userId: req.userId,
-      language,
-      state: 0,
-      due: { $lte: now }
-    }).sort({ createdAt: -1 }).limit(remainingNew).select('_id');
-
-    // Bug 3 & 4 核心修复：自动追溯。如果在过去的时间点没有足够的新词，但当前额度充沛
-    // 我们就看看有没有被强行丢拽到未来（比如明天）的待背新词，如果有，提前把它们“拉”回现在。
-    if (quotaNewWords.length < remainingNew) {
-      const deficit = remainingNew - quotaNewWords.length;
-      const postponedWords = await Word.find({
+    // 【核心修复】：防止 remainingNew 为 0 时触发 Mongoose 的 limit(0) 无限查询
+    let quotaNewWords = [];
+    if (remainingNew > 0) {
+      quotaNewWords = await Word.find({
         userId: req.userId,
         language,
         state: 0,
-        due: { $gt: now }
-      }).sort({ createdAt: -1 }).limit(deficit).select('_id');
-      
-      if (postponedWords.length > 0) {
-        const pullIds = postponedWords.map(w => w._id);
-        await Word.updateMany({ _id: { $in: pullIds } }, { $set: { due: now } });
-        quotaNewWords = quotaNewWords.concat(postponedWords);
+        due: { $lte: now }
+      }).sort({ createdAt: -1 }).limit(remainingNew).select('_id');
+
+      if (quotaNewWords.length < remainingNew) {
+        const deficit = remainingNew - quotaNewWords.length;
+        const postponedWords = await Word.find({
+          userId: req.userId,
+          language,
+          state: 0,
+          due: { $gt: now }
+        }).sort({ createdAt: -1 }).limit(deficit).select('_id');
+        
+        if (postponedWords.length > 0) {
+          const pullIds = postponedWords.map(w => w._id);
+          await Word.updateMany({ _id: { $in: pullIds } }, { $set: { due: now } });
+          quotaNewWords = quotaNewWords.concat(postponedWords);
+        }
       }
     }
 
     const quotaIds = quotaNewWords.map(w => w._id);
 
-    // 完全遵从用户设置的新词配额，不再被复习量强行拦截
     if (quotaIds.length > 0) {
       newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: -1 });
     }
 
     // 推迟的只是"配额之外"的词
+    // 如果 quotaIds 为空数组(比如配额用完了)，这里会将今天所有多余的新词推迟到明天，清理掉队列
     await Word.updateMany({
       userId: req.userId,
       language,
