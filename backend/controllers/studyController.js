@@ -97,17 +97,35 @@ exports.getDueWords = async (req, res) => {
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
     // 无论是否达到 50 的阈值，先预留出今日配额保护的单词 ID
-    const quotaNewWords = await Word.find({
+    let quotaNewWords = await Word.find({
       userId: req.userId,
       language,
       state: 0,
       due: { $lte: now }
     }).sort({ createdAt: -1 }).limit(remainingNew).select('_id');
 
+    // Bug 3 & 4 核心修复：自动追溯。如果在过去的时间点没有足够的新词，但当前额度充沛
+    // 我们就看看有没有被强行丢拽到未来（比如明天）的待背新词，如果有，提前把它们“拉”回现在。
+    if (quotaNewWords.length < remainingNew) {
+      const deficit = remainingNew - quotaNewWords.length;
+      const postponedWords = await Word.find({
+        userId: req.userId,
+        language,
+        state: 0,
+        due: { $gt: now }
+      }).sort({ createdAt: -1 }).limit(deficit).select('_id');
+      
+      if (postponedWords.length > 0) {
+        const pullIds = postponedWords.map(w => w._id);
+        await Word.updateMany({ _id: { $in: pullIds } }, { $set: { due: now } });
+        quotaNewWords = quotaNewWords.concat(postponedWords);
+      }
+    }
+
     const quotaIds = quotaNewWords.map(w => w._id);
 
     // 完全遵从用户设置的新词配额，不再被复习量强行拦截
-    if (remainingNew > 0) {
+    if (quotaIds.length > 0) {
       newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: -1 });
     }
 
@@ -254,7 +272,7 @@ exports.getStats = async (req, res) => {
     });
 
     // 2. 查找还没背过且今日到期的新词（与 getDueWords 查询条件完全一致）
-    const dueNewWords = await Word.countDocuments({
+    let dueNewWords = await Word.countDocuments({
       userId: req.userId,
       language,
       state: 0,
@@ -275,6 +293,18 @@ exports.getStats = async (req, res) => {
       ? (user?.fsrsSettings?.dailyNewLimitEn ?? 20) 
       : (user?.fsrsSettings?.dailyNewLimitJa ?? 20);
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
+
+    // Bug 3/4 修复后续：如果今日待背新词不够，但发现队列里（明天）存在被推迟的词，那么它实际也算作“由于你的额度盈余而被召回可用”
+    if (dueNewWords < remainingNew) {
+      const deficit = remainingNew - dueNewWords;
+      const postponedCount = await Word.countDocuments({
+        userId: req.userId,
+        language,
+        state: 0,
+        due: { $gt: now }
+      });
+      dueNewWords += Math.min(deficit, postponedCount);
+    }
 
     // 真实待复习总数 = 旧词 + min(剩余额度, 今日到期新词)
     const dueWords = dueReviewCount + Math.min(remainingNew, dueNewWords);

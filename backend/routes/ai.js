@@ -163,4 +163,72 @@ router.post('/generate-batch', auth, aiRateLimiter, async (req, res) => {
   }
 });
 
+// 批量智能修正词性
+router.post('/generate-pos', auth, aiRateLimiter, async (req, res) => {
+  try {
+    const { words, language = 'ja' } = req.body;
+    if (!Array.isArray(words) || words.length === 0) {
+      return res.status(400).json({ message: '请提供单词列表' });
+    }
+
+    if (words.length > 100) {
+      return res.status(400).json({ message: '一次最多处理 100 个单词' });
+    }
+
+    const payloadText = words.map((w, i) => `${i + 1}. ${w.japanese} | ${w.meaning}`).join('\n');
+    
+    const prompt = language === 'ja'
+      ? `给定以下带有词义的日语单词列表（原单词 | 词义），请判断它们最恰当的词性（如：名词、动词、形容词、副词、助词、连词、叹词等）。如果是片语或短语词组，可以返回"其他"。\n\n请返回一个与输入列表长度完全一致的 JSON 数组，数组只包含词性字符串。例如：["名词", "动词", "其他"]。不要返回任何其他文字。\n\n输入列表：\n${payloadText}`
+      : `给定以下带有词义的英语单词列表（原单词 | 词义），请判断它们最恰当的词性（如：名词、动词、形容词、副词、介词、连词、代词、冠词等）。如果是片语或短语词组，可以返回"其他"。\n\n请返回一个与输入列表长度完全一致的 JSON 数组，数组只包含词性字符串。例如：["名词", "动词", "其他"]。不要返回任何其他文字。\n\n输入列表：\n${payloadText}`;
+
+    const systemContent = '你是一个只输出严格 JSON 数组格式（如 ["词型1", "词型2"]）的 AI 词性标注器，不要有任何 Markdown 修饰符或额外文字。';
+
+    const response = await axios.post(
+      'https://api.deepseek.com/chat/completions',
+      {
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemContent },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        },
+      }
+    );
+
+    const content = response.data.choices[0].message.content.trim();
+    
+    let results;
+    try {
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        results = JSON.parse(jsonMatch[0]);
+      } else {
+        results = JSON.parse(content);
+      }
+      
+      if (!Array.isArray(results)) {
+        results = words.map(() => "名词");
+      } else if (results.length !== words.length) {
+         console.warn(`Length mismatch in POS result: expected ${words.length}, got ${results.length}`);
+         while(results.length < words.length) results.push("名词");
+         if (results.length > words.length) results = results.slice(0, words.length);
+      }
+    } catch (parseErr) {
+      console.error('JSON parse error:', parseErr, 'Content:', content);
+      return res.status(500).json({ message: 'AI 返回格式错误' });
+    }
+
+    res.json(results);
+  } catch (err) {
+    console.error('DeepSeek API error:', err.response?.data || err.message);
+    res.status(500).json({ message: 'AI 服务调用失败' });
+  }
+});
+
 module.exports = router;

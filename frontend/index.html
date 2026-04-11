@@ -1042,6 +1042,14 @@
           </div>
           
           <div id="dictBatchPreviewList" class="space-y-2 max-h-60 overflow-y-auto mb-6 pr-2"></div>
+
+          <div class="flex items-center gap-3 mb-6 bg-parchment/50 p-3.5 rounded-xl border border-borderline">
+            <input type="checkbox" id="aiDictPosToggle" class="w-4 h-4 text-ochre rounded border-borderline focus:ring-ochre accent-ochre">
+            <label for="aiDictPosToggle" class="text-[0.8rem] text-charcoal flex-1 font-medium cursor-pointer tracking-wide">
+              使用 AI 自动修正词性 (若导入出错可开启，导入耗时会变长)
+              <span class="block text-[0.65rem] text-muted mt-1 font-normal">若发现导入的单词在按词性过滤时表现凌乱，系统将会按批次请求大模型进行重新标注。</span>
+            </label>
+          </div>
           
           <div class="flex justify-end gap-6 items-center">
             <button type="button" onclick="closeModal('dictImportModal')" class="ghost-underline-btn text-[0.9rem] font-bold text-muted">取消</button>
@@ -1377,12 +1385,15 @@ document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e)
   }
 });
 
-function formatDate(dateStr) {
+function formatDate(dateStr, state) {
   if (!dateStr) return '<span class="text-xs text-muted">无日期</span>';
   const now = new Date();
   const target = new Date(dateStr);
   if (target <= now) {
     return '<span class="px-2 py-0.5 bg-ochre/10 text-ochre rounded text-xs font-semibold pulse-ochre">待复习</span>';
+  }
+  if (state === 0 && target > now) {
+    return `<span class="text-xs text-muted">排队中(明日)</span>`;
   }
   const diffMs = target - now;
   const diffMin = Math.ceil(diffMs / 60000);
@@ -1647,7 +1658,8 @@ function updateTableDueTimes() {
     const cells = document.querySelectorAll('.due-cell');
     cells.forEach(cell => {
        const dueStr = cell.getAttribute('data-due');
-       if (dueStr) cell.innerHTML = formatDate(dueStr);
+       const wstate = parseInt(cell.getAttribute('data-state'));
+       if (dueStr) cell.innerHTML = formatDate(dueStr, wstate);
     });
   }
 }
@@ -2222,7 +2234,7 @@ function renderWordList(words) {
           ${((w.tags || []).slice(0, 2).map(t => `<span class="px-1.5 py-0.5 border border-borderline rounded text-[10px] text-muted">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="px-1.5 py-0.5 text-[10px] text-muted">+${(w.tags || []).length - 2}</span>` : ''}
         </div>
       </td>
-      <td class="px-6 py-4 due-cell" data-due="${w.due}">${formatDate(w.due)}</td>
+      <td class="px-6 py-4 due-cell" data-due="${w.due}" data-state="${w.state}">${formatDate(w.due, w.state)}</td>
       <td class="px-6 py-4 text-right">
         <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button onclick="editWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all flex items-center justify-center" title="编辑">
@@ -2241,11 +2253,39 @@ function renderWordList(words) {
 function renderPagination() {
   const nav = document.getElementById('pagination'), { page, totalPages } = state.pagination;
   if (totalPages <= 1) return nav.innerHTML = '';
+  
   let html = '';
-  for (let i = 1; i <= totalPages; i++) {
-    const active = i === page ? 'bg-charcoal text-surface shadow-md' : 'bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50';
+  
+  if (page > 1) {
+    html += `<button onclick="loadWords(${page - 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="上一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></button>`;
+  }
+
+  let startPage = Math.max(1, page - 2);
+  let endPage = startPage + 4;
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - 4);
+  }
+
+  if (startPage > 1) {
+    html += `<button onclick="loadWords(1)" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer">1</button>`;
+    if (startPage > 2) html += `<span class="w-8 h-8 flex items-center justify-center text-xs text-muted/50 select-none">...</span>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const active = i === page ? 'bg-charcoal text-surface shadow-md' : 'bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer';
     html += `<button onclick="loadWords(${i})" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all ${active}">${i}</button>`;
   }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += `<span class="w-8 h-8 flex items-center justify-center text-xs text-muted/50 select-none">...</span>`;
+    html += `<button onclick="loadWords(${totalPages})" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer">${totalPages}</button>`;
+  }
+
+  if (page < totalPages) {
+    html += `<button onclick="loadWords(${page + 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="下一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg></button>`;
+  }
+
   nav.innerHTML = html;
 }
 
@@ -2430,8 +2470,34 @@ async function handleDictBatchImport() {
   let hasError = false;
 
   try {
+    const useAiFix = document.getElementById('aiDictPosToggle')?.checked;
+    if (useAiFix) {
+      document.getElementById('dictImportProgressText').textContent = 'AI正在校验词性并导入...';
+    } else {
+      document.getElementById('dictImportProgressText').textContent = '正在处理词书...';
+    }
+
     for (let i = 0; i < total; i += chunkSize) {
-      const chunk = dictBatchWords.slice(i, i + chunkSize);
+      let chunk = dictBatchWords.slice(i, i + chunkSize);
+      
+      // AI 词性修复逻辑
+      if (useAiFix) {
+        try {
+          const aiRes = await api('/ai/generate-pos', {
+            method: 'POST',
+            body: JSON.stringify({ words: chunk, language: state.currentLang })
+          });
+          if (Array.isArray(aiRes) && aiRes.length === chunk.length) {
+            chunk = chunk.map((w, index) => ({
+              ...w,
+              partOfSpeech: aiRes[index] || w.partOfSpeech || '名词'
+            }));
+          }
+        } catch (aiErr) {
+          console.warn('AI 词性修复由于网络或并发限制失败，降级使用原始解析', aiErr);
+        }
+      }
+
       await api('/words/import', { method: 'POST', body: JSON.stringify({ words: chunk }) });
       processed += chunk.length;
       count.textContent = `${processed}/${total}`;
@@ -3478,6 +3544,15 @@ async function undoLastReview() {
 
     // 重新创建卡片 DOM（干净的未翻开状态）
     addCardToDOM(last.index, last.word);
+    
+    // Bug 5: 核心修复 - 撤回后清除新卡片的已翻面残余状态
+    const nextGroup = document.getElementById(`word-group-${state.studyIndex + 1}`);
+    if (nextGroup) {
+      const front = nextGroup.querySelector('.front');
+      const back = nextGroup.querySelector('.back');
+      if (front) front.classList.remove('peeled');
+      if (back) back.classList.remove('revealed');
+    }
 
     updateStackDepths();
     updateStudyProgress();
