@@ -3120,12 +3120,13 @@ function confirmLeaveStudy() {
   msg += `\n\n确定要退出学习吗？`;
 
   if (confirm(msg)) {
-    // 【修复 Bug 2】：持久化当前未完成的会话，包含已点击重来被追加的卡片
+    // 【修复】：持久化当前未完成的会话，包含已点击重来被追加的卡片，以及无痕模式状态
     localStorage.setItem(`active_session_${state.currentLang}`, JSON.stringify({
       studyWords: state.studyWords,
       studyIndex: state.studyIndex,
       originalTotal: state.originalTotal,
-      studyStats: state.studyStats
+      studyStats: state.studyStats,
+      isCramMode: state.isCramMode // <--- 新增这行，保存当前是否是无痕模式
     }));
 
     if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
@@ -3166,8 +3167,15 @@ async function initStudy() {
         state.studyIndex = activeData.studyIndex;
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+        state.isCramMode = activeData.isCramMode || false; // <--- 新增这行，恢复无痕模式
         words = state.studyWords;
-        showToast('已恢复上次未完成的进度', 'info');
+        
+        // 为了视觉上更清晰，在恢复无痕模式时提示一下
+        if (state.isCramMode) {
+          showToast('已恢复上次未完成的无痕练习进度', 'info');
+        } else {
+          showToast('已恢复上次未完成的进度', 'info');
+        }
       }
     } catch (e) {}
     localStorage.removeItem(`active_session_${state.currentLang}`);
