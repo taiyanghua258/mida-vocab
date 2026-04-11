@@ -68,6 +68,26 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* ========== 工作区切换：数据区域平滑过渡 ========== */
+    .workspace-switching #totalWords,
+    .workspace-switching #dueWords {
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+    }
+    .workspace-switching #wordTableBody {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    
+    /* 赋予数字和表格持续的弹簧物理反馈 */
+    #totalWords, #dueWords {
+      display: inline-block;
+      transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #wordTableBody {
+      transition: opacity 0.25s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
     /* 进场序列错落感 - 修复闪烁 */
     .animate-soft-in { animation: softlyFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
     .stagger-1 { animation-delay: 0.05s; }
@@ -2154,10 +2174,20 @@ function showLogin() {
 }
 
 function switchWorkspace(lang, isInitial = false) {
+  // 增加防抖：如果点击的是当前已激活的语言，直接忽略，避免重复刷新动画
+  if (state.currentLang === lang && !isInitial) return;
+
+  const dashActive = document.getElementById('view-dashboard').classList.contains('active');
+
+  // 1. 触发淡出离场动画（如果在主控制台且非首次加载）
+  if (!isInitial && dashActive) {
+    document.body.classList.add('workspace-switching');
+  }
+
   state.currentLang = lang;
   localStorage.setItem('appLang', lang);
 
-  // 👇 新增：Logo 丝滑滚动切换动效
+  // ========== Logo 丝滑滚动切换动效 (保持原有逻辑) ==========
   const brandJa = document.getElementById('brand-ja');
   const brandEn = document.getElementById('brand-en');
   if (brandJa && brandEn) {
@@ -2165,21 +2195,17 @@ function switchWorkspace(lang, isInitial = false) {
       brandJa.style.transition = 'none';
       brandEn.style.transition = 'none';
     }
-
     if (lang === 'ja') {
       brandJa.classList.remove('-translate-y-8', 'translate-y-8', 'opacity-0');
       brandJa.classList.add('translate-y-0', 'opacity-100');
-      
       brandEn.classList.remove('translate-y-0', '-translate-y-8', 'opacity-100');
       brandEn.classList.add('translate-y-8', 'opacity-0');
     } else {
       brandJa.classList.remove('translate-y-0', 'translate-y-8', 'opacity-100');
       brandJa.classList.add('-translate-y-8', 'opacity-0');
-      
       brandEn.classList.remove('translate-y-8', '-translate-y-8', 'opacity-0');
       brandEn.classList.add('translate-y-0', 'opacity-100');
     }
-
     if (isInitial) {
       setTimeout(() => {
         brandJa.style.transition = '';
@@ -2188,7 +2214,7 @@ function switchWorkspace(lang, isInitial = false) {
     }
   }
 
-  // 1. 切换按钮样式
+  // ========== 按钮及界面文案切换 (保持原有逻辑) ==========
   const btnJa = document.getElementById('ws-btn-ja');
   const btnEn = document.getElementById('ws-btn-en');
   if (btnJa && btnEn) {
@@ -2200,14 +2226,12 @@ function switchWorkspace(lang, isInitial = false) {
       : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal';
   }
 
-  // 2. 动态修改页面文案
   const tableHeader = document.getElementById('tableHeaderWord');
   if (tableHeader) tableHeader.textContent = lang === 'ja' ? '日语单词' : '英语单词';
   
   const addWordLabel = document.getElementById('addWordLabel');
   if (addWordLabel) addWordLabel.innerHTML = lang === 'ja' ? '日语 <span class="text-terracotta">*</span>' : '英语 <span class="text-terracotta">*</span>';
   
-  // 3. 动态修改输入框占位符和字体
   const inputEl = document.getElementById('japanese');
   if (inputEl) {
     inputEl.placeholder = lang === 'ja' ? '桜' : 'apple';
@@ -2223,13 +2247,30 @@ function switchWorkspace(lang, isInitial = false) {
   const readingLabel = document.getElementById('readingLabel');
   if (readingLabel) readingLabel.textContent = lang === 'ja' ? '读音' : '音标 (IPA)';
 
-  // 4. 清空之前可能选中的多选框
+  // 清空之前可能选中的多选框
   clearWordSelection();
 
-  // 5. 重新拉取当前语言的数据
-  if (document.getElementById('view-dashboard').classList.contains('active')) {
-    loadStats();
-    loadWords(1);
+  // ========== 数据拉取与进场动画编排 ==========
+  if (dashActive) {
+    if (isInitial) {
+      // 初始进入页面，直接加载，不播切换动画
+      loadStats();
+      loadWords(1);
+    } else {
+      // 切换语言时：等待 200ms 让旧数据带着动画沉下去并变透明
+      setTimeout(async () => {
+        // 并发拉取新数据
+        await Promise.all([
+          loadStats(),
+          loadWords(1)
+        ]);
+        
+        // 数据替换完毕后，在下一帧移除 switching 状态，触发新数据“弹上来”的动画
+        requestAnimationFrame(() => {
+          document.body.classList.remove('workspace-switching');
+        });
+      }, 200);
+    }
   }
 }
 
