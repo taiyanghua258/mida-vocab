@@ -68,8 +68,8 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* 进场序列错落感 */
-    .animate-soft-in { animation: softlyFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards; }
+    /* 进场序列错落感 - 修复闪烁 */
+    .animate-soft-in { animation: softlyFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
     .stagger-1 { animation-delay: 0.05s; }
     .stagger-2 { animation-delay: 0.15s; }
     .stagger-3 { animation-delay: 0.25s; }
@@ -81,10 +81,10 @@
       50% { transform: translateY(-4px); }
     }
 
-    /* 进度条的「流体果冻」反馈 (Jelly Progress) */
+    /* 进度条的「流体果冻」反馈 (Jelly Progress) - 修复溢出乱飞 */
     #progressFill {
-      /* 覆盖 Tailwind 的 duration-300，换上强力的回弹曲线 */
-      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      /* 使用丝滑的减速曲线，避免 width 超过 100% 冲出边框 */
+      transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
     }
 
     /* ========== Niche Aesthetics 组件化 CSS ========== */
@@ -215,7 +215,7 @@
       position: absolute; width: 100%; height: 100%;
       transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
       transform-style: preserve-3d;
-      will-change: transform, opacity;
+      /* 修复 GPU 爆炸：已移除 will-change */
     }
     .word-group[data-depth="0"] { transform: translateY(0) scale(1); opacity: 1; }
     .word-group[data-depth="1"] { transform: translateY(10px) scale(0.97); opacity: 1; }
@@ -245,7 +245,7 @@
       transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                   opacity 0.4s ease, 
                   box-shadow 0.6s ease;
-      will-change: transform, opacity;
+      /* 修复 GPU 爆炸：已移除 will-change */
     }
     .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 4px 20px rgba(26,47,43,0.03); }
     .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 2px 10px rgba(26,47,43,0.02); background: linear-gradient(135deg, #FAFAFA 0%, #F9F7F1 100%); }
