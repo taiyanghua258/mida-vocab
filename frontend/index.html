@@ -280,8 +280,8 @@
     .paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: 0 12px 40px rgba(26,47,43,0.08); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; }
 
     /* ========== 答案按钮 ========== */
-    #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; transform: translateY(10px); }
-    #answerSection.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+    #answerSection.show { opacity: 1; pointer-events: auto; }
     /* 赋予按钮初始的硬阴影（Neo-brutalism 标志） */
     .answer-btn { 
       transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* 缩短时间，让按压反馈更脆 */
@@ -875,7 +875,7 @@
       <div id="studyCardContainer" class="w-full max-w-md mx-auto relative">
         <div id="cardStack" class="w-full h-[55vh] sm:h-[400px] relative card-stack-container z-30"></div>
 
-        <div id="answerSection" class="w-full flex overflow-x-auto gap-2.5 z-10 mt-6 relative pb-2 snap-x" style="scrollbar-width: none;">
+        <div id="answerSection" class="w-full flex overflow-x-auto gap-2.5 z-50 mt-6 relative pb-2 snap-x" style="scrollbar-width: none;">
           <style>#answerSection::-webkit-scrollbar { display: none; }</style>
           
           <button onclick="submitReview('again')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center gap-0.5 group">
