@@ -69,9 +69,10 @@
     }
 
     /* 进场序列错落感 */
-    .stagger-1 { animation-delay: 0.05s !important; }
-    .stagger-2 { animation-delay: 0.15s !important; }
-    .stagger-3 { animation-delay: 0.25s !important; }
+    .animate-soft-in { animation: softlyFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards; }
+    .stagger-1 { animation-delay: 0.05s; }
+    .stagger-2 { animation-delay: 0.15s; }
+    .stagger-3 { animation-delay: 0.25s; }
 
     /* ========== Niche Aesthetics 组件化 CSS ========== */
     
@@ -615,11 +616,11 @@
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div id="tour-stats-area" class="flex gap-4 w-full lg:w-auto">
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-1">
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-1">
             <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight" id="totalWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
           </div>
-          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-2">
+          <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-2">
             <div class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-ochre/80 to-terracotta/80 shadow-[4px_0_12px_rgba(223,159,40,0.3)]"></div>
             <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight" id="dueWords">0</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2">待复习</span>
@@ -627,7 +628,7 @@
         </div>
 
         <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto">
-          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto opacity-0 animate-[softlyFadeIn_0.5s_forwards] stagger-3">
+          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto animate-soft-in stagger-3">
             <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
