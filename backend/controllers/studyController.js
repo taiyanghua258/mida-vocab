@@ -259,31 +259,27 @@ exports.getStats = async (req, res) => {
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
-    const totalWords = await Word.countDocuments({ userId: req.userId, language });
+    const [
+      totalWords,
+      dueReviewCount,
+      dueNewWordsBase,
+      todayNewReviews,
+      learningWords,
+      reviewWords,
+      masteredWords,
+      todayReviews
+    ] = await Promise.all([
+      Word.countDocuments({ userId: req.userId, language }),
+      Word.countDocuments({ userId: req.userId, language, state: { $ne: 0 }, due: { $lte: now } }),
+      Word.countDocuments({ userId: req.userId, language, state: 0, due: { $lte: now } }),
+      ReviewLog.countDocuments({ userId: req.userId, language, reviewDate: { $gte: todayStart, $lt: tomorrowStart }, state: 0 }),
+      Word.countDocuments({ userId: req.userId, language, state: { $in: [1, 3] } }),
+      Word.countDocuments({ userId: req.userId, language, state: 2 }),
+      Word.countDocuments({ userId: req.userId, language, state: 2, reps: { $gte: 5 } }),
+      ReviewLog.countDocuments({ userId: req.userId, language, reviewDate: { $gte: todayStart, $lt: tomorrowStart } })
+    ]);
 
-    // 1. 查找必须复习的旧词
-    const dueReviewCount = await Word.countDocuments({
-      userId: req.userId,
-      language,
-      state: { $ne: 0 },
-      due: { $lte: now }
-    });
-
-    // 2. 查找还没背过且今日到期的新词（与 getDueWords 查询条件完全一致）
-    let dueNewWords = await Word.countDocuments({
-      userId: req.userId,
-      language,
-      state: 0,
-      due: { $lte: now }
-    });
-
-    // 3. 计算今天还剩下的新词额度
-    const todayNewReviews = await ReviewLog.countDocuments({
-      userId: req.userId,
-      language,
-      reviewDate: { $gte: todayStart, $lt: tomorrowStart },
-      state: 0
-    });
+    let dueNewWords = dueNewWordsBase;
 
     const user = await User.findById(req.userId).select('fsrsSettings');
     // 【修改】：根据当前语种加载上限
@@ -293,8 +289,8 @@ exports.getStats = async (req, res) => {
     const remainingNew = Math.max(0, dailyNewLimit - todayNewReviews);
 
     // Bug 3/4 修复后续：如果今日待背新词不够，但发现队列里（明天）存在被推迟的词，那么它实际也算作“由于你的额度盈余而被召回可用”
-    if (dueNewWords < remainingNew) {
-      const deficit = remainingNew - dueNewWords;
+    if (dueNewWordsBase < remainingNew) {
+      const deficit = remainingNew - dueNewWordsBase;
       const postponedCount = await Word.countDocuments({
         userId: req.userId,
         language,
@@ -306,28 +302,6 @@ exports.getStats = async (req, res) => {
 
     // 真实待复习总数 = 旧词 + min(剩余额度, 今日到期新词)
     const dueWords = dueReviewCount + Math.min(remainingNew, dueNewWords);
-
-    const learningWords = await Word.countDocuments({
-      userId: req.userId,
-      language,
-      state: { $in: [1, 3] }
-    });
-    const reviewWords = await Word.countDocuments({
-      userId: req.userId,
-      language,
-      state: 2
-    });
-    const masteredWords = await Word.countDocuments({
-      userId: req.userId,
-      language,
-      state: 2,
-      reps: { $gte: 5 }
-    });
-    const todayReviews = await ReviewLog.countDocuments({
-      userId: req.userId,
-      language,
-      reviewDate: { $gte: todayStart, $lt: tomorrowStart }
-    });
 
     // 提前抓取未来1小时内即将冷却完毕的单词
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
