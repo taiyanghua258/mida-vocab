@@ -61,7 +61,7 @@
     .tracking-tight-minus { letter-spacing: -0.04em; }
 
     /* ========== 视图切换 (GPU 优化版) ========== */
-    .view-section { display: none; will-change: transform, opacity; }
+    .view-section { display: none; }
     .view-section.active { display: flex; animation: softlyFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     @keyframes softlyFadeIn {
       from { opacity: 0; transform: translateY(6px) scale(0.99); }
