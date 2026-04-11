@@ -2737,27 +2737,28 @@ async function handleBatchGenerate() {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) return showToast('请输入有效的单词', 'error');
 
-  // ================= 新增：语言识别预警 =================
+  // ================= 新增：语言识别预警 (优化版) =================
   let engCount = 0;
-  let noKanaKanjiCount = 0; // 无假名但包含汉字的行（可能是纯中文）
-  const kanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/; // 匹配平假名或片假名
+  let longChineseNoteCount = 0;
+  const kanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/; // 匹配假名
 
   lines.forEach(line => {
-    // 纯英文(含符号空格)
+    // 统计纯英文字母构成的行
     if (/^[a-zA-Z\s\-\.,'!]+$/.test(line)) engCount++;
-    // 如果没有假名，但有汉字，大概率是纯中文（或罕见的纯汉字日语词）
-    else if (!kanaRegex.test(line) && /[\u4e00-\u9fa5]/.test(line)) noKanaKanjiCount++;
+    // 如果没有假名，全是汉字，且长度超过 8 个字，大概率是用户粘贴的中文笔记/废话
+    else if (!kanaRegex.test(line) && line.length > 8 && /[\u4e00-\u9fa5]/.test(line)) longChineseNoteCount++;
   });
 
   if (state.currentLang === 'ja') {
     if (engCount > lines.length * 0.5) {
       if (!confirm('⚠️ 语言异常警告\n\n检测到您输入的文本大部分是【英语】，但当前处于【日语】工作区。\nAI 会自动过滤非目标语言。确定要继续吗？')) return;
-    } else if (noKanaKanjiCount > lines.length * 0.8 && lines.length > 2) {
-      if (!confirm('⚠️ 语言异常警告\n\n检测到文本可能包含大量【纯中文】（未包含假名）。\n当前是日语工作区，AI 可能会将其过滤丢弃。确定要继续吗？')) return;
+    } else if (longChineseNoteCount > 0 && lines.length <= 5) {
+      // 只有当行数较少，且检测到超长无假名的中文字符串时，稍微提醒一下
+      if (!confirm('⚠️ 内容预警\n\n检测到可能包含中文句子或笔记（如解释说明）。\nAI 将会自动丢弃非日语词汇，纯汉字的日语词会被保留。确定要继续吗？')) return;
     }
   } else if (state.currentLang === 'en') {
     if (engCount < lines.length * 0.2) {
-      if (!confirm('⚠️ 语言异常警告\n\n检测到您输入的文本大部分似乎不是【英语】。\n当前处于英语工作区，AI 将会自动过滤非英语内容。确定要继续吗？')) return;
+      if (!confirm('⚠️ 语言异常警告\n\n检测到您输入的文本大部分似乎不是【英语】。\n当前处于英语工作区，AI 将会自动丢弃非英语内容。确定要继续吗？')) return;
     }
   }
   // ================= 新增结束 =================
