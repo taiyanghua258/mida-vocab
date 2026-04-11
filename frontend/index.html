@@ -824,7 +824,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M232,128A104,104,0,0,1,58.34,197.67a8,8,0,0,1,11.32-11.32A88,88,0,0,0,216,128,88.1,88.1,0,0,0,128,40a87.53,87.53,0,0,0-63.84,27.44L88,91.31A8,8,0,0,1,82.34,104H32a8,8,0,0,1-8-8V45.66A8,8,0,0,1,37.66,40L60.28,62.63A103.53,103.53,0,0,1,128,24,104.11,104.11,0,0,1,232,128Z"></path></svg>
           <span class="text-xs font-bold tracking-wider">撤回</span>
         </button>
-        <div id="studyModeBadge" class="text-[10px] font-bold tracking-widest uppercase text-ochre bg-ochre/10 border border-ochre/20 px-2.5 py-1 rounded-md transition-colors">FSRS 复习</div>
+        <div id="studyModeBadge" class="text-[11px] font-bold tracking-widest uppercase text-muted">FSRS 复习</div>
       </div>
     </nav>
 
@@ -3120,13 +3120,13 @@ function confirmLeaveStudy() {
   msg += `\n\n确定要退出学习吗？`;
 
   if (confirm(msg)) {
-    // 【修复】：持久化当前未完成的会话，包含已点击重来被追加的卡片，以及无痕模式状态
+    // 【修复 Bug 2】：持久化当前未完成的会话，包含无痕模式状态
     localStorage.setItem(`active_session_${state.currentLang}`, JSON.stringify({
       studyWords: state.studyWords,
       studyIndex: state.studyIndex,
       originalTotal: state.originalTotal,
       studyStats: state.studyStats,
-      isCramMode: state.isCramMode // <--- 新增这行，保存当前是否是无痕模式
+      isCramMode: state.isCramMode // <--- 保存无痕状态
     }));
 
     if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
@@ -3147,14 +3147,6 @@ async function initStudy() {
   document.getElementById('undoBtn').disabled = true; // Bug 3: 重置撤回按钮
   revealAllowed = false;
 
-  // --- 新增：正统复习模式 UI 初始化 ---
-  const badge = document.getElementById('studyModeBadge');
-  if (badge) {
-     badge.textContent = 'FSRS 复习';
-     badge.className = 'text-[10px] font-bold tracking-widest uppercase text-ochre bg-ochre/10 border border-ochre/20 px-2.5 py-1 rounded-md transition-colors';
-  }
-  // --- 结束 ---
-
   let words = [];
   const activeSessionStr = localStorage.getItem(`active_session_${state.currentLang}`);
   
@@ -3167,10 +3159,9 @@ async function initStudy() {
         state.studyIndex = activeData.studyIndex;
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-        state.isCramMode = activeData.isCramMode || false; // <--- 新增这行，恢复无痕模式
+        state.isCramMode = activeData.isCramMode || false; // <--- 恢复无痕模式
         words = state.studyWords;
         
-        // 为了视觉上更清晰，在恢复无痕模式时提示一下
         if (state.isCramMode) {
           showToast('已恢复上次未完成的无痕练习进度', 'info');
         } else {
@@ -3181,16 +3172,10 @@ async function initStudy() {
     localStorage.removeItem(`active_session_${state.currentLang}`);
   }
 
-  // --- 新增：初始化或恢复时，根据状态更新右上角文字 ---
+  // 👇 根据状态动态更新右上角文字
   const badge = document.getElementById('studyModeBadge');
   if (badge) {
-    if (state.isCramMode) {
-      badge.textContent = '无痕练习';
-      badge.className = 'text-[10px] font-bold tracking-widest uppercase text-muted bg-borderline/50 border border-borderline px-2.5 py-1 rounded-md transition-colors';
-    } else {
-      badge.textContent = 'FSRS 复习';
-      badge.className = 'text-[10px] font-bold tracking-widest uppercase text-ochre bg-ochre/10 border border-ochre/20 px-2.5 py-1 rounded-md transition-colors';
-    }
+    badge.textContent = state.isCramMode ? '无痕练习' : 'FSRS 复习';
   }
 
   if (words.length === 0) {
@@ -3623,26 +3608,12 @@ function showStudyComplete() {
 
 async function reviewAgain() {
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
-  
-  // --- 新增：点击再练一次时，马上变成无痕练习 ---
-  const badge = document.getElementById('studyModeBadge');
-  if (badge) {
-    badge.textContent = '无痕练习';
-    badge.className = 'text-[10px] font-bold tracking-widest uppercase text-muted bg-borderline/50 border border-borderline px-2.5 py-1 rounded-md transition-colors';
-  }
-
   state.studyHistory = [];
-  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-  revealAllowed = false;
-
-  // --- 新增：无痕巩固模式 UI 初始化 ---
-  const badge = document.getElementById('studyModeBadge');
-  if (badge) {
-     badge.textContent = '无痕巩固';
-     badge.className = 'text-[10px] font-bold tracking-widest uppercase text-muted bg-borderline/50 border border-borderline px-2.5 py-1 rounded-md transition-colors';
-  }
-  // --- 结束 ---
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+
+  // 👇 点击再练一次时，马上更新右上角文字
+  const badge = document.getElementById('studyModeBadge');
+  if (badge) badge.textContent = '无痕练习';
 
   // 【修复 Bug 3/4】通过后端接口拉取今日数据，支持跨设备与语种隔离
   let wordsToUse = [];
