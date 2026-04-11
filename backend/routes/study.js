@@ -11,5 +11,5 @@ router.post('/review', studyController.reviewWord);
 router.post('/undo', studyController.undoReview);
 router.post('/extra', studyController.addExtraNewWords);
 router.get('/stats', studyController.getStats);
-
+router.get('/reviewed_today', studyController.getTodayReviewedWords);
 module.exports = router;

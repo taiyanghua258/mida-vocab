@@ -403,6 +403,17 @@ exports.batchDeleteWords = async (req, res) => {
   }
 };
 
+exports.clearAllWords = async (req, res) => {
+  try {
+    const { language = 'ja' } = req.body;
+    const result = await Word.deleteMany({ userId: req.userId, language });
+    res.json({ message: '清空成功', count: result.deletedCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const { execFile } = require('child_process');
 const path = require('path');
 const fs = require('fs');

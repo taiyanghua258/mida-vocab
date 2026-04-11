@@ -631,8 +631,15 @@
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
+             </button>
+            
+            <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
+            
+            <button onclick="clearWorkspace()" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-terracotta/10 hover:shadow-sm text-[0.85rem] font-medium text-terracotta transition-all group active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256" class="text-terracotta/80 group-hover:text-terracotta transition-colors">
+                <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path>
               </svg>
-              <span>导出库</span>
+              <span>清空词库</span>
             </button>
           </div>
 
@@ -2367,6 +2374,22 @@ function handleDictFileSelect(event) {
 
       if (!dictBatchWords.length) throw new Error('未识别到有效单词');
 
+      // 【修复 Bug 6】检查文件语言是否与当前工作区匹配
+      let engCount = 0;
+      dictBatchWords.forEach(w => {
+        if (/^[a-zA-Z\s\-']+$/.test(w.japanese)) engCount++;
+      });
+      
+      if (state.currentLang === 'ja' && engCount > dictBatchWords.length * 0.8) {
+        if (!confirm('⚠️ 语言异常警告\n\n检测到您导入的似乎是【英语】词书，但当前处于【日语】工作区。\n\n这可能导致发音和学习算法异常，确定要强行导入吗？')) {
+          return; // 用户取消导入
+        }
+      } else if (state.currentLang === 'en' && engCount < dictBatchWords.length * 0.2) {
+        if (!confirm('⚠️ 语言异常警告\n\n检测到您导入的似乎是非英语词书，但当前处于【英语】工作区。\n\n确定要强行导入吗？')) {
+          return;
+        }
+      }
+
       // 切换视图
       document.getElementById('dictStep1').classList.add('hidden');
       document.getElementById('dictStep2').classList.remove('hidden');
@@ -2836,6 +2859,31 @@ async function batchDeleteSelected() {
   }
 }
 
+async function clearWorkspace() {
+  const langName = state.currentLang === 'en' ? '英语' : '日语';
+  const targetText = state.currentLang === 'en' ? 'CLEAR EN' : 'CLEAR JA';
+  
+  const userInput = prompt(`⚠️ 危险操作警告 ⚠️\n\n您即将清空当前【${langName}】工作区下的所有单词（包括已掌握的进度）！\n此操作不可恢复。\n\n请输入 "${targetText}" 以确认清空：`);
+  
+  if (userInput !== targetText) {
+    if (userInput !== null) showToast('输入不匹配，已取消清空操作', 'info');
+    return;
+  }
+
+  try {
+    const res = await api('/words/clear-all', { 
+      method: 'POST',
+      body: JSON.stringify({ language: state.currentLang })
+    });
+    showToast(`已清空 ${langName} 工作区，删除了 ${res.count} 个单词`, 'success');
+    state.currentPage = 1;
+    loadWords(1);
+    loadStats();
+  } catch (e) {
+    showToast('清空失败，请重试', 'error');
+  }
+}
+
 async function batchExportSelected() {
   if (state.selectedWordIds.size === 0) return showToast('请先选择要导出的单词', 'error');
 
@@ -2906,6 +2954,14 @@ function confirmLeaveStudy() {
   msg += `\n\n确定要退出学习吗？`;
 
   if (confirm(msg)) {
+    // 【修复 Bug 2】：持久化当前未完成的会话，包含已点击重来被追加的卡片
+    localStorage.setItem(`active_session_${state.currentLang}`, JSON.stringify({
+      studyWords: state.studyWords,
+      studyIndex: state.studyIndex,
+      originalTotal: state.originalTotal,
+      studyStats: state.studyStats
+    }));
+
     if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
     navigate('dashboard');
   }
@@ -2924,22 +2980,31 @@ async function initStudy() {
   document.getElementById('undoBtn').disabled = true; // Bug 3: 重置撤回按钮
   revealAllowed = false;
 
-  const words = await api(`/study/due?language=${state.currentLang}`);
-  state.studyWords = words;
-  state.originalTotal = words.length;
-  state.studyIndex = 0;
-  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  let words = [];
+  const activeSessionStr = localStorage.getItem(`active_session_${state.currentLang}`);
+  
+  if (activeSessionStr) {
+    try {
+      const activeData = JSON.parse(activeSessionStr);
+      // 只有在真的有剩余单词时才恢复
+      if (activeData.studyWords && activeData.studyIndex < activeData.studyWords.length) {
+        state.studyWords = activeData.studyWords;
+        state.studyIndex = activeData.studyIndex;
+        state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
+        state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+        words = state.studyWords;
+        showToast('已恢复上次未完成的进度', 'info');
+      }
+    } catch (e) {}
+    localStorage.removeItem(`active_session_${state.currentLang}`);
+  }
 
-  // Bug 7: 在会话开始时保存完整的单词列表，而非完成时（避免后续冷却轮次覆盖）
-  if (words.length > 0) {
-    // 只在有新词时才保存，且只在非冷却恢复轮时保存
-    const existing = localStorage.getItem('lastStudyWords');
-    const existingWords = existing ? JSON.parse(existing) : [];
-    // 合并新词和已有记录（按_id去重），保留整个今日会话的全部单词
-    const mergedMap = new Map();
-    for (const w of existingWords) mergedMap.set(w._id, w);
-    for (const w of words) mergedMap.set(w._id, w);
-    localStorage.setItem('lastStudyWords', JSON.stringify([...mergedMap.values()]));
+  if (words.length === 0) {
+    words = await api(`/study/due?language=${state.currentLang}`);
+    state.studyWords = words;
+    state.originalTotal = words.length;
+    state.studyIndex = 0;
+    state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   }
 
   if (state.studyWords.length === 0) {
@@ -3334,82 +3399,43 @@ function showStudyComplete() {
   });
 }
 
-function reviewAgain() {
+async function reviewAgain() {
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
   state.studyHistory = [];
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
 
-  // Bug 7: 优先从 localStorage 加载完整会话（而非 state.studyWords 只有最后几个）
+  // 【修复 Bug 3/4】通过后端接口拉取今日数据，支持跨设备与语种隔离
   let wordsToUse = [];
-  const saved = localStorage.getItem('lastStudyWords');
-  if (saved) {
-    try { wordsToUse = JSON.parse(saved); } catch(e) {}
+  try {
+    const res = await api(`/study/reviewed_today?language=${state.currentLang}`);
+    wordsToUse = res.words || [];
+  } catch (e) {
+    showToast('拉取复习记录失败', 'error');
+    return;
   }
-  
-  // 如果 localStorage 没有，回退到当前 state
+
   if (wordsToUse.length === 0) {
-    wordsToUse = state.studyWords;
+    showToast('今日没有可复习的记录', 'error');
+    return;
   }
 
-  // 按 _id 去重
-  const uniqueWords = [];
-  const seenIds = new Set();
-  for (const w of wordsToUse) {
-    if (!seenIds.has(w._id)) {
-      uniqueWords.push(w);
-      seenIds.add(w._id);
-    }
-  }
-
-  state.studyWords = uniqueWords;
-  state.originalTotal = uniqueWords.length;
+  state.studyWords = wordsToUse;
+  state.originalTotal = wordsToUse.length;
   state.studyIndex = 0;
   state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   revealAllowed = false;
   
-  // 隐藏完成/空状态界面，显示卡片容器
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
   document.getElementById('studyCardContainer').classList.remove('hidden');
   document.getElementById('undoBtn').disabled = true;
 
-  // 重新渲染卡片堆叠
   renderCardStack();
   updateStudyProgress();
 }
 
-function reviewLastSession() {
-  const saved = localStorage.getItem('lastStudyWords');
-  if (!saved) {
-    showToast('没有可复习的记录', 'error');
-    return;
-  }
-  
-  let words = JSON.parse(saved);
-  state.isCramMode = true; // 开启纯净巩固模式
-  
-  // 根据 _id 进行去重，确保拿到的是最纯净的初始词库集合
-  const uniqueWords = [];
-  const seenIds = new Set();
-  for (const w of words) {
-    if (!seenIds.has(w._id)) {
-      uniqueWords.push(w);
-      seenIds.add(w._id);
-    }
-  }
-  
-  state.studyWords = uniqueWords;
-  state.originalTotal = uniqueWords.length;
-  state.studyIndex = 0;
-  state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-  revealAllowed = false;
-
-  document.getElementById('studyComplete').classList.add('hidden');
-  document.getElementById('noWords').classList.add('hidden');
-  document.getElementById('studyCardContainer').classList.remove('hidden');
-
-  renderCardStack();
-  updateStudyProgress();
+async function reviewLastSession() {
+  await reviewAgain(); // 逻辑完全一致，直接复用
 }
 
 // Bug 2+3: 撤回上一步复习（修复 DOM 状态恢复）

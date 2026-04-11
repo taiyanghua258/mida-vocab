@@ -327,7 +327,7 @@ exports.getStats = async (req, res) => {
     const coolingWordsToday = await Word.find({
       userId: req.userId,
       language,
-      state: { $in: [1, 3] }, // Learning / Relearning
+      state: { $ne: 0 }, // Include any short-term Review items (state=2) due today
       due: { $gt: now, $lte: endOfDay }
     }).select('due learning_steps').sort({ due: -1 }).lean();
     const allCoolingToday = coolingWordsToday.length;
@@ -336,7 +336,7 @@ exports.getStats = async (req, res) => {
     const dueLearningWords = await Word.find({
       userId: req.userId,
       language,
-      state: { $in: [1, 3] },
+      state: { $ne: 0 },
       due: { $lte: now }
     }).select('learning_steps').lean();
 
@@ -511,6 +511,36 @@ exports.addExtraNewWords = async (req, res) => {
     );
 
     res.json({ message: `已释放 ${ids.length} 个新词`, released: ids.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getTodayReviewedWords = async (req, res) => {
+  try {
+    const language = req.query.language || 'ja';
+    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
+
+    const logs = await ReviewLog.find({
+      userId: req.userId,
+      language,
+      reviewDate: { $gte: todayStart, $lt: tomorrowStart }
+    }).select('wordId').lean();
+
+    const wordIds = [...new Set(logs.map(log => log.wordId.toString()))];
+    
+    if (wordIds.length === 0) {
+      return res.json({ words: [] });
+    }
+
+    const words = await Word.find({
+      _id: { $in: wordIds },
+      userId: req.userId
+    }).lean();
+
+    res.json({ words });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

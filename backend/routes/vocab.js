@@ -15,6 +15,7 @@ router.post('/import', vocabController.importWords);
 router.post('/upload-apkg', upload.single('dictFile'), vocabController.uploadAndConvertApkg);
 router.put('/:id', vocabController.updateWord);
 router.post('/batch-delete', vocabController.batchDeleteWords);
+router.post('/clear-all', vocabController.clearAllWords);
 router.delete('/:id', vocabController.deleteWord);
 
 module.exports = router;
