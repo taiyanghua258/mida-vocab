@@ -2209,11 +2209,14 @@ function showLogin() {
   if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
 }
 
+let currentSwitchId = 0; // 👇 新增全局变量在函数外面
+
 function switchWorkspace(lang, isInitial = false) {
   // 增加防抖：如果点击的是当前已激活的语言，直接忽略，避免重复刷新动画
   if (state.currentLang === lang && !isInitial) return;
 
   const dashActive = document.getElementById('view-dashboard').classList.contains('active');
+  const switchId = ++currentSwitchId; // 👇 新增：每次切换生成唯一 ID
 
   // 1. 触发淡出离场动画（如果在主控制台且非首次加载）
   if (!isInitial && dashActive) {

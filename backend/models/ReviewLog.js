@@ -56,4 +56,7 @@ const reviewLogSchema = new mongoose.Schema({
 
 reviewLogSchema.index({ userId: 1, language: 1, reviewDate: -1, state: 1 });
 
-module.exports = mongoose.model('ReviewLog', reviewLogSchema);
+const ReviewLog = mongoose.model('ReviewLog', reviewLogSchema);
+ReviewLog.syncIndexes().then(() => console.log('ReviewLog 表索引已同步'));
+
+module.exports = ReviewLog;

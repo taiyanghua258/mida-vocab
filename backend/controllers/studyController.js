@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Word = require('../models/Word');
 const ReviewLog = require('../models/ReviewLog');
 const User = require('../models/User');
@@ -259,25 +260,38 @@ exports.getStats = async (req, res) => {
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
 
-    const [
-      totalWords,
-      dueReviewCount,
-      dueNewWordsBase,
-      todayNewReviews,
-      learningWords,
-      reviewWords,
-      masteredWords,
-      todayReviews
-    ] = await Promise.all([
-      Word.countDocuments({ userId: req.userId, language }),
-      Word.countDocuments({ userId: req.userId, language, state: { $ne: 0 }, due: { $lte: now } }),
-      Word.countDocuments({ userId: req.userId, language, state: 0, due: { $lte: now } }),
+    // 使用聚合管道，将 7 次沉重的全表扫瞄合并为 1 次极限扫描
+    const [wordStats] = await Word.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(req.userId), language } },
+      { $group: {
+          _id: null,
+          totalWords: { $sum: 1 },
+          dueReviewCount: { $sum: { $cond: [ { $and: [ { $ne: ["$state", 0] }, { $lte: ["$due", now] } ] }, 1, 0 ] } },
+          dueNewWordsBase: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 0] }, { $lte: ["$due", now] } ] }, 1, 0 ] } },
+          learningWords: { $sum: { $cond: [ { $in: ["$state", [1, 3]] }, 1, 0 ] } },
+          reviewWords: { $sum: { $cond: [ { $eq: ["$state", 2] }, 1, 0 ] } },
+          masteredWords: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 2] }, { $gte: ["$reps", 5] } ] }, 1, 0 ] } }
+      }}
+    ]);
+
+    // 如果该语言下完全没有单词，提供兜底 0 值
+    const stats = wordStats || {
+      totalWords: 0, dueReviewCount: 0, dueNewWordsBase: 0,
+      learningWords: 0, reviewWords: 0, masteredWords: 0
+    };
+
+    // ReviewLog 的查询保持原样即可，因为数据量相对较小且有明确时间范围
+    const [todayNewReviews, todayReviews] = await Promise.all([
       ReviewLog.countDocuments({ userId: req.userId, language, reviewDate: { $gte: todayStart, $lt: tomorrowStart }, state: 0 }),
-      Word.countDocuments({ userId: req.userId, language, state: { $in: [1, 3] } }),
-      Word.countDocuments({ userId: req.userId, language, state: 2 }),
-      Word.countDocuments({ userId: req.userId, language, state: 2, reps: { $gte: 5 } }),
       ReviewLog.countDocuments({ userId: req.userId, language, reviewDate: { $gte: todayStart, $lt: tomorrowStart } })
     ]);
+
+    const totalWords = stats.totalWords;
+    const dueReviewCount = stats.dueReviewCount;
+    const dueNewWordsBase = stats.dueNewWordsBase;
+    const learningWords = stats.learningWords;
+    const reviewWords = stats.reviewWords;
+    const masteredWords = stats.masteredWords;
 
     let dueNewWords = dueNewWordsBase;
 
