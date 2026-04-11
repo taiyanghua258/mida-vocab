@@ -516,29 +516,27 @@ exports.addExtraNewWords = async (req, res) => {
     const { count = 5, language = 'ja' } = req.body;
     const safeCount = Math.min(Math.max(1, parseInt(count) || 5), 50);
 
-    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
-    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
-    const now = new Date();
-
-    // 找到被推迟到明天的新词（state=0, due 在明天凌晨）
-    const postponedWords = await Word.find({
-      userId: req.userId,
-      language,
-      state: 0,
-      due: { $gt: now }
-    }).sort({ createdAt: -1 }).limit(safeCount).select('_id');
-
-    if (postponedWords.length === 0) {
-      return res.json({ message: '没有更多可释放的新词', released: 0 });
+    // 1. 获取用户，直接动态提升用户的单日配额上限（最高不超过 Schema 限制的 200）
+    const user = await User.findById(req.userId);
+    let newLimit = 0;
+    
+    if (language === 'en') {
+      const currentLimit = user.fsrsSettings?.dailyNewLimitEn ?? 20;
+      newLimit = Math.min(currentLimit + safeCount, 200);
+      user.fsrsSettings.dailyNewLimitEn = newLimit;
+    } else {
+      const currentLimit = user.fsrsSettings?.dailyNewLimitJa ?? 20;
+      newLimit = Math.min(currentLimit + safeCount, 200);
+      user.fsrsSettings.dailyNewLimitJa = newLimit;
     }
 
-    const ids = postponedWords.map(w => w._id);
-    await Word.updateMany(
-      { _id: { $in: ids } },
-      { $set: { due: now } }
-    );
+    // Mongoose 修改嵌套对象必须要 markModified
+    user.markModified('fsrsSettings');
+    await user.save();
 
-    res.json({ message: `已释放 ${ids.length} 个新词`, released: ids.length });
+    // 2. 此时无需再去操作 Word 表。前端再次调用 getDueWords 时，
+    // remainingNew 会自然扩大，底层原本的 deficit 追溯逻辑会自动把明天的词拉过来！
+    res.json({ message: `配额已临时增加至 ${newLimit}，已释放 ${safeCount} 个新词`, released: safeCount });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

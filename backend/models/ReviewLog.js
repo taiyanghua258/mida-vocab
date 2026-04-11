@@ -54,4 +54,6 @@ const reviewLogSchema = new mongoose.Schema({
   timestamps: true
 });
 
+reviewLogSchema.index({ userId: 1, language: 1, reviewDate: -1, state: 1 });
+
 module.exports = mongoose.model('ReviewLog', reviewLogSchema);
