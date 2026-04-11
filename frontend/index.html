@@ -80,7 +80,8 @@
 
     /* ========== 工作区切换：数据区域平滑过渡 ========== */
     .workspace-switching #totalWords,
-    .workspace-switching #dueWords {
+    .workspace-switching #dueWords,
+    .workspace-switching #upcomingWidget {
       opacity: 0;
       transform: translateY(8px) scale(0.95);
     }
@@ -96,6 +97,31 @@
     }
     #wordTableBody {
       transition: opacity 0.25s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 冷却池平滑折叠动画 */
+    #upcomingWidget {
+      transition: opacity 0.25s ease, 
+                  transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  margin 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  padding 0.4s ease, 
+                  border-width 0.4s ease;
+      max-height: 300px; /* 预设一个足够容纳标签的高度 */
+      overflow: hidden;
+      transform-origin: top center;
+    }
+
+    /* 自定义折叠状态类（用于替代 Tailwind 的 hidden） */
+    #upcomingWidget.is-collapsed {
+      max-height: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      border-width: 0 !important;
+      opacity: 0 !important;
+      transform: scaleY(0.95);
+      pointer-events: none;
     }
 
     /* 进场序列错落感 - 修复闪烁 */
@@ -1743,8 +1769,16 @@ function loadNotifySettings() {
 function renderUpcomingWidget() {
   const widget = document.getElementById('upcomingWidget');
   const timeline = document.getElementById('upcomingTimeline');
+  
+  // 首次渲染时，将 HTML 中写死的 Tailwind hidden 类剥离，换成我们的平滑折叠类
+  if (widget.classList.contains('hidden')) {
+    widget.classList.remove('hidden');
+    widget.classList.add('is-collapsed');
+  }
+
   if (!state.upcomingWords || state.upcomingWords.length === 0) {
-    widget.classList.add('hidden');
+    // 隐藏时使用 is-collapsed
+    widget.classList.add('is-collapsed');
     return;
   }
 
@@ -1766,7 +1800,8 @@ function renderUpcomingWidget() {
     </div>
   `).join('');
 
-  widget.classList.remove('hidden');
+  // 展开时移除 is-collapsed，触发 css 的 max-height 过渡
+  widget.classList.remove('is-collapsed');
 }
 
 function updateTableDueTimes() {
