@@ -125,30 +125,6 @@
       outline: none;
     }
 
-    /* 1.5 自定义美学下拉框 (Aesthetic Select) */
-    .aesthetic-select {
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      /* 注入与 text-muted (#8B8982) 颜色一致的极简折线箭头 */
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238B8982'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1.2em;
-      padding-right: 2.5rem !important; /* 给右侧箭头留出空间，防止文字重叠 */
-    }
-    
-    /* 优化展开后的列表选项底色（部分浏览器支持） */
-    .aesthetic-select option {
-      background-color: #FDFBF7;
-      color: #1A2F2B;
-      padding: 8px;
-    }
-    .aesthetic-select:focus {
-      /* 沿用 input 的下划线点亮交互 */
-      background-color: rgba(255, 255, 255, 0.8);
-      border-bottom-color: #DF9F28;
-    }
 
     /* 2. 磁性胶囊按钮 (Magnetic Capsule) */
     .magnetic-btn {
@@ -757,21 +733,26 @@
           </div>
           <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem]">
         </div>
-        <select id="partOfSpeechFilter" class="aesthetic-input aesthetic-select w-full sm:w-40 px-4 py-3 text-charcoal cursor-pointer text-[0.95rem]">
-          <option value="">全部词性</option>
-          <option value="名词">名词</option>
-          <option value="动词">动词</option>
-          <option value="形容词">形容词</option>
-          <option value="副词">副词</option>
-          <option value="助词">助词</option>
-          <option value="连词">连词</option>
-          <option value="感叹词">感叹词</option>
-          <option value="代词">代词</option>
-          <option value="数词">数词</option>
-          <option value="接尾词">接尾词</option>
-          <option value="接头词">接头词</option>
-          <option value="其他">其他</option>
-        </select>
+        <div class="relative w-full sm:w-40 flex-shrink-0">
+          <select id="partOfSpeechFilter" class="aesthetic-input appearance-none w-full px-4 py-3 pr-10 text-charcoal cursor-pointer text-[0.95rem]">
+            <option value="">全部词性</option>
+            <option value="名词">名词</option>
+            <option value="动词">动词</option>
+            <option value="形容词">形容词</option>
+            <option value="副词">副词</option>
+            <option value="助词">助词</option>
+            <option value="连词">连词</option>
+            <option value="感叹词">感叹词</option>
+            <option value="代词">代词</option>
+            <option value="数词">数词</option>
+            <option value="接尾词">接尾词</option>
+            <option value="接头词">接头词</option>
+            <option value="其他">其他</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+        </div>
       </div>
 
       <!-- 批量操作进度条 -->
@@ -970,22 +951,27 @@
         <div class="grid grid-cols-2 gap-5">
           <div>
             <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">词性</label>
-            <select id="partOfSpeech" class="aesthetic-input aesthetic-select w-full px-2 py-2 text-charcoal cursor-pointer">
-              <option value="名词">名词</option>
-              <option value="动词">动词</option>
-              <option value="形容词">形容词</option>
-              <option value="副词">副词</option>
-              <option value="助词">助词</option>
-              <option value="连词">连词</option>
-              <option value="感叹词">感叹词</option>
-              <option value="代词">代词</option>
-              <option value="数词">数词</option>
-              <option value="接尾词">接尾词</option>
-              <option value="接头词">接头词</option>
-              <option value="介词">介词</option>
-              <option value="冠词">冠词</option>
-              <option value="其他">其他</option>
-            </select>
+            <div class="relative">
+              <select id="partOfSpeech" class="aesthetic-input appearance-none w-full px-2 py-2 pr-8 text-charcoal cursor-pointer">
+                <option value="名词">名词</option>
+                <option value="动词">动词</option>
+                <option value="形容词">形容词</option>
+                <option value="副词">副词</option>
+                <option value="助词">助词</option>
+                <option value="连词">连词</option>
+                <option value="感叹词">感叹词</option>
+                <option value="代词">代词</option>
+                <option value="数词">数词</option>
+                <option value="接尾词">接尾词</option>
+                <option value="接头词">接头词</option>
+                <option value="介词">介词</option>
+                <option value="冠词">冠词</option>
+                <option value="其他">其他</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+              </div>
+            </div>
           </div>
           <div>
             <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">标签</label>
