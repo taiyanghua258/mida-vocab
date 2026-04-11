@@ -631,18 +631,10 @@
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
-             </button>
-            
-            <div class="w-[1px] bg-borderline/60 my-2 mx-1"></div>
-            
-            <button onclick="clearWorkspace()" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-terracotta/10 hover:shadow-sm text-[0.85rem] font-medium text-terracotta transition-all group active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256" class="text-terracotta/80 group-hover:text-terracotta transition-colors">
-                <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path>
               </svg>
-              <span>清空词库</span>
+              <span>导出库</span>
             </button>
           </div>
-
           <button id="tour-study-btn" onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem]">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ochre">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -712,6 +704,11 @@
           <button onclick="batchDeleteSelected()" class="px-4 py-1.5 bg-terracotta/10 hover:bg-terracotta/20 border border-terracotta/30 text-terracotta text-sm rounded-lg transition-all active:scale-95 font-medium flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
             批量删除
+          </button>
+          <div class="h-4 w-[1px] bg-terracotta/20 mx-1"></div>
+          <button onclick="clearWorkspace()" class="px-4 py-1.5 bg-terracotta hover:bg-terracotta/90 border border-terracotta/30 text-surface text-sm rounded-lg transition-all active:scale-95 font-medium flex items-center gap-1.5 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+            清空词库
           </button>
         </div>
       </div>
