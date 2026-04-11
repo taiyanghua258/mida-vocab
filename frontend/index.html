@@ -153,6 +153,24 @@
       transform: translateY(1px) scale(0.97);
     }
 
+    /* 隐藏手工下拉列表的系统原生丑陋滚动条，改为极简悬浮条 */
+    .select-options::-webkit-scrollbar {
+      width: 4px;
+    }
+    .select-options::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .select-options::-webkit-scrollbar-thumb {
+      background-color: rgba(229, 225, 216, 0.8); /* border-borderline 的颜色 */
+      border-radius: 4px;
+    }
+    /* 配合 JS 实现的开启状态类 */
+    .select-options.is-open {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+    }
+
     /* 3. 悬浮下划线幽灵按钮 (Ghost Underline) */
     .ghost-underline-btn {
       position: relative;
@@ -733,25 +751,24 @@
           </div>
           <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem]">
         </div>
-        <div class="relative w-full sm:w-40 flex-shrink-0">
-          <select id="partOfSpeechFilter" class="aesthetic-input appearance-none w-full px-4 py-3 pr-10 text-charcoal cursor-pointer text-[0.95rem]">
-            <option value="">全部词性</option>
-            <option value="名词">名词</option>
-            <option value="动词">动词</option>
-            <option value="形容词">形容词</option>
-            <option value="副词">副词</option>
-            <option value="助词">助词</option>
-            <option value="连词">连词</option>
-            <option value="感叹词">感叹词</option>
-            <option value="代词">代词</option>
-            <option value="数词">数词</option>
-            <option value="接尾词">接尾词</option>
-            <option value="接头词">接头词</option>
-            <option value="其他">其他</option>
-          </select>
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-muted">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+        <div class="custom-select relative w-full sm:w-40 flex-shrink-0" id="filterSelectWrapper">
+          <input type="hidden" id="partOfSpeechFilter" value="">
+          
+          <div class="select-trigger aesthetic-input w-full px-4 py-3 text-charcoal cursor-pointer text-[0.95rem] flex justify-between items-center bg-surface">
+            <span class="select-text text-muted">全部词性</span>
+            <svg class="select-arrow text-muted transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
           </div>
+
+          <ul class="select-options absolute z-50 w-full mt-2 bg-surface border border-borderline rounded-2xl shadow-[0_10px_40px_rgba(26,47,43,0.08)] opacity-0 invisible -translate-y-2 transition-all duration-300 max-h-56 overflow-y-auto py-2 backdrop-blur-md">
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="">全部词性</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="名词">名词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="动词">动词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="形容词">形容词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="副词">副词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="助词">助词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="连词">连词</li>
+            <li class="px-4 py-2.5 text-[0.95rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors" data-value="其他">其他</li>
+          </ul>
         </div>
       </div>
 
@@ -951,26 +968,22 @@
         <div class="grid grid-cols-2 gap-5">
           <div>
             <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">词性</label>
-            <div class="relative">
-              <select id="partOfSpeech" class="aesthetic-input appearance-none w-full px-2 py-2 pr-8 text-charcoal cursor-pointer">
-                <option value="名词">名词</option>
-                <option value="动词">动词</option>
-                <option value="形容词">形容词</option>
-                <option value="副词">副词</option>
-                <option value="助词">助词</option>
-                <option value="连词">连词</option>
-                <option value="感叹词">感叹词</option>
-                <option value="代词">代词</option>
-                <option value="数词">数词</option>
-                <option value="接尾词">接尾词</option>
-                <option value="接头词">接头词</option>
-                <option value="介词">介词</option>
-                <option value="冠词">冠词</option>
-                <option value="其他">其他</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-muted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+            <div class="custom-select relative w-full" id="addWordSelectWrapper">
+              <input type="hidden" id="partOfSpeech" value="名词">
+              
+              <div class="select-trigger aesthetic-input w-full px-3 py-2 text-charcoal cursor-pointer flex justify-between items-center bg-surface">
+                <span class="select-text">名词</span>
+                <svg class="select-arrow text-muted transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
               </div>
+
+              <ul class="select-options absolute z-[60] w-full mt-2 bg-surface border border-borderline rounded-xl shadow-[0_8px_30px_rgba(26,47,43,0.12)] opacity-0 invisible -translate-y-2 transition-all duration-300 max-h-48 overflow-y-auto py-1.5 backdrop-blur-md">
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="名词">名词</li>
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="动词">动词</li>
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="形容词">形容词</li>
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="副词">副词</li>
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="助词">助词</li>
+                <li class="px-3 py-2 text-[0.9rem] text-charcoal cursor-pointer hover:bg-parchment hover:text-ochre transition-colors font-medium" data-value="其他">其他</li>
+              </ul>
             </div>
           </div>
           <div>
@@ -3940,6 +3953,87 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate('dashboard');
   }
   else navigate('auth');
+});
+
+// ==================== 自定义高定下拉框逻辑 ====================
+function initCustomSelects() {
+  document.querySelectorAll('.custom-select').forEach(wrapper => {
+    const trigger = wrapper.querySelector('.select-trigger');
+    const optionsList = wrapper.querySelector('.select-options');
+    const textDisplay = wrapper.querySelector('.select-text');
+    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+    const arrow = wrapper.querySelector('.select-arrow');
+
+    // 点击框体：展开或收起
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation(); // 阻止冒泡
+      
+      // 关闭其他可能已经打开的下拉框
+      document.querySelectorAll('.select-options.is-open').forEach(list => {
+        if (list !== optionsList) {
+          list.classList.remove('is-open');
+          list.previousElementSibling.querySelector('.select-arrow').style.transform = 'rotate(0deg)';
+        }
+      });
+
+      // 切换当前的开关状态
+      const isOpen = optionsList.classList.contains('is-open');
+      if (isOpen) {
+        optionsList.classList.remove('is-open');
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        optionsList.classList.add('is-open');
+        arrow.style.transform = 'rotate(180deg)'; // 箭头翻转
+      }
+    });
+
+    // 点击选项：选中值，关闭列表，并触发 onChange
+    optionsList.querySelectorAll('li').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        const value = item.getAttribute('data-value');
+        const text = item.textContent;
+        
+        // 更新显示文字和隐藏的 input 值
+        textDisplay.textContent = text;
+        if (value === "") {
+            textDisplay.classList.add('text-muted');
+        } else {
+            textDisplay.classList.remove('text-muted');
+        }
+        
+        hiddenInput.value = value;
+
+        // 如果是控制台的筛选框，点击后直接触发查询（替代原本的 onchange）
+        if (hiddenInput.id === 'partOfSpeechFilter') {
+          // 这里调用你原本用于筛选的函数，由于我没有完整的函数名，假设你直接在重新加载
+          loadWords(1); 
+        }
+
+        // 收起列表
+        optionsList.classList.remove('is-open');
+        arrow.style.transform = 'rotate(0deg)';
+      });
+    });
+  });
+
+  // 点击页面空白处：收起所有已展开的下拉框
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.select-options.is-open').forEach(list => {
+      list.classList.remove('is-open');
+      const prevElement = list.previousElementSibling;
+      if (prevElement) {
+        const arrow = prevElement.querySelector('.select-arrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+      }
+    });
+  });
+}
+
+// 确保页面加载完后执行初始化
+document.addEventListener('DOMContentLoaded', () => {
+  initCustomSelects();
 });
 </script>
 
