@@ -2763,6 +2763,27 @@ async function handleBatchGenerate() {
   }
   // ================= 新增结束 =================
 
+  // ========== 前端轻量级“垃圾阻击”（优化速度与 API 成本） ==========
+  const validLines = [];
+  const kanaRegexForFilter = /[\u3040-\u309F\u30A0-\u30FF]/;
+  
+  lines.forEach(line => {
+    if (state.currentLang === 'ja') {
+      // 1. 如果是纯英文/数字/符号，直接剔除（不发给后端）
+      if (/^[a-zA-Z0-9\s\-\.,'!]+$/.test(line)) return; 
+      // 2. 如果超过 10 个字，且完全没有假名，大概率是长篇中文笔记，直接剔除
+      if (line.length > 10 && !kanaRegexForFilter.test(line)) return; 
+    }
+    // 留下来的加入有效数组
+    validLines.push(line);
+  });
+
+  if (validLines.length === 0) {
+    return showToast('未检测到有效的单词内容，已被自动过滤', 'error');
+  } else if (validLines.length < lines.length) {
+    showToast(`已在前端自动拦截 ${lines.length - validLines.length} 行非目标语言内容`, 'info');
+  }
+
   // Bug 2: 创建 AbortController 以支持中断
   if (state.batchAbortController) state.batchAbortController.abort();
   state.batchAbortController = new AbortController();
@@ -2778,7 +2799,7 @@ async function handleBatchGenerate() {
   pb.classList.remove('hidden');
 
   batchGeneratedWords = [];
-  const total = lines.length;
+  const total = validLines.length;
   const chunkSize = 3; 
   let processed = 0;
 
@@ -2787,10 +2808,9 @@ async function handleBatchGenerate() {
 
   try {
     for (let i = 0; i < total; i += chunkSize) {
-      // Bug 2: 每次迭代前检查是否已被中断
       if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
-      const chunkLines = lines.slice(i, i + chunkSize);
+      const chunkLines = validLines.slice(i, i + chunkSize);
       const chunkText = chunkLines.join('\n');
 
       const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
