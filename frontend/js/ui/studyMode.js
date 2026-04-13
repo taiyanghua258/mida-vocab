@@ -385,12 +385,14 @@ async function submitReview(result) {
   document.getElementById('answerSection').classList.remove('show');
   const word = state.studyWords[state.studyIndex];
   
+  // 【修复 1】：将 resData 提取到外层
+  let resData = null; 
+  
   try {
-    // 【关键修改】：如果不是无痕巩固模式，才向后端发送复习记录
     if (!state.isCramMode) {
-      const resData = await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
+      resData = await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
 
-      // Bug 3: 记录撤回历史
+      // 记录撤回历史
       state.studyHistory.push({
         wordId: word._id,
         index: state.studyIndex,
@@ -399,18 +401,17 @@ async function submitReview(result) {
       });
       document.getElementById('undoBtn').disabled = false;
 
-      // 修复4：捕获 1 分钟 / 10 分钟短时记忆！
+      // 捕获 1 分钟 / 10 分钟短时记忆
       if (resData.scheduled_days < 1) {
         const dueTime = new Date(resData.due).getTime();
         if (dueTime > Date.now()) {
-          state.coolingWords.push(resData); // 丢进冷却池
+          state.coolingWords.push(resData); 
         }
       }
     }
   } catch (err) {
     showToast(`复习记录保存失败：${err.message || '网络异常'}`, 'error');
     console.error('Review Error', err);
-    // 【修复】发生错误时恢复按钮交互
     isReviewProcessing = false;
     revealAllowed = true;
     document.getElementById('answerSection').classList.add('show');
@@ -422,7 +423,6 @@ async function submitReview(result) {
   // 整组卡片飞走剥离
   if (currentGroup) {
     currentGroup.classList.add(`discarded-${result}`);
-    // 动画完成后彻底从 DOM 摘除，防止层叠崩溃
     setTimeout(() => {
       if (currentGroup.parentNode) {
         currentGroup.parentNode.removeChild(currentGroup);
@@ -430,10 +430,27 @@ async function submitReview(result) {
     }, 600);
   }
 
+  // 【修复 2】：智能判断是否需要追加到当前牌堆底
   if (result === 'again') {
-    const newWord = { ...word };
-    state.studyWords.push(newWord);
-    addCardToDOM(state.studyWords.length - 1, newWord);
+    let shouldAppend = true;
+    
+    // 如果后端返回了由于 FSRS 算法产生的真实下次复习时间
+    if (resData && resData.due) {
+      const dueTime = new Date(resData.due).getTime();
+      const diffMinutes = (dueTime - Date.now()) / 60000;
+      
+      // 如果冷却时间超过 2 分钟（即 10 分钟那次阶梯），就不追加到牌堆底了
+      // 把它留在后台，让用户完成当前牌堆后，自然进入冷却池倒计时界面
+      if (diffMinutes > 2) {
+        shouldAppend = false;
+      }
+    }
+
+    if (shouldAppend) {
+      const newWord = { ...word };
+      state.studyWords.push(newWord);
+      addCardToDOM(state.studyWords.length - 1, newWord);
+    }
   }
 
   state.studyIndex++;
@@ -451,13 +468,11 @@ async function submitReview(result) {
   updateStudyProgress();
 
   if (state.studyIndex >= state.studyWords.length) {
-    // 延迟显示完成界面，等卡片飞走动画先完成
     setTimeout(() => {
       showStudyComplete();
       isReviewProcessing = false;
     }, 400);
   } else {
-    // 短暂延迟解锁，留给过渡动画缓冲时间
     setTimeout(() => {
       isReviewProcessing = false;
     }, 150);
