@@ -19,14 +19,14 @@
       theme: {
         extend: {
           colors: {
-            parchment: '#F9F7F1',
-            surface: '#FFFFFF',
-            charcoal: '#1A2F2B',
-            ochre: '#DF9F28',
-            terracotta: '#D16B4A',
-            lavender: '#C6CBEA',
-            muted: '#8B8982',
-            borderline: '#E5E1D8'
+            parchment: 'var(--color-parchment)',
+            surface: 'var(--color-surface)',
+            charcoal: 'var(--color-charcoal)',
+            ochre: 'var(--color-ochre)',
+            terracotta: 'var(--color-terracotta)',
+            lavender: 'var(--color-lavender)',
+            muted: 'var(--color-muted)',
+            borderline: 'var(--color-borderline)'
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -38,9 +38,62 @@
   </script>
 
   <style>
+    /* ========== 主题变量：明亮模式 (原始) ========== */
+    :root {
+      --color-parchment: #F9F7F1;
+      --color-surface: #FFFFFF;
+      --color-charcoal: #1A2F2B;
+      --color-ochre: #DF9F28;
+      --color-terracotta: #D16B4A;
+      --color-lavender: #C6CBEA;
+      --color-muted: #8B8982;
+      --color-borderline: #E5E1D8;
+      --bg-body: #FDFBF7;
+    }
+
+    /* ========== 主题变量：黑曜与金缮 (极简侘寂暗调) ========== */
+    [data-theme="obsidian"] {
+      --color-parchment: #181715;   /* 深夜纸张：极度克制的深灰褐 */
+      --color-surface: #22201D;     /* 浮层暗墨：带有微弱温度的炭黑 */
+      --color-charcoal: #EAE6DB;    /* 骨白：不刺眼的低对比度文字 */
+      --color-ochre: #C29B57;       /* 砂金：金缮工艺的暗金色 */
+      --color-terracotta: #A6523F;  /* 暗朱砂：沉稳的警示色 */
+      --color-lavender: #4A4D66;    /* 幽蓝紫 */
+      --color-muted: #737069;       /* 褪色灰 */
+      --color-borderline: #363430;  /* 隐约的边界线 */
+      --bg-body: #11100F;           /* 极夜底色 */
+    }
+
+    /* 修复 body 背景色绑定 */
+    body { 
+      background-color: var(--bg-body) !important;
+      color: var(--color-charcoal);
+    }
+
+    /* ========== 电影级 View Transitions 光影溶解动画 ========== */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.8s;
+      animation-timing-function: cubic-bezier(0.25, 1, 0.30, 1);
+      mix-blend-mode: normal;
+    }
+    ::view-transition-old(root) {
+      animation-name: aesthetic-fade-out;
+    }
+    ::view-transition-new(root) {
+      animation-name: aesthetic-fade-in;
+    }
+    @keyframes aesthetic-fade-out {
+      from { opacity: 1; filter: blur(0px) scale(1); }
+      to { opacity: 0; filter: blur(4px) scale(0.98); }
+    }
+    @keyframes aesthetic-fade-in {
+      from { opacity: 0; filter: blur(8px) scale(1.02); }
+      to { opacity: 1; filter: blur(0px) scale(1); }
+    }
+
     /* ========== 全局审美与排版 (Typography & Globals) ========== */
     body { 
-      background-color: #FDFBF7; /* 稍微调亮底色以贴合极简白 */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Yu Gothic", Meiryo, "PingFang SC", "Microsoft YaHei", sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -699,6 +752,14 @@
               </div>
               
               <div class="p-2.5 flex flex-col gap-1">
+                <button onclick="toggleAestheticTheme()" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-charcoal hover:bg-parchment transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
+                  <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-ochre/50 group-hover:text-ochre transition-all shadow-sm">
+                    <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/70 transition-transform duration-500"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"></path></svg>
+                  </div>
+                  <span id="themeToggleText">沉浸暗调 (Zen Night)</span>
+                </button>
+                
+                <div class="w-full h-[1px] bg-borderline/40 my-1"></div>
                 <button onclick="openModal('profileModal'); closeUserMenu();" class="w-full text-left px-4 py-3 rounded-xl text-[0.85rem] font-medium text-charcoal hover:bg-parchment transition-colors flex items-center gap-2.5 group active:scale-[0.98]">
                   <div class="w-7 h-7 rounded-full bg-surface border border-borderline flex items-center justify-center group-hover:border-charcoal/30 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" class="text-charcoal/70"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
@@ -4099,9 +4160,54 @@ function initCustomSelects() {
   });
 }
 
-// 确保页面加载完后执行初始化
+/* ================= AESTHETIC THEME ENGINE ================= */
+function toggleAestheticTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'obsidian';
+  const nextTheme = isDark ? 'light' : 'obsidian';
+
+  // 检查浏览器是否支持原生的 View Transitions API（极具高级感的光影过渡）
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      applyTheme(nextTheme);
+    });
+  } else {
+    // 降级处理
+    applyTheme(nextTheme);
+  }
+}
+
+function applyTheme(theme) {
+  const toggleText = document.getElementById('themeToggleText');
+  const themeIcon = document.getElementById('themeIcon');
+  
+  if (theme === 'obsidian') {
+    document.documentElement.setAttribute('data-theme', 'obsidian');
+    if(toggleText) toggleText.textContent = '素雅明亮 (Parchment)';
+    if(themeIcon) {
+      themeIcon.style.transform = 'rotate(-180deg)';
+      // 太阳图标
+      themeIcon.innerHTML = `<path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm192-8h-24a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Zm-112,72a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V200A8,8,0,0,0,128,192Z"></path>`;
+    }
+    localStorage.setItem('aesthetic-theme', 'obsidian');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    if(toggleText) toggleText.textContent = '沉浸暗调 (Zen Night)';
+    if(themeIcon) {
+      themeIcon.style.transform = 'rotate(0deg)';
+      // 月亮图标
+      themeIcon.innerHTML = `<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"></path>`;
+    }
+    localStorage.setItem('aesthetic-theme', 'light');
+  }
+}
+
+// 在页面加载时恢复用户选定的质感
 document.addEventListener('DOMContentLoaded', () => {
-  initCustomSelects();
+  const savedTheme = localStorage.getItem('aesthetic-theme');
+  if (savedTheme === 'obsidian') {
+    applyTheme('obsidian');
+  }
+  initCustomSelects(); // 原有的初始化
 });
 </script>
 
