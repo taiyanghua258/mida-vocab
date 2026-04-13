@@ -70,35 +70,31 @@
       --color-surface: 253 251 247;
       --color-charcoal: 17 17 17;
       --color-ochre: 166 82 63;
-      --color-borderline: 17 17 17;
+      /* 【修复】将原本极黑的 17 17 17 边框线调浅，消除粗线条感 */
+      --color-borderline: 190 185 175; 
       --bg-body: 244 241 233;
       --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ========================================== */
-    /* 悬浮层爆改：抛弃毛玻璃，打造实体厚纸板质感  */
-    /* ========================================== */
+    /* 悬浮层优化：抹除生硬厚纸板边框，改为优雅阴影 */
     [data-theme="editorial"] #userDropdown,
     [data-theme="editorial"] .select-options,
     [data-theme="editorial"] .modal-content {
       background-color: rgb(var(--color-parchment)) !important;
-      backdrop-filter: none !important; /* 拔掉现代感的毛玻璃模糊 */
-      border: 1px solid rgb(var(--color-charcoal)) !important;
-      border-radius: 2px !important; /* 几乎直角的微小弧度，克制干练 */
-      /* 核心：硬切边的错位阴影，模拟物理卡片堆叠 */
-      box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.15) !important; 
+      backdrop-filter: none !important;
+      border: 1px solid rgb(var(--color-borderline)) !important;
+      border-radius: 4px !important;
+      box-shadow: 0 12px 40px rgba(17, 17, 17, 0.08) !important; 
     }
 
-    /* 修复菜单内部选项的 Hover 状态，避免背景色冲突 */
     [data-theme="editorial"] #userDropdown button:hover,
     [data-theme="editorial"] .select-options li:hover {
       background-color: rgba(17, 17, 17, 0.06) !important;
     }
     
-    /* 抹除下拉菜单顶部的装饰性背景块 */
     [data-theme="editorial"] #userDropdown .bg-parchment\/30 {
       background-color: transparent !important;
-      border-bottom: 1px solid rgb(var(--color-borderline) / 0.2) !important;
+      border-bottom: 1px solid rgb(var(--color-borderline) / 0.5) !important;
     }
     
     /* 辞典字体覆盖 */
@@ -134,18 +130,59 @@
       transition: transform 0.8s var(--easing-heavy), opacity 0.6s ease;
     }
     
-    /* 暗室模式 (Darkroom Mode) - 仅在学习视图生效 */
+    /* ========================================================= */
+    /* 暗室模式 (Darkroom Mode) - 仅在学习视图生效，全域反白渲染 */
+    /* ========================================================= */
     [data-theme="editorial"] #view-study {
-      background-color: #0F1211 !important; /* 极深的黑绿 */
+      background-color: #0B0C0C !important; /* 极深暗室黑 */
     }
-    [data-theme="editorial"] #view-study nav * { color: rgba(255,255,255,0.2) !important; }
+    [data-theme="editorial"] #view-study nav * { color: rgba(255,255,255,0.4) !important; }
+    [data-theme="editorial"] #view-study nav button:hover * { color: #EAE6DB !important; }
+
+    /* 所有层级的卡片在暗室中变为深色磨砂质感 */
+    [data-theme="editorial"] #view-study .paper-card {
+      background: #141616 !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+    }
     [data-theme="editorial"] #view-study .paper-card.front {
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      text-shadow: 0 0 30px rgba(244, 241, 233, 0.1);
+      background: linear-gradient(135deg, #181A1A 0%, #111313 100%) !important;
     }
-    [data-theme="editorial"] #view-study .paper-card.front .text-charcoal {
+    [data-theme="editorial"] #view-study .paper-card.back {
+      background: linear-gradient(145deg, #181A1A, #111313) !important;
+    }
+
+    /* 字体反白与发光效应 */
+    [data-theme="editorial"] #view-study .paper-card .text-charcoal,
+    [data-theme="editorial"] #view-study .paper-card .text-ochre {
+      color: #EAE6DB !important;
+      text-shadow: 0 0 20px rgba(234, 230, 219, 0.1) !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card .text-muted { color: #737069 !important; }
+    [data-theme="editorial"] #view-study .paper-card .bg-parchment {
+      background-color: rgba(255,255,255,0.06) !important;
+      color: #EAE6DB !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card kbd {
+      background-color: rgba(255,255,255,0.06) !important;
+      border-color: rgba(255,255,255,0.15) !important;
+      color: #EAE6DB !important;
+    }
+
+    /* 答案按钮暗室化 */
+    [data-theme="editorial"] #view-study .answer-btn {
+      background: #141616 !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.8) !important;
+      color: #8B8982 !important;
+    }
+    [data-theme="editorial"] #view-study .answer-btn:hover {
+      background: #1A1D1D !important;
+      color: #EAE6DB !important;
+    }
+    [data-theme="editorial"] #view-study .answer-btn kbd {
+      background-color: rgba(255,255,255,0.08) !important;
+      border-color: rgba(255,255,255,0.15) !important;
       color: #EAE6DB !important;
     }
 
@@ -285,17 +322,17 @@
     
     /* 1. 悬浮线输入框 (Floating Input) */
     .aesthetic-input {
-      background-color: rgba(249, 247, 241, 0.6);
+      background-color: rgb(var(--color-parchment) / 0.6);
       border: none;
-      border-bottom: 1.5px solid rgba(229, 225, 216, 0.6);
+      border-bottom: 1.5px solid rgb(var(--color-borderline) / 0.8);
       border-radius: 4px 4px 0 0;
       transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
       position: relative;
     }
     .aesthetic-input:focus {
-      background-color: rgba(255, 255, 255, 0.8);
-      border-bottom-color: #DF9F28;
-      box-shadow: 0 4px 12px rgba(223, 159, 40, 0.05);
+      background-color: rgb(var(--color-surface));
+      border-bottom-color: rgb(var(--color-ochre));
+      box-shadow: 0 4px 12px rgb(var(--color-ochre) / 0.1);
       outline: none;
     }
 
@@ -305,8 +342,8 @@
       position: relative;
       overflow: hidden;
       border-radius: 99px;
-      background: #1A2F2B;
-      color: #FDFBF7;
+      background: rgb(var(--color-charcoal));
+      color: rgb(var(--bg-body)); /* 黑曜模式下，这是反相的字色 */
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
       will-change: transform;
     }
@@ -314,18 +351,16 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       opacity: 0;
       transition: opacity 0.3s ease;
     }
     .magnetic-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(26, 47, 43, 0.15);
+      box-shadow: 0 4px 12px rgb(var(--color-charcoal) / 0.2);
     }
     .magnetic-btn:hover::before { opacity: 1; }
-    .magnetic-btn:active {
-      transform: translateY(1px) scale(0.97);
-    }
+    .magnetic-btn:active { transform: translateY(1px) scale(0.97); }
 
     /* 隐藏手工下拉列表的系统原生丑陋滚动条，改为极简悬浮条 */
     .select-options::-webkit-scrollbar {
@@ -372,21 +407,13 @@
     /* 4. 无边界空气表格 (Airy Table/ListRow) */
     .airy-row {
       transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease, box-shadow 0.3s ease;
-      border-bottom: 1px solid rgba(229, 225, 216, 0.3);
-    }
-    .airy-row:hover {
-      transform: translateY(-1px);
-      background-color: rgba(255, 255, 255, 0.6);
-      box-shadow: 0 8px 24px rgba(26, 47, 43, 0.03);
-      border-bottom-color: transparent;
+      border-bottom: 1px solid rgb(var(--color-borderline) / 0.3);
     }
 
     /* 5. 玻璃态模态框 (Glassmorphism Modal Backing) */
     .modal-overlay { 
-      opacity: 0; 
-      pointer-events: none; 
-      backdrop-filter: blur(4px);
-      background-color: rgba(249, 247, 241, 0.4);
+      opacity: 0; pointer-events: none; backdrop-filter: blur(4px);
+      background-color: rgb(var(--color-charcoal) / 0.3); /* 使用深色底色，黑曜模式下更和谐 */
       transition: opacity 0.35s ease; 
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
@@ -402,15 +429,21 @@
 
     /* 6. Dashboard 背景卡片精修 */
     .glass-card {
-      background: rgba(255, 255, 255, 0.65);
+      background: rgb(var(--color-surface) / 0.65);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(229, 225, 216, 0.4);
+      border: 1px solid rgb(var(--color-borderline) / 0.6);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
       transition: transform 0.4s ease, box-shadow 0.4s ease;
     }
     .glass-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+    }
+    .airy-row:hover {
+      transform: translateY(-1px);
+      background-color: rgb(var(--color-surface) / 0.8);
+      box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.05);
+      border-bottom-color: transparent;
     }
 
     /* ========== Flashcard 翻转 ========== */
@@ -448,50 +481,66 @@
     .word-group:not([data-depth="0"]) .paper-card.back { visibility: hidden; }
     .word-group[data-depth="0"] .paper-card.back { visibility: visible; }
 
-    /* ========== 纸张卡片 (更新阴影以符合空气感) ========== */
+    /* ========== 纸张卡片 (全面拥抱 CSS 变量，解决暗黑模式发白问题) ========== */
     .paper-card {
       position: absolute; width: 100%; height: 100%;
-      border-radius: 1.5rem; background: #fff; border: 1px solid rgba(229, 225, 216, 0.5);
+      border-radius: 1.5rem; 
+      background: rgb(var(--color-surface)); 
+      border: 1px solid rgb(var(--color-borderline) / 0.6);
       display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
       transform-origin: bottom left;
-      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                  opacity 0.4s ease, 
-                  box-shadow 0.6s ease;
-      will-change: transform; /* 恢复硬件加速，只加速纸片层 */
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, box-shadow 0.6s ease;
+      will-change: transform;
     }
-    .paper-card.front { z-index: 2; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #FDFBF7 100%); box-shadow: 0 4px 20px rgba(26,47,43,0.03); }
-    .word-group[data-depth="1"] .paper-card.front { box-shadow: 0 2px 10px rgba(26,47,43,0.02); background: linear-gradient(135deg, #FAFAFA 0%, #F9F7F1 100%); }
-    .word-group[data-depth="2"] .paper-card.front { box-shadow: 0 1px 4px rgba(26,47,43,0.01); background: linear-gradient(135deg, #F9F7F1 0%, #F4F2EC 100%); }
-    .paper-card.back { z-index: 1; background: linear-gradient(145deg, #FAFAFA, #F9F7F1); transform: scale(0.97) translateY(4px); opacity: 1; box-shadow: 0 4px 16px rgba(26,47,43,0.04); }
+    .paper-card.front { 
+      z-index: 2; cursor: pointer; 
+      background: linear-gradient(135deg, rgb(var(--color-surface)) 0%, rgb(var(--color-parchment)) 100%); 
+      box-shadow: 0 4px 20px rgb(var(--color-charcoal) / 0.05); 
+    }
+    .word-group[data-depth="1"] .paper-card.front { 
+      box-shadow: 0 2px 10px rgb(var(--color-charcoal) / 0.03); 
+      background: linear-gradient(135deg, rgb(var(--color-surface)) 0%, rgb(var(--color-parchment)) 100%); 
+    }
+    .word-group[data-depth="2"] .paper-card.front { 
+      box-shadow: 0 1px 4px rgb(var(--color-charcoal) / 0.02); 
+      background: rgb(var(--color-parchment)); filter: brightness(0.97); 
+    }
+    .paper-card.back { 
+      z-index: 1; 
+      background: linear-gradient(145deg, rgb(var(--color-surface)), rgb(var(--color-parchment))); 
+      transform: scale(0.97) translateY(4px); opacity: 1; 
+      box-shadow: 0 4px 16px rgb(var(--color-charcoal) / 0.06); 
+    }
     .paper-card.front.peeled { 
-      transform-origin: top right; /* 支点移到右上角 */
-      transform: translate(-20%, -60%) rotate(25deg) scale(0.9); /* 向左上角撕开 */
-      opacity: 0; 
-      box-shadow: 20px 30px 40px rgba(0,0,0,0.1); 
-      pointer-events: none; 
+      transform-origin: top right; 
+      transform: translate(-20%, -60%) rotate(25deg) scale(0.9);
+      opacity: 0; box-shadow: 20px 30px 40px rgba(0,0,0,0.2); pointer-events: none; 
     }
-    .paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: 0 12px 40px rgba(26,47,43,0.08); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; }
+    .paper-card.back.revealed { 
+      transform: scale(1) translateY(0); 
+      box-shadow: 0 12px 40px rgb(var(--color-charcoal) / 0.1); 
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s; 
+    }
 
     /* ========== 答案按钮 ========== */
     #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
     #answerSection.show { opacity: 1; pointer-events: auto; }
-    /* 赋予按钮初始的硬阴影（Neo-brutalism 标志） */
+    /* ========== 答案按钮 (物理阴影也挂靠变量) ========== */
     .answer-btn { 
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* 缩短时间，让按压反馈更脆 */
-      border: 1px solid rgba(26, 47, 43, 0.8); /* 加深边框 */
-      box-shadow: 0 4px 0 rgba(26, 47, 43, 0.8); /* 实体黑色硬阴影 */
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgb(var(--color-charcoal) / 0.6); 
+      box-shadow: 0 4px 0 rgb(var(--color-charcoal) / 0.8); 
       transform: translateY(0);
+      background-color: rgb(var(--color-surface));
     }
     .answer-btn:hover { 
-      border-color: #1A2F2B;
-      /* 悬停时微微上浮，阴影加深 */
+      border-color: rgb(var(--color-charcoal));
       transform: translateY(-2px); 
-      box-shadow: 0 6px 0 rgba(26, 47, 43, 0.8); 
+      box-shadow: 0 6px 0 rgb(var(--color-charcoal)); 
     }
     .answer-btn:active { 
-       /* 按下时：位移等于阴影高度，阴影归零，完美模拟真实物理按键踩到底的感觉 */
       transform: translateY(4px) scale(0.98); 
-      box-shadow: 0 0 0 rgba(26, 47, 43, 0.8);
+      box-shadow: 0 0 0 rgb(var(--color-charcoal));
     }
 
     /* ========== Toast & Modal ========== */
