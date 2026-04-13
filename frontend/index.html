@@ -65,21 +65,21 @@
     }
 
     /* ========================================================= */
-    /* 主题 3：先锋印刷与微缩胶片暗室 (Editorial & Microfilm)      */
+    /* 主题 3：先锋印记与胶片暗室 (Editorial & Microfilm Darkroom) */
     /* ========================================================= */
     [data-theme="editorial"] {
-      /* 基础调色板：糙面纸与老朱砂 */
-      --color-parchment: 236 233 226; 
-      --color-surface: 247 245 240;
-      --color-charcoal: 20 20 20; 
-      --color-ochre: 193 64 45; /* 朱砂红，克制且极具张力 */
-      --color-borderline: 35 35 35; /* 极粗或极细的实体墨线 */
-      --bg-body: 236 233 226;
-      --font-editorial: "Shippori Mincho", "Noto Serif JP", "Georgia", "Times New Roman", serif;
-      --easing-editorial: cubic-bezier(0.85, 0, 0.15, 1); /* 更机械、冷峻的动效 */
+      --color-parchment: 249 247 241; /* 老旧纸张基底 */
+      --color-surface: 249 247 241; /* 抹平层级差异，追求印刷平面感 */
+      --color-charcoal: 26 47 43; /* 极深的墨绿黑 */
+      --color-ochre: 223 159 40; /* 褪色金/朱砂 */
+      --bg-darkroom: 18 26 24; /* 深邃暗室黑绿 #121A18 */
+      --color-borderline: 26 47 43; /* 边框即墨线，不再用灰色 */
+      --bg-body: 249 247 241;
+      --font-editorial: 'Shippori Mincho', 'Noto Serif JP', Georgia, 'Times New Roman', serif;
+      --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* 1. 全局排版覆写：抹杀现代无衬线体，注入印刷质感 */
+    /* 1. 信仰级字体覆盖与绝对零圆角 */
     [data-theme="editorial"],
     [data-theme="editorial"] body,
     [data-theme="editorial"] input,
@@ -92,24 +92,23 @@
     [data-theme="editorial"] h3 {
       font-family: var(--font-editorial) !important;
     }
-    [data-theme="editorial"] .tracking-tight,
-    [data-theme="editorial"] .tracking-tighter {
-      letter-spacing: 0.05em !important; /* 印刷体需要更多文字呼吸感 */
+    
+    /* 砸碎所有现代 UI 的廉价圆角 */
+    [data-theme="editorial"] * {
+      border-radius: 0 !important;
     }
 
-    /* 2. 几何重塑：砸碎所有廉价的圆角与弥散阴影，回归纯粹直角 */
-    [data-theme="editorial"] .rounded-lg,
-    [data-theme="editorial"] .rounded-xl,
-    [data-theme="editorial"] .rounded-2xl,
-    [data-theme="editorial"] .rounded-3xl,
-    [data-theme="editorial"] .rounded-full,
-    [data-theme="editorial"] .rounded-\[1\.25rem\],
-    [data-theme="editorial"] .rounded-\[1\.5rem\],
-    [data-theme="editorial"] .rounded-\[2rem\] {
-      border-radius: 0 !important; 
+    /* 光学噪点特调 (区分明暗模式) */
+    [data-theme="editorial"] #noiseOverlay {
+      opacity: 0.04 !important;
+      mix-blend-mode: multiply !important;
+    }
+    body:has(#view-study.active)[data-theme="editorial"] #noiseOverlay {
+      opacity: 0.02 !important;
+      mix-blend-mode: screen !important; /* 暗室下使用滤色模式让噪点可见 */
     }
 
-    /* 3. 面板与模态框：Neo-Brutalism 报纸专栏排版 */
+    /* 2. 报纸专栏排版 (Neo-Brutalism) */
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] .modal-content,
     [data-theme="editorial"] #userDropdown,
@@ -117,140 +116,150 @@
       background: rgb(var(--color-surface)) !important;
       backdrop-filter: none !important;
       border: 1px solid rgb(var(--color-charcoal)) !important;
-      box-shadow: 6px 6px 0 rgb(var(--color-charcoal)) !important; /* 粗犷的实体错位阴影 */
+      /* 粗犷的实体错位墨迹阴影 */
+      box-shadow: 6px 6px 0 rgb(var(--color-charcoal)) !important; 
     }
-    
-    /* 输入框变为手写填空线 */
+
+    /* 手写填空线输入框 */
     [data-theme="editorial"] .aesthetic-input {
       background-color: transparent !important;
       border: none !important;
-      border-bottom: 1px dashed rgb(var(--color-charcoal)) !important;
-      border-radius: 0 !important;
+      border-bottom: 1px dashed rgb(var(--color-charcoal) / 0.5) !important;
     }
     [data-theme="editorial"] .aesthetic-input:focus {
-      border-bottom: 1px solid rgb(var(--color-ochre)) !important;
+      border-bottom: 1px solid rgb(var(--color-charcoal)) !important;
+      background-color: rgb(var(--color-charcoal) / 0.03) !important;
       box-shadow: none !important;
-      background-color: rgb(var(--color-surface)) !important;
     }
 
-    /* 4. 按钮革命：实体印章质感 */
+    /* 3. 机械打字机按钮 (Mech-Buttons) */
     [data-theme="editorial"] .magnetic-btn,
-    [data-theme="editorial"] .btn-study {
+    [data-theme="editorial"] .btn-study,
+    [data-theme="editorial"] .ghost-underline-btn {
       background: transparent !important;
       color: rgb(var(--color-charcoal)) !important;
       border: 1px solid rgb(var(--color-charcoal)) !important;
-      box-shadow: 4px 4px 0 rgb(var(--color-charcoal)) !important;
-      transition: all 0.2s var(--easing-editorial) !important;
+      border-bottom: 4px solid rgb(var(--color-charcoal)) !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.15em !important;
+      text-transform: uppercase !important;
+      transition: all 0.15s ease-out !important;
+      box-shadow: none !important;
+      transform: translateY(0) !important;
     }
-    [data-theme="editorial"] .magnetic-btn:hover,
-    [data-theme="editorial"] .btn-study:hover {
-      transform: translate(3px, 3px) !important;
-      box-shadow: 1px 1px 0 rgb(var(--color-charcoal)) !important;
-      background: rgb(var(--color-charcoal)) !important;
-      color: rgb(var(--color-surface)) !important;
-    }
+    /* 剔除多余的流光特效 */
     [data-theme="editorial"] .magnetic-btn::before,
     [data-theme="editorial"] .btn-study::before,
-    [data-theme="editorial"] .btn-study::after {
-      display: none !important; /*彻底剔除渐变与发光特效 */
+    [data-theme="editorial"] .btn-study::after,
+    [data-theme="editorial"] .ghost-underline-btn::after { display: none !important; }
+    
+    /* 极度舒适的按下键程反馈 */
+    [data-theme="editorial"] .magnetic-btn:active,
+    [data-theme="editorial"] .btn-study:active,
+    [data-theme="editorial"] .ghost-underline-btn:active {
+      transform: translateY(3px) !important;
+      border-bottom-width: 1px !important;
+      background: rgb(var(--color-charcoal) / 0.05) !important;
     }
+    [data-theme="editorial"] .magnetic-btn:hover,
+    [data-theme="editorial"] .btn-study:hover { background: rgb(var(--color-charcoal) / 0.02) !important; }
 
-    /* 5. 字典式列表 (Index Table) */
+    /* 4. 词典化索引列表 (Index View) */
     [data-theme="editorial"] table, 
     [data-theme="editorial"] tbody, 
-    [data-theme="editorial"] tr.airy-row {
-      display: block; width: 100%;
-    }
+    [data-theme="editorial"] tr.airy-row { display: block; width: 100%; }
     [data-theme="editorial"] thead { display: none; }
+    
     [data-theme="editorial"] tr.airy-row {
-      display: flex; flex-wrap: wrap; align-items: baseline;
-      padding: 1.25rem 0;
+      display: flex !important; flex-wrap: wrap !important; align-items: baseline !important;
+      padding: 1.5rem 0 !important;
       border-bottom: 1px solid rgb(var(--color-charcoal) / 0.15) !important;
       background: transparent !important;
       box-shadow: none !important;
-      transition: padding-left 0.3s ease;
+      transition: padding-left 0.6s var(--easing-heavy) !important;
     }
+    /* 悬停不再变背景，而是文字呼吸平移 */
     [data-theme="editorial"] tr.airy-row:hover {
-      background: rgb(var(--color-charcoal) / 0.03) !important;
-      padding-left: 1.5rem;
+      padding-left: 1.5rem !important;
+      background: transparent !important;
       border-bottom-color: rgb(var(--color-charcoal)) !important;
+      transform: none !important;
     }
-    [data-theme="editorial"] td { display: block; border: none; padding: 0.5rem 1rem 0 0; }
-    [data-theme="editorial"] td input[type="checkbox"] { border-radius: 0 !important; }
+    [data-theme="editorial"] td { padding: 0.5rem 1.5rem 0 0 !important; border: none !important; }
+    
+    /* 放大核心词汇，匹配词典视觉 */
+    [data-theme="editorial"] tr.airy-row td:nth-child(2) .text-lg {
+      font-size: 2rem !important; font-weight: 800 !important; letter-spacing: 0.02em !important;
+    }
 
     /* ========================================================= */
-    /* 6. 学习视图：微缩胶片暗室 (Microfilm Darkroom Mode)       */
+    /* 5. 学习视图：绝对暗室与投影仪 (Absolute Darkroom)           */
     /* ========================================================= */
     [data-theme="editorial"] #view-study {
-      background-color: #050505 !important;
-      /* 绘制暗室专用的极细物理坐标网格线 */
-      background-image: 
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) !important;
-      background-size: 24px 24px !important; 
+      background-color: rgb(var(--bg-darkroom)) !important;
+    }
+    /* 全域文字反白 */
+    [data-theme="editorial"] #view-study *,
+    [data-theme="editorial"] #view-study .text-muted,
+    [data-theme="editorial"] #view-study .text-charcoal {
+      color: rgba(249, 247, 241, 0.6) !important;
+      border-color: rgba(249, 247, 241, 0.2) !important;
     }
     
-    [data-theme="editorial"] #view-study nav *,
-    [data-theme="editorial"] #view-study .text-muted { 
-      color: rgba(255,255,255,0.3) !important; 
-    }
-    [data-theme="editorial"] #view-study nav button:hover * { color: #EBE7E0 !important; }
-
-    /* 冲印相框卡片 */
+    /* 抽离物理纸张卡片，变为悬浮投影 */
     [data-theme="editorial"] #view-study .paper-card {
-      background: #0A0A0A !important;
-      border: 1px solid #333 !important;
-      border-radius: 0 !important;
-      /* 模拟胶片外框的硬阴影嵌套 */
-      box-shadow: 0 0 0 6px #050505, 0 0 0 7px #222 !important; 
-    }
-    [data-theme="editorial"] #view-study .paper-card.front {
-      background: #0A0A0A !important;
-    }
-    [data-theme="editorial"] #view-study .paper-card.back {
-      background: #0E0E0E !important;
+      background: transparent !important; /* 隐藏白卡片背景 */
+      border: none !important;
+      box-shadow: none !important;
     }
 
-    /* 字体反白与磷光效应 */
-    [data-theme="editorial"] #view-study .paper-card .text-charcoal,
-    [data-theme="editorial"] #view-study .paper-card .font-semibold {
-      color: #EBE7E0 !important;
-      text-shadow: 0 0 12px rgba(235, 231, 224, 0.15) !important; /* 微微的发光颗粒感 */
+    /* 投影发光字效 (Glow Text) */
+    [data-theme="editorial"] #view-study .paper-card.front > div:nth-child(2),
+    [data-theme="editorial"] #view-study .paper-card.front .font-jp {
+      font-size: 6rem !important; /* 强制超大字号 */
+      font-weight: 800 !important;
+      line-height: 1 !important;
+      color: #F9F7F1 !important;
+      text-shadow: 0 0 60px rgba(249, 247, 241, 0.2) !important; /* 磷光效应 */
     }
-    [data-theme="editorial"] #view-study .paper-card .text-ochre {
-      color: #C1402D !important; /* 暗房指示灯红 */
-      text-shadow: 0 0 10px rgba(193, 64, 45, 0.3) !important;
+    
+    [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(1) {
+      color: rgb(var(--color-ochre)) !important; /* 读音使用暗室的褪色金 */
     }
-    [data-theme="editorial"] #view-study .bg-parchment,
-    [data-theme="editorial"] #view-study kbd {
-      background: #111 !important;
-      border: 1px solid #333 !important;
-      color: #888 !important;
-      border-radius: 0 !important;
+    [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(2) {
+      color: #F9F7F1 !important;
+      font-size: 1.5rem !important;
     }
 
-    /* 答案机械按键 (打字机风格) */
+    /* 暗室中的打字机答案键 */
     [data-theme="editorial"] #view-study .answer-btn {
-      background: #0A0A0A !important;
-      border: 1px solid #333 !important;
-      border-radius: 0 !important;
-      box-shadow: 0 3px 0 #222 !important; /* 机械键程 */
-      color: #666 !important;
-      transform: translateY(0);
-    }
-    [data-theme="editorial"] #view-study .answer-btn:hover {
-      border-color: #EBE7E0 !important;
-      color: #050505 !important;
-      background: #EBE7E0 !important;
-      box-shadow: 0 3px 0 #EBE7E0 !important;
+      background: transparent !important;
+      border: 1px solid rgba(249, 247, 241, 0.3) !important;
+      border-bottom: 4px solid rgba(249, 247, 241, 0.6) !important;
+      color: #F9F7F1 !important;
+      box-shadow: none !important;
+      transition: all 0.15s ease-out !important;
+      transform: translateY(0) !important;
     }
     [data-theme="editorial"] #view-study .answer-btn:active {
       transform: translateY(3px) !important;
-      box-shadow: 0 0 0 transparent !important;
+      border-bottom-width: 1px !important;
+      background: rgba(249, 247, 241, 0.08) !important;
     }
-    /* 针对不同按钮的暗房悬停特调 */
-    [data-theme="editorial"] #view-study .answer-btn[onclick*="again"]:hover { border-color: #C1402D !important; background: #C1402D !important; color: #fff !important; box-shadow: 0 3px 0 #8B2C1F !important;}
-    [data-theme="editorial"] #view-study .answer-btn[onclick*="easy"]:hover { border-color: #4A6354 !important; background: #4A6354 !important; color: #fff !important; box-shadow: 0 3px 0 #2A3C32 !important;}
+    /* 悬停高亮 */
+    [data-theme="editorial"] #view-study .answer-btn:hover {
+      border-color: #F9F7F1 !important;
+      border-bottom-color: #F9F7F1 !important;
+      background: rgba(249, 247, 241, 0.03) !important;
+    }
+    
+    /* 屏蔽键盘快捷键标签等杂散元素的背景 */
+    [data-theme="editorial"] #view-study kbd,
+    [data-theme="editorial"] #view-study .bg-parchment {
+      background: transparent !important;
+      border: 1px solid rgba(249, 247, 241, 0.2) !important;
+      color: rgba(249, 247, 241, 0.5) !important;
+    }
 
     /* 必须包裹 rgb() 才能生效 */
     body { 
