@@ -255,31 +255,54 @@
     [data-theme="editorial"] #view-study .paper-card.front.peeled { display: none !important; }
     [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) { display: none !important; }
 
-/* 极简正面 */
-[data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
-  font-size: clamp(2.5rem, 8vw, 5rem) !important;
-  color: rgb(var(--color-charcoal)) !important;
-  text-shadow: none !important;
-  font-weight: 800 !important;
-  margin-top: 3rem !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.1 !important;
-  word-break: keep-all !important; 
-  overflow-wrap: break-word !important;
-  hyphens: auto !important; 
-  width: 100% !important;
-  text-align: center !important;
-  padding: 0 1rem !important;
-}
+    /* ================================================== */
+    /* 极简正面 (Darkroom Front) - 反白修复 */
+    /* ================================================== */
+    [data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
+      font-size: clamp(2.5rem, 8vw, 5rem) !important;
+      color: #F9F7F1 !important; /* 关键修复：从 Charcoal 改为明亮的纸张白 */
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1) !important; /* 增加一点底片发光感 */
+      font-weight: 800 !important;
+      margin-top: 3rem !important;
+      letter-spacing: -0.02em !important;
+      line-height: 1.1 !important;
+      word-break: keep-all !important; 
+      overflow-wrap: break-word !important;
+      hyphens: auto !important; 
+      width: 100% !important;
+      text-align: center !important;
+      padding: 0 1rem !important;
+    }
 
-/* 极简背面 */
-[data-theme="editorial"] #view-study .paper-card.back .text-ochre { color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; letter-spacing: 0.1em; }
-[data-theme="editorial"] #view-study .paper-card.back .text-charcoal { 
-  color: rgb(var(--color-charcoal)) !important; 
-  font-size: 1.8rem !important; 
-}
+    /* 正面辅助文字反白处理 */
+    [data-theme="editorial"] #view-study .paper-card.front .footnote-tag {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card.front .text-muted\/60 {
+      color: rgba(255, 255, 255, 0.3) !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card.front kbd {
+      background: transparent !important;
+      color: rgba(255, 255, 255, 0.5) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
 
-    [data-theme="editorial"] #view-study .paper-card.back > div:last-child { border: 1px solid rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.6) !important; background: transparent !important;}
+    /* ================================================== */
+    /* 极简背面 (Darkroom Back) - 反白修复 */
+    /* ================================================== */
+    [data-theme="editorial"] #view-study .paper-card.back .text-ochre { 
+      color: rgb(var(--color-ochre)) !important; 
+      font-family: var(--font-ui) !important; 
+      letter-spacing: 0.1em; 
+    }
+    [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { 
+      color: #F9F7F1 !important; /* 关键修复：中文释义反白 */
+      font-size: 1.8rem !important; 
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.05) !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card.back .footnote-tag {
+      color: rgba(255, 255, 255, 0.3) !important;
+    }
 
     /* 结算及无词界面反白 */
     [data-theme="editorial"] #studyComplete *, [data-theme="editorial"] #noWords * { color: rgba(255,255,255,0.8) !important; border-color: rgba(255,255,255,0.1) !important;}
