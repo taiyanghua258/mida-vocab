@@ -949,6 +949,7 @@
       #wordTableBody tr.airy-row {
         display: flex !important;
         flex-direction: column !important;
+        position: relative !important;
         padding: 1.5rem 1rem !important;
         border-bottom: 1px solid rgb(var(--color-borderline) / 0.4) !important;
         background: rgb(var(--color-surface)) !important;
