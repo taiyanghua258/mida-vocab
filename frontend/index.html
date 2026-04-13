@@ -67,12 +67,38 @@
     /* ========== 主题 3：复古辞典与暗室 (Editorial & Darkroom) ========== */
     [data-theme="editorial"] {
       --color-parchment: #F4F1E9;
-      --color-surface: transparent;
+      --color-surface: #FDFBF7;     /* 👈 修复：从 transparent 改为更亮的实体纸张白 */
       --color-charcoal: #111111;
       --color-ochre: #A6523F;
       --color-borderline: rgba(17, 17, 17, 0.1);
       --bg-body: #F4F1E9;
       --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ========================================== */
+    /* 悬浮层爆改：抛弃毛玻璃，打造实体厚纸板质感  */
+    /* ========================================== */
+    [data-theme="editorial"] #userDropdown,
+    [data-theme="editorial"] .select-options,
+    [data-theme="editorial"] .modal-content {
+      background-color: var(--color-parchment) !important;
+      backdrop-filter: none !important; /* 拔掉现代感的毛玻璃模糊 */
+      border: 1px solid var(--color-charcoal) !important;
+      border-radius: 2px !important; /* 几乎直角的微小弧度，显得非常克制干练 */
+      /* 核心：硬切边的错位阴影，模拟物理纸张堆叠 */
+      box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.15) !important; 
+    }
+
+    /* 修复菜单内部选项的 Hover 状态，避免背景色冲突 */
+    [data-theme="editorial"] #userDropdown button:hover,
+    [data-theme="editorial"] .select-options li:hover {
+      background-color: rgba(17, 17, 17, 0.06) !important;
+    }
+    
+    /* 抹除下拉菜单顶部的装饰性背景块 */
+    [data-theme="editorial"] #userDropdown .bg-parchment\/30 {
+      background-color: transparent !important;
+      border-bottom: 1px solid var(--color-borderline);
     }
     
     /* 辞典字体覆盖 */
