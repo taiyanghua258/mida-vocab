@@ -52,13 +52,16 @@
       --bg-body: 253 251 247;
       --color-success: 75 115 101;
 
-      /* Phase 1: Establish Typography Variables */
       --font-ui: "Inter", "Noto Sans SC", -apple-system, sans-serif;
-      --font-display: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
+      --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
       
-      /* Defaults */
-      --font-main: var(--font-ui);
-      --font-serif: var(--font-display);
+      /* Default Scaling Logic */
+      --word-size: 3rem;
+      --word-font: var(--font-ui);
+      --word-weight: 700;
+      --word-tracking: -0.02em;
+      
+      --font-display: var(--font-serif);
     }
 
     /* ========== 主题 2：深色模式 (Obsidian & Kintsugi) ========== */
@@ -76,9 +79,10 @@
       
       /* Phase 2: Structural Upgrade */
       --card-bg: #121214;
-      --font-ui: "Inter", sans-serif;
-      --font-display: var(--font-ui); /* Obsidian mode uses tech-sans */
-      --word-scale: 2.25rem;
+      --word-font: var(--font-ui);
+      --word-size: 3.5rem;
+      --word-weight: 600;
+      --word-tracking: 0.02em;
       
       /* 材质固化：优化深色模式下的文字渲染边缘，使其更锐利 */
       -webkit-font-smoothing: antialiased;
@@ -109,15 +113,12 @@
       --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
       
-      /* Phase 2: Structural Upgrade */
-      --font-ui: "Inter", system-ui, sans-serif;
-      --font-display: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
-      --word-scale: 4.2rem;
-      --letter-spacing: -0.05em;
-      background-color: #fcfaf2; /* Paper texture */
-
-      --font-main: var(--font-ui);
-      --font-serif: var(--font-display);
+      /* 深度重构：极端排版 */
+      --word-font: var(--font-serif);
+      --word-size: clamp(4rem, 12vw, 7rem);
+      --word-weight: 800;
+      --word-tracking: -0.05em;
+      background-color: #fdfaf5 !important;
     }
 
     [data-theme="editorial"] .main-container {
@@ -127,20 +128,28 @@
       background-size: 40px 40px;
     }
 
-    [data-theme="editorial"] body {
-      font-family: var(--font-main);
+    body {
+      font-family: var(--font-ui) !important;
     }
 
     /* 精准排版工具类 */
-    .font-display { font-family: var(--font-display) !important; }
+    .font-display { font-family: var(--font-serif) !important; }
     .font-ui { font-family: var(--font-ui) !important; }
     .leading-tight-display { line-height: 1.15 !important; }
     
-    /* Dedicated Macro-display word */
-    #studyWord {
-      font-size: var(--word-scale, 3.5rem);
-      letter-spacing: var(--letter-spacing, normal);
+    /* 核心单词显示逻辑 (变量驱动) */
+    #studyWord, 
+    .card-front-word {
+      font-family: var(--word-font) !important;
+      font-size: var(--word-size) !important;
+      font-weight: var(--word-weight) !important;
+      letter-spacing: var(--word-tracking) !important;
+      line-height: 1.1 !important;
       transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    [data-theme="editorial"] #view-study .paper-card {
+      padding-top: 4rem !important;
     }
 
     /* Refined Footnote Tags */
