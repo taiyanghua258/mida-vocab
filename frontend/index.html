@@ -189,30 +189,30 @@
     [data-theme="editorial"] #view-study .paper-card.front.peeled { display: none !important; }
     [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) { display: none !important; }
 
-    /* 极简正面 */
-    [data-theme="editorial"] #view-study .paper-card.front > span,
-    [data-theme="editorial"] #view-study .paper-card.front > div.mt-auto { display: none !important; }
-    [data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
-      /* 稍微收敛最大字号，避免压迫感 */
-      font-size: clamp(2.5rem, 8vw, 5rem) !important;
-      color: rgb(var(--color-charcoal)) !important; /* 跟随变量 */
-      text-shadow: none !important; /* 关掉俗气的发光阴影 */
-      font-weight: 800 !important;
-      margin-top: 3rem !important;
-      /* 增加高级排版属性：紧凑字距、优雅折行 */
-      letter-spacing: -0.02em !important;
-      line-height: 1.1 !important;
-      word-break: keep-all !important; 
-      overflow-wrap: break-word !important;
-      hyphens: auto !important; 
-      width: 100% !important;
-      text-align: center !important;
-      padding: 0 1rem !important;
-    }
+/* 极简正面 */
+[data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
+  font-size: clamp(2.5rem, 8vw, 5rem) !important;
+  color: rgb(var(--color-charcoal)) !important;
+  text-shadow: none !important;
+  font-weight: 800 !important;
+  margin-top: 3rem !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+  word-break: keep-all !important; 
+  overflow-wrap: break-word !important;
+  hyphens: auto !important; 
+  width: 100% !important;
+  text-align: center !important;
+  padding: 0 1rem !important;
+}
 
-    /* 极简背面 */
-    [data-theme="editorial"] #view-study .paper-card.back .text-ochre { color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; letter-spacing: 0.1em; }
-    [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { color: rgb(var(--color-charcoal)) !important; font-size: 1.8rem !important; }
+/* 极简背面 */
+[data-theme="editorial"] #view-study .paper-card.back .text-ochre { color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; letter-spacing: 0.1em; }
+[data-theme="editorial"] #view-study .paper-card.back .text-charcoal { 
+  color: rgb(var(--color-charcoal)) !important; 
+  font-size: 1.8rem !important; 
+}
+
     [data-theme="editorial"] #view-study .paper-card.back > div:last-child { border: 1px solid rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.6) !important; background: transparent !important;}
 
     /* 结算及无词界面反白 */
@@ -339,27 +339,28 @@
       transition: opacity 0.25s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    /* 冷却池平滑折叠动画 */
-    #upcomingWidget {
-      display: grid;
-      grid-template-rows: 1fr;
-      opacity: 1;
-      transition: grid-template-rows 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-      transform-origin: top center;
-    }
+/* 冷却池平滑折叠动画 */
+#upcomingWidget {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  transform-origin: top center;
+  margin-bottom: 1.5rem; /* Equivalent to mb-6 */
+}
 
-    #upcomingWidget.is-collapsed {
-      grid-template-rows: 0fr;
-      opacity: 0;
-      pointer-events: none;
-      border-color: transparent !important; /* 隐藏边框 */
-    }
+#upcomingWidget.is-collapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  margin-bottom: 0 !important;
+  border-color: transparent !important;
+}
 
-    /* 内部容器需设置 min-height: 0 防止撑开 */
-    #upcomingWidget > div.flex-wrap {
-      min-height: 0;
-      overflow: hidden;
-    }
+#upcomingWidget > div.upcoming-inner {
+  min-height: 0;
+  overflow: hidden;
+}
 
     /* 进场序列错落感 - 修复闪烁 */
     .animate-soft-in { animation: softlyFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
@@ -489,18 +490,17 @@
       opacity: 1;
     }
 
-    /* 6. Dashboard 背景卡片精修 */
-    .glass-card {
-      background: rgb(var(--color-surface));
-      /* 移除 backdrop-filter: blur(12px); */
-      border: 1px solid rgb(var(--color-borderline));
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
-    }
-    .glass-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
-    }
+/* 6. Dashboard 背景卡片精修 */
+.glass-card {
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-borderline) / 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+}
     .airy-row:hover {
       transform: translateY(-1px);
       background-color: rgb(var(--color-surface) / 0.8);
@@ -587,24 +587,23 @@
     /* ========== 答案按钮 ========== */
     #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
     #answerSection.show { opacity: 1; pointer-events: auto; }
-    /* ========== 答案按钮 (物理阴影也挂靠变量，且改为柔和呼吸感) ========== */
-    .answer-btn { 
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      border: 1px solid rgb(var(--color-borderline)); 
-      /* 移除粗野的 0 4px 0 rgb(...)，换成高级的高斯模糊阴影 */
-      box-shadow: 0 4px 12px rgb(var(--color-charcoal) / 0.03); 
-      transform: translateY(0);
-      background-color: rgb(var(--color-surface));
-    }
-    .answer-btn:hover { 
-      border-color: currentColor; /* 跟随不同状态的颜色 */
-      transform: translateY(-3px); 
-      box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.08); 
-    }
-    .answer-btn:active { 
-      transform: translateY(1px) scale(0.97); 
-      box-shadow: 0 2px 8px rgb(var(--color-charcoal) / 0.05);
-    }
+/* ========== 答案按钮 (移除硬阴影，使用高斯模糊软阴影) ========== */
+.answer-btn { 
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgb(var(--color-borderline)); 
+  box-shadow: 0 4px 12px rgb(var(--color-charcoal) / 0.03); 
+  transform: translateY(0);
+  background-color: rgb(var(--color-surface));
+}
+.answer-btn:hover { 
+  border-color: currentColor;
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.08); 
+}
+.answer-btn:active { 
+  transform: translateY(1px) scale(0.97); 
+  box-shadow: 0 2px 8px rgb(var(--color-charcoal) / 0.05);
+}
 
     /* ========== Toast & Modal ========== */
     .toast { 
@@ -682,64 +681,63 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ========== 开始学习按钮 ========== */
-    .btn-study {
-      position: relative;
-      background: rgb(var(--color-charcoal)); 
-      color: rgb(var(--bg-body));
-      padding: 0.65rem 1.75rem;
-      border-radius: 100px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      border: none;
-      cursor: pointer;
-      overflow: hidden;
-      transition: color 0.4s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-    }
+/* ========== 开始学习按钮 ========== */
+.btn-study {
+  position: relative;
+  background: rgb(var(--color-charcoal)); 
+  color: rgb(var(--bg-body));
+  padding: 0.65rem 1.75rem;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.4s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
 
-    .btn-study::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 100px;
-      padding: 1.5px;
-      /* 统一使用 CSS 变量，干掉硬编码的 #DF9F28 */
-      background: linear-gradient(90deg, rgb(var(--color-ochre)), rgb(var(--color-terracotta)), rgb(var(--color-ochre)));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
+.btn-study::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  padding: 1.5px;
+  background: linear-gradient(90deg, rgb(var(--color-ochre)), rgb(var(--color-terracotta)), rgb(var(--color-ochre)));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
 
-    .btn-study::after {
-      content: '';
-      position: absolute;
-      bottom: 0.45rem;
-      left: 50%;
-      transform: translateX(-50%) scaleX(0);
-      width: 40%;
-      height: 1.5px;
-      background: linear-gradient(90deg, transparent, rgb(var(--color-ochre)), transparent);
-      transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
-    }
+.btn-study::after {
+  content: '';
+  position: absolute;
+  bottom: 0.45rem;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 40%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgb(var(--color-ochre)), transparent);
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
 
-    .btn-study:hover {
-      color: rgb(var(--color-surface));
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.15);
-    }
-    .btn-study:hover::before { opacity: 1; }
-    .btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
-    .btn-study:active { transform: translateY(0) scale(0.98); }
-    .btn-study svg { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
+.btn-study:hover {
+  color: rgb(var(--color-surface));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.15);
+}
+.btn-study:hover::before { opacity: 1; }
+.btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
+.btn-study:active { transform: translateY(0) scale(0.98); }
+.btn-study svg { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
 
     /* ========== Checkbox 自定义样式 ========== */
     input[type="checkbox"] {
@@ -819,7 +817,7 @@
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col relative z-10">
   <div id="noiseOverlay" class="fixed inset-0 z-0 pointer-events-none opacity-0 mix-blend-multiply transition-opacity duration-1000">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full opacity-40">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full opacity-30">
       <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter>
       <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
     </svg>
@@ -1076,16 +1074,18 @@
         </div>
       </div>
 
-      <div id="upcomingWidget" class="hidden mb-6 glass-card p-4 rounded-2xl border border-borderline flex flex-wrap gap-3 items-center">
-        <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
-          记忆冷却池
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
-          <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-charcoal text-surface text-[10px] leading-relaxed rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-            仅显示未来 1 小时内即将到期的短期记忆步骤（如 1 分钟、10 分钟冷却）。表格中显示的「2 小时后」等较长间隔是 FSRS 算法安排的正常复习周期，不在冷却池中。
+      <div id="upcomingWidget" class="hidden glass-card rounded-2xl border border-borderline">
+        <div class="upcoming-inner flex flex-wrap gap-3 items-center p-4">
+          <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
+            记忆冷却池
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
+            <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-charcoal text-surface text-[10px] leading-relaxed rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              仅显示未来 1 小时内即将到期的短期记忆步骤（如 1 分钟、10 分钟冷却）。表格中显示的「2 小时后」等较长间隔是 FSRS 算法安排的正常复习周期，不在冷却池中。
+            </div>
           </div>
+          <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
         </div>
-        <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
       </div>
       <div class="mb-5 flex flex-col sm:flex-row gap-4">
         <div class="relative flex-1">
