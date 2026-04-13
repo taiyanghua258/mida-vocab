@@ -488,6 +488,27 @@
         padding-bottom: env(safe-area-inset-bottom);
       }
     }
+
+    /* ========== 移动端 UI & 性能优化 ========== */
+    @media (max-width: 640px) {
+      /* 缩小卡片内边距，留出更多呼吸空间 */
+      .paper-card {
+        padding: 1.25rem !important; 
+        border-radius: 1.25rem !important;
+      }
+      
+      /* 减轻移动端撕开卡片时的阴影渲染压力，并减小位移防止飞出屏幕外 */
+      .paper-card.front.peeled {
+        transform: translate(-10%, -30%) rotate(10deg) scale(0.95) !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+      }
+      
+      /* 缩小复习操作时的飞出幅度（防止动画看不全），取消复杂的旋转 */
+      .word-group.discarded-hard { transform: translate(-40%, 10%) scale(0.9) !important; }
+      .word-group.discarded-good { transform: translate(40%, -10%) scale(0.9) !important; }
+      .word-group.discarded-again { transform: translateY(60px) scale(0.85) !important; }
+      .word-group.discarded-easy { transform: translateY(-60px) scale(1.05) !important; }
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <style>
@@ -932,33 +953,32 @@
       </div>
 
       <div id="studyCardContainer" class="w-full max-w-md mx-auto relative">
-        <div id="cardStack" class="w-full h-[55vh] sm:h-[400px] relative card-stack-container z-30"></div>
+        <div id="cardStack" class="w-full h-[45vh] min-h-[300px] sm:h-[400px] relative card-stack-container z-30"></div>
 
-        <div id="answerSection" class="w-full flex overflow-x-auto gap-2.5 z-50 mt-4 pt-2 relative pb-2 snap-x" style="scrollbar-width: none;">
-          <style>#answerSection::-webkit-scrollbar { display: none; }</style>
+        <div id="answerSection" class="w-full grid grid-cols-4 gap-2 sm:gap-3 z-50 mt-4 pt-2 relative pb-2">
           
-          <button onclick="submitReview('again')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center gap-0.5 group">
-            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-terracotta/40 group-hover:text-terracotta transition-colors shadow-sm">1</kbd>
-            <span class="text-[0.85rem] font-bold mt-1">重来</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-terracotta/10 group-hover:text-terracotta">-</span>
+          <button onclick="submitReview('again')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">1</kbd>
+            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">重来</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('hard')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center gap-0.5 group">
-            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-ochre/40 group-hover:text-ochre transition-colors shadow-sm">2</kbd>
-            <span class="text-[0.85rem] font-bold mt-1">困难</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-ochre/10 group-hover:text-ochre">-</span>
+          <button onclick="submitReview('hard')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">2</kbd>
+            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">困难</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('good')" class="answer-btn relative flex-1 min-w-[85px] shrink-0 snap-center py-2.5 rounded-xl bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center gap-0.5 group">
-            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-charcoal/40 group-hover:text-charcoal transition-colors shadow-sm">3</kbd>
-            <span class="text-[0.85rem] font-bold mt-1">良好</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-charcoal/10 group-hover:text-charcoal">-</span>
+          <button onclick="submitReview('good')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">3</kbd>
+            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">良好</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('easy')" class="answer-btn relative flex-1 py-2.5 rounded-xl bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal flex flex-col items-center gap-0.5 group">
-            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted group-hover:border-[#4B7365]/40 group-hover:text-[#4B7365] transition-colors shadow-sm">4</kbd>
-            <span class="text-[0.85rem] font-bold mt-1">简单</span>
-            <span class="interval-text text-[10px] font-mono text-muted bg-borderline/30 px-1.5 rounded-sm mt-0.5 mb-1 group-hover:bg-[#4B7365]/10 group-hover:text-[#4B7365]">-</span>
+          <button onclick="submitReview('easy')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-[#4B7365] hover:text-[#4B7365] hover:bg-[#4B7365]/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+            <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">4</kbd>
+            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">简单</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
           </button>
         </div>
       </div>
@@ -3440,14 +3460,14 @@ function getCardHTML(index, word) {
   else if (relativeIndex === 2) depth = '2';
 
   const fontClass = state.currentLang === 'en' 
-    ? 'font-sans text-4xl md:text-5xl tracking-tight' 
-    : 'font-jp text-5xl md:text-6xl';                 
+    ? 'font-sans text-3xl sm:text-4xl md:text-5xl tracking-tight' 
+    : 'font-jp text-4xl sm:text-5xl md:text-6xl';                 
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
       <div class="paper-card back">
         <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
-        <div class="text-3xl font-semibold text-charcoal mb-6 text-center">${word.meaning}</div>
+        <div class="text-2xl sm:text-3xl font-semibold text-charcoal mb-4 sm:mb-6 text-center">${word.meaning}</div>
         <div class="px-4 py-1.5 bg-parchment rounded-full text-xs font-medium text-muted uppercase">${word.partOfSpeech || '其他'}</div>
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
