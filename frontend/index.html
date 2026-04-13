@@ -129,15 +129,14 @@
       background-size: 40px 40px;
     }
 
-    /* 统一 Body 定义，消除冗余 */
-    body {
-      background-color: rgb(var(--bg-body)) !important;
+    body { 
+      font-family: var(--font-ui), sans-serif;
+      background-color: rgb(var(--bg-body));
       color: rgb(var(--color-charcoal));
-      font-family: var(--font-ui) !important;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
-      transition: background-color 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.4s ease;
+      transition: background-color 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.4s ease;
     }
     
     /* 深色模式下的弹窗质感与占位符增强 */
@@ -189,10 +188,6 @@
       box-shadow: none !important;
     }
     
-    [data-theme="editorial"] .glass-card,
-    [data-theme="editorial"] #tour-action-bar,
-    [data-theme="editorial"] #upcomingWidget,
-    [data-theme="editorial"] #batchActionBar,
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] #tour-action-bar,
     [data-theme="editorial"] #upcomingWidget,
@@ -3925,7 +3920,7 @@ function getCardHTML(index, word) {
   const isEditorial = currentTheme === 'editorial';
 
   // 2. 移除冲突的 Tailwind 类，完全交由 CSS 变量控制 (font-size, font-family, font-weight)
-  const studyWordClasses = `mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic' : ''}`;
+  const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic' : ''}`;
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
@@ -3936,7 +3931,9 @@ function getCardHTML(index, word) {
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
         <span class="footnote-tag uppercase mb-4 font-ui">${word.partOfSpeech || '其他'}</span>
+        
         <div id="studyWord" class="${studyWordClasses}">${word.japanese}</div>
+        
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>
           <div class="hidden sm:flex items-center ml-2">
