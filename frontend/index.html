@@ -65,21 +65,22 @@
     }
 
     /* ========================================================= */
-    /* 主题 3：先锋印记与胶片暗室 (Editorial & Microfilm Darkroom) */
+    /* 终极净化：学术模式主界面 (Editorial & Dictionary Print)     */
     /* ========================================================= */
+    
+    /* 1. 调色板重置：绝对素净的纸，与绝对纯粹的墨 */
     [data-theme="editorial"] {
-      --color-parchment: 249 247 241; /* 老旧纸张基底 */
-      --color-surface: 249 247 241; /* 抹平层级差异，追求印刷平面感 */
-      --color-charcoal: 26 47 43; /* 极深的墨绿黑 */
-      --color-ochre: 223 159 40; /* 褪色金/朱砂 */
-      --bg-darkroom: 18 26 24; /* 深邃暗室黑绿 #121A18 */
-      --color-borderline: 26 47 43; /* 边框即墨线，不再用灰色 */
-      --bg-body: 249 247 241;
+      --color-parchment: 242 239 233; /* 褪去黄气，更干净的冷调米色基底 */
+      --color-surface: 242 239 233;   /* 抹平层级，完全与基底同色 */
+      --color-charcoal: 20 20 20;     /* 纯正油墨黑 */
+      --color-ochre: 196 43 28;       /* 朱砂红（仅用于小面积点缀，如拼音/假名） */
+      --color-borderline: 20 20 20;
+      --bg-body: 242 239 233;
+      --bg-darkroom: 18 26 24;        /* 保持暗室背景变量 */
       --font-editorial: 'Shippori Mincho', 'Noto Serif JP', Georgia, 'Times New Roman', serif;
-      --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* 1. 信仰级字体覆盖与绝对零圆角 */
+    /* 字体强制接管 */
     [data-theme="editorial"],
     [data-theme="editorial"] body,
     [data-theme="editorial"] input,
@@ -91,105 +92,134 @@
     [data-theme="editorial"] h2,
     [data-theme="editorial"] h3 {
       font-family: var(--font-editorial) !important;
-    }
-    
-    /* 砸碎所有现代 UI 的廉价圆角 */
-    [data-theme="editorial"] * {
-      border-radius: 0 !important;
+      border-radius: 0 !important; /* 全域抹杀圆角 */
     }
 
-    /* 光学噪点特调 (区分明暗模式) */
-    [data-theme="editorial"] #noiseOverlay {
-      opacity: 0.04 !important;
-      mix-blend-mode: multiply !important;
-    }
-    body:has(#view-study.active)[data-theme="editorial"] #noiseOverlay {
-      opacity: 0.02 !important;
-      mix-blend-mode: screen !important; /* 暗室下使用滤色模式让噪点可见 */
-    }
-
-    /* 2. 报纸专栏排版 (Neo-Brutalism) */
-    [data-theme="editorial"] .glass-card,
-    [data-theme="editorial"] .modal-content,
-    [data-theme="editorial"] #userDropdown,
-    [data-theme="editorial"] .select-options {
-      background: rgb(var(--color-surface)) !important;
+    /* 2. 碾碎主界面的容器盒子：印刷品不需要“卡片” */
+    [data-theme="editorial"] .glass-card {
+      background: transparent !important;
       backdrop-filter: none !important;
-      border: 1px solid rgb(var(--color-charcoal)) !important;
-      /* 粗犷的实体错位墨迹阴影 */
-      box-shadow: 6px 6px 0 rgb(var(--color-charcoal)) !important; 
+      border: none !important;      /* 删掉灾难性的黑框 */
+      box-shadow: none !important;  /* 删掉灾难性的错位阴影 */
+      padding: 0 !important;        /* 让内容直接撑开，贴合页面留白 */
     }
 
-    /* 手写填空线输入框 */
+    /* 3. 输入区与控制台极简主义 */
+    [data-theme="editorial"] .mb-8.flex,
+    [data-theme="editorial"] header {
+      border-bottom: 2px solid rgb(var(--color-charcoal)) !important; /* 极粗的截断线 */
+      padding-bottom: 1.5rem !important;
+      margin-bottom: 2rem !important;
+    }
+
     [data-theme="editorial"] .aesthetic-input {
-      background-color: transparent !important;
+      background: transparent !important;
       border: none !important;
-      border-bottom: 1px dashed rgb(var(--color-charcoal) / 0.5) !important;
+      border-bottom: 1px dashed rgb(var(--color-charcoal) / 0.4) !important;
+      padding-left: 0 !important;
+      font-size: 1.25rem !important; /* 输入框字号放大，像填表 */
+      box-shadow: none !important;
     }
     [data-theme="editorial"] .aesthetic-input:focus {
       border-bottom: 1px solid rgb(var(--color-charcoal)) !important;
-      background-color: rgb(var(--color-charcoal) / 0.03) !important;
-      box-shadow: none !important;
+      background: transparent !important;
     }
 
-    /* 3. 机械打字机按钮 (Mech-Buttons) */
+    /* 4. 按钮克制化：仅保留机械线条 */
     [data-theme="editorial"] .magnetic-btn,
-    [data-theme="editorial"] .btn-study,
-    [data-theme="editorial"] .ghost-underline-btn {
+    [data-theme="editorial"] .btn-study {
       background: transparent !important;
       color: rgb(var(--color-charcoal)) !important;
       border: 1px solid rgb(var(--color-charcoal)) !important;
-      border-bottom: 4px solid rgb(var(--color-charcoal)) !important;
-      font-weight: 700 !important;
-      letter-spacing: 0.15em !important;
-      text-transform: uppercase !important;
-      transition: all 0.15s ease-out !important;
+      border-bottom: 3px solid rgb(var(--color-charcoal)) !important;
       box-shadow: none !important;
       transform: translateY(0) !important;
+      padding: 0.5rem 1.5rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.1em !important;
     }
-    /* 剔除多余的流光特效 */
-    [data-theme="editorial"] .magnetic-btn::before,
-    [data-theme="editorial"] .btn-study::before,
-    [data-theme="editorial"] .btn-study::after,
-    [data-theme="editorial"] .ghost-underline-btn::after { display: none !important; }
-    
-    /* 极度舒适的按下键程反馈 */
     [data-theme="editorial"] .magnetic-btn:active,
-    [data-theme="editorial"] .btn-study:active,
-    [data-theme="editorial"] .ghost-underline-btn:active {
-      transform: translateY(3px) !important;
+    [data-theme="editorial"] .btn-study:active {
+      transform: translateY(2px) !important;
       border-bottom-width: 1px !important;
       background: rgb(var(--color-charcoal) / 0.05) !important;
     }
     [data-theme="editorial"] .magnetic-btn:hover,
-    [data-theme="editorial"] .btn-study:hover { background: rgb(var(--color-charcoal) / 0.02) !important; }
+    [data-theme="editorial"] .btn-study:hover {
+      background: rgb(var(--color-charcoal)) !important;
+      color: rgb(var(--color-parchment)) !important;
+    }
 
-    /* 4. 词典化索引列表 (Index View) */
-    [data-theme="editorial"] table, 
-    [data-theme="editorial"] tbody, 
-    [data-theme="editorial"] tr.airy-row { display: block; width: 100%; }
-    [data-theme="editorial"] thead { display: none; }
+    /* ========================================================= */
+    /* 5. 辞海级词汇表 (Dictionary Table Restructure)            */
+    /* ========================================================= */
+    
+    /* 恢复 Table 的原生排版能力，放弃花里胡哨的 flex block */
+    [data-theme="editorial"] table {
+      display: table !important;
+      width: 100% !important;
+      border-collapse: collapse !important;
+      border-top: 1px solid rgb(var(--color-charcoal)) !important;
+    }
+    [data-theme="editorial"] thead {
+      display: table-header-group !important; /* 恢复表头 */
+    }
+    [data-theme="editorial"] th {
+      border-bottom: 1px solid rgb(var(--color-charcoal)) !important;
+      color: rgb(var(--color-charcoal) / 0.5) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.15em !important;
+      font-size: 0.75rem !important;
+      padding: 1rem 0 !important;
+      text-align: left !important;
+      font-weight: normal !important;
+    }
+    
+    [data-theme="editorial"] tbody { display: table-row-group !important; }
     
     [data-theme="editorial"] tr.airy-row {
-      display: flex !important; flex-wrap: wrap !important; align-items: baseline !important;
-      padding: 1.5rem 0 !important;
-      border-bottom: 1px solid rgb(var(--color-charcoal) / 0.15) !important;
+      display: table-row !important;
+      border-bottom: 1px solid rgb(var(--color-charcoal) / 0.1) !important;
       background: transparent !important;
-      box-shadow: none !important;
-      transition: padding-left 0.6s var(--easing-heavy) !important;
+      transition: background 0.15s ease !important;
+      transform: none !important; /* 移除一切位移 */
     }
-    /* 悬停不再变背景，而是文字呼吸平移 */
     [data-theme="editorial"] tr.airy-row:hover {
-      padding-left: 1.5rem !important;
-      background: transparent !important;
-      border-bottom-color: rgb(var(--color-charcoal)) !important;
-      transform: none !important;
+      background: rgb(var(--color-charcoal) / 0.03) !important;
+      padding-left: 0 !important; /* 移除悬停右移，保持字典的庄重对齐 */
+      border-bottom-color: rgb(var(--color-charcoal) / 0.3) !important;
     }
-    [data-theme="editorial"] td { padding: 0.5rem 1.5rem 0 0 !important; border: none !important; }
     
-    /* 放大核心词汇，匹配词典视觉 */
-    [data-theme="editorial"] tr.airy-row td:nth-child(2) .text-lg {
-      font-size: 2rem !important; font-weight: 800 !important; letter-spacing: 0.02em !important;
+    [data-theme="editorial"] td {
+      display: table-cell !important;
+      padding: 1.5rem 0 !important;
+      vertical-align: top !important; /* 顶部对齐 */
+      border: none !important;
+    }
+
+    /* 极致排版：突出主词，克制释义 */
+    [data-theme="editorial"] td:nth-child(2) {
+      font-size: 1.75rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.02em !important;
+      line-height: 1.1 !important;
+    }
+    /* 读音/假名变小，并使用朱砂红 */
+    [data-theme="editorial"] td:nth-child(2) .text-sm,
+    [data-theme="editorial"] td:nth-child(2) span {
+      display: block !important;
+      font-size: 0.75rem !important;
+      color: rgb(var(--color-ochre)) !important;
+      margin-top: 0.4rem !important;
+      font-family: sans-serif !important; /* 注音保留无衬线，增加层级对比 */
+      letter-spacing: 0.05em !important;
+    }
+    
+    /* 弱化英文与中文释义 */
+    [data-theme="editorial"] td:nth-child(3) {
+      font-size: 1rem !important;
+      color: rgb(var(--color-charcoal) / 0.75) !important;
+      padding-top: 1.7rem !important; /* 手动向下偏移，对齐主词的基线 */
     }
 
     /* ========================================================= */
