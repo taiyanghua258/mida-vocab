@@ -79,6 +79,10 @@
       --font-ui: "Inter", sans-serif;
       --font-display: var(--font-ui); /* Obsidian mode uses tech-sans */
       --word-scale: 2.25rem;
+      
+      /* 材质固化：优化深色模式下的文字渲染边缘，使其更锐利 */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     [data-theme="obsidian"] .paper-card,
@@ -3877,8 +3881,7 @@ function getCardHTML(index, word) {
     ? 'font-sans text-3xl sm:text-4xl md:text-5xl tracking-tight' 
     : 'font-jp text-4xl sm:text-5xl md:text-6xl';                 
 
-  const isEditorial = document.documentElement.getAttribute('data-theme') === 'editorial';
-  const studyWordClasses = `font-display font-bold text-charcoal mb-2 leading-none break-all ${isEditorial ? 'italic tracking-tighter' : ''}`;
+  const studyWordClasses = `font-display font-bold text-charcoal mb-2 leading-none break-all text-[var(--word-scale)] transition-all duration-500 ${isEditorial ? 'italic tracking-tighter' : ''}`;
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
