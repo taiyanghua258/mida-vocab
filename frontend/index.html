@@ -461,32 +461,32 @@
       </div>
 
       <div id="studyCardContainer" class="w-full max-w-2xl px-4 sm:px-8 mx-auto relative">
-        <div id="cardStack" class="w-full h-[45vh] min-h-[300px] sm:h-[400px] relative card-stack-container z-30"></div>
+        <div id="cardStack" class="w-full h-[38vh] min-h-[220px] sm:h-[45vh] sm:min-h-[300px] relative card-stack-container z-30"></div>
 
-        <div id="answerSection" class="w-full grid grid-cols-4 gap-2 sm:gap-3 z-50 mt-4 pt-2 relative pb-2">
+        <div id="answerSection" class="w-full grid grid-cols-4 gap-1.5 sm:gap-3 z-50 mt-3 sm:mt-4 pt-1 sm:pt-2 relative pb-2">
           
-          <button onclick="submitReview('again')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+          <button onclick="submitReview('again')" class="answer-btn relative py-1.5 sm:py-2.5 rounded-lg sm:rounded-[0.85rem] bg-surface border border-borderline hover:border-terracotta hover:text-terracotta hover:bg-terracotta/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
             <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">1</kbd>
-            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">重来</span>
-            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
+            <span class="text-[0.75rem] sm:text-[0.85rem] font-bold mt-0.5">重来</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-0.5 sm:mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('hard')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+          <button onclick="submitReview('hard')" class="answer-btn relative py-1.5 sm:py-2.5 rounded-lg sm:rounded-[0.85rem] bg-surface border border-borderline hover:border-ochre hover:text-ochre hover:bg-ochre/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
             <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">2</kbd>
-            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">困难</span>
-            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
+            <span class="text-[0.75rem] sm:text-[0.85rem] font-bold mt-0.5">困难</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-0.5 sm:mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('good')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+          <button onclick="submitReview('good')" class="answer-btn relative py-1.5 sm:py-2.5 rounded-lg sm:rounded-[0.85rem] bg-surface border border-borderline hover:border-charcoal hover:bg-charcoal/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
             <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">3</kbd>
-            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">良好</span>
-            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
+            <span class="text-[0.75rem] sm:text-[0.85rem] font-bold mt-0.5">良好</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-0.5 sm:mt-1 mb-0.5">-</span>
           </button>
           
-          <button onclick="submitReview('easy')" class="answer-btn relative py-2 sm:py-2.5 rounded-[0.85rem] bg-surface border border-borderline hover:border-success hover:text-success hover:bg-success/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
+          <button onclick="submitReview('easy')" class="answer-btn relative py-1.5 sm:py-2.5 rounded-lg sm:rounded-[0.85rem] bg-surface border border-borderline hover:border-success hover:text-success hover:bg-success/5 text-charcoal flex flex-col items-center justify-center gap-0 group">
             <kbd class="hidden sm:block absolute top-1.5 left-2 px-1.5 py-0.5 bg-surface border border-borderline border-b-2 rounded text-[10px] font-mono font-bold text-muted shadow-sm">4</kbd>
-            <span class="text-[0.8rem] sm:text-[0.85rem] font-bold mt-0.5">简单</span>
-            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-1 mb-0.5">-</span>
+            <span class="text-[0.75rem] sm:text-[0.85rem] font-bold mt-0.5">简单</span>
+            <span class="interval-text text-[9px] sm:text-[10px] font-mono text-muted bg-borderline/30 px-1 rounded-sm mt-0.5 sm:mt-1 mb-0.5">-</span>
           </button>
         </div>
       </div>

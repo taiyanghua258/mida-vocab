@@ -983,23 +983,43 @@
         right: 1rem;
       }
 
-      /* 缩小卡片内边距，留出更多呼吸空间 */
+      /* 缩小卡片内边距，留出更多呼吸空间，去除移动端性能杀手厚重心点 */
       .paper-card {
         padding: 1.25rem !important; 
         border-radius: 1.25rem !important;
+        box-shadow: none !important; /* Move shadow to border on mobile for performance */
       }
       
-      /* 减轻移动端撕开卡片时的阴影渲染压力，并减小位移防止飞出屏幕外 */
+      /* 减轻移动端撕开卡片时的阴影渲染压力，彻底消除横向溢出 */
       .paper-card.front.peeled {
-        transform: translate(-10%, -30%) rotate(10deg) scale(0.95) !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+        transform: translate(0, -20%) scale(0.95) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
       }
       
-      /* 缩小复习操作时的飞出幅度（防止动画看不全），取消复杂的旋转 */
-      .word-group.discarded-hard { transform: translate(-40%, 10%) scale(0.9) !important; }
-      .word-group.discarded-good { transform: translate(40%, -10%) scale(0.9) !important; }
-      .word-group.discarded-again { transform: translateY(60px) scale(0.85) !important; }
-      .word-group.discarded-easy { transform: translateY(-60px) scale(1.05) !important; }
+      /* 缩小复习操作时的垂直飞出幅度，取消横向位移防止页面被撑撑出横滑条 */
+      .word-group.discarded-hard { transform: translateY(40px) scale(0.85) !important; opacity: 0 !important; }
+      .word-group.discarded-good { transform: translateY(-40px) scale(1.05) !important; opacity: 0 !important; }
+      .word-group.discarded-again { transform: translateY(50px) scale(0.85) !important; opacity: 0 !important; }
+      .word-group.discarded-easy { transform: translateY(-50px) scale(1.05) !important; opacity: 0 !important; }
+
+      /* 学术模式 (Editorial) 移动端专属微缩比例 */
+      [data-theme="editorial"] #view-study .editorial-dict-front,
+      [data-theme="editorial"] #view-study .editorial-dict-back {
+        padding: 1.5rem 1.25rem !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-front .word {
+        font-size: clamp(2.8rem, 15vw, 4rem) !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-header .reading {
+        font-size: 1.8rem !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-back .meaning {
+        font-size: 1.2rem !important;
+        line-height: 1.5 !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-divider {
+        margin-bottom: 1.5rem !important;
+      }
     }
     /* =========================================
        第三方组件适配：Driver.js (新手引导)

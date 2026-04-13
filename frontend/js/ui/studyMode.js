@@ -22,14 +22,18 @@ function confirmLeaveStudy() {
   msg += `\n\n确定要退出学习吗？`;
 
   if (confirm(msg)) {
-    // 【修复 Bug 2】：持久化当前未完成的会话，包含无痕模式状态
-    localStorage.setItem(`active_session_${state.currentLang}`, JSON.stringify({
-      studyWords: state.studyWords,
-      studyIndex: state.studyIndex,
-      originalTotal: state.originalTotal,
-      studyStats: state.studyStats,
-      isCramMode: state.isCramMode // <--- 保存无痕状态
-    }));
+    if (!state.isCramMode) {
+      localStorage.setItem(`active_session_${state.currentLang}`, JSON.stringify({
+        studyWords: state.studyWords,
+        studyIndex: state.studyIndex,
+        originalTotal: state.originalTotal,
+        studyStats: state.studyStats,
+        isCramMode: state.isCramMode
+      }));
+    } else {
+      // 无痕模式不保存进度
+      localStorage.removeItem(`active_session_${state.currentLang}`);
+    }
 
     if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
     navigate('dashboard');
