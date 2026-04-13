@@ -40,8 +40,16 @@ async function getUserScheduler(userId) {
 }
 
 function wordToCard(word) {
+  let state = word.state != null ? word.state : State.New;
+  let last_review = word.last_review ? new Date(word.last_review) : undefined;
+
+  // 修复 ts-fsrs 5.x 严格校验报错: "last_review is required when state is not New"
+  if (state !== State.New && !last_review) {
+    last_review = word.due ? new Date(word.due) : new Date();
+  }
+
   return {
-    due: word.due || new Date(),
+    due: word.due ? new Date(word.due) : new Date(),
     stability: word.stability || 0,
     difficulty: word.difficulty || 0,
     elapsed_days: word.elapsed_days || 0,
@@ -49,8 +57,8 @@ function wordToCard(word) {
     reps: word.reps || 0,
     lapses: word.lapses || 0,
     learning_steps: word.learning_steps || 0,
-    state: word.state != null ? word.state : State.New,
-    last_review: word.last_review || undefined
+    state: state,
+    last_review: last_review
   };
 }
 

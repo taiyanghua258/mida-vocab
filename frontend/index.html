@@ -4208,7 +4208,8 @@ async function submitReview(result) {
       }
     }
   } catch (err) {
-    showToast('网络异常，复习记录保存失败', 'error');
+    showToast(`复习记录保存失败：${err.message || '网络异常'}`, 'error');
+    console.error('Review Error', err);
     // 【修复】发生错误时恢复按钮交互
     isReviewProcessing = false;
     revealAllowed = true;

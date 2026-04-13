@@ -354,7 +354,7 @@ exports.importWords = async (req, res) => {
           due: { $lte: new Date() }
         });
 
-        const usedQuota = todayNewReviews + queuedNew;
+        const usedQuota = todayNewReviews; // 修改：不再让历史积压 (queuedNew) 阻挡新导入的单词，让新单词能插队优先学习
         const remainingQuota = Math.max(0, dailyNewLimit - usedQuota);
 
         const tomorrowStart = dayjs().tz(TIMEZONE).add(1, 'day').startOf('day').toDate();
@@ -431,7 +431,7 @@ exports.uploadAndConvertApkg = async (req, res) => {
       if (error) {
         console.error('转换失败:', error);
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-        return res.status(500).json({ message: '词书解析失败' });
+        return res.status(500).json({ message: '词书解析失败', details: error.message });
       }
 
       if (!fs.existsSync(outputPath)) {
