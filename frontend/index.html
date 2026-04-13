@@ -12,7 +12,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -54,7 +54,7 @@
 
       /* Phase 1: Establish Typography Variables */
       --font-ui: "Inter", "Noto Sans SC", -apple-system, sans-serif;
-      --font-display: "Shippori Mincho", "Noto Serif JP", serif;
+      --font-display: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
       
       /* Defaults */
       --font-main: var(--font-ui);
@@ -77,12 +77,12 @@
 
     [data-theme="obsidian"] .paper-card,
     [data-theme="obsidian"] .glass-card {
-      background: rgba(34, 32, 29, 0.6) !important;
-      backdrop-filter: blur(20px);
+      background: #18181b !important;
+      backdrop-filter: none !important;
       box-shadow: 
-        inset 0 1px 1px rgba(255, 255, 255, 0.05),
-        0 20px 40px rgba(0, 0, 0, 0.4) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        inset 0 1px 1px rgba(255, 255, 255, 0.08),
+        0 20px 40px rgba(0, 0, 0, 0.8) !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
     /* ========================================================= */
@@ -114,6 +114,11 @@
       font-family: var(--font-main);
     }
 
+    /* 精准排版工具类 */
+    .font-display { font-family: var(--font-display) !important; }
+    .font-ui { font-family: var(--font-ui) !important; }
+    .leading-tight-display { line-height: 1.15 !important; }
+
     /* Refined Footnote Tags */
     .footnote-tag {
       font-family: var(--font-ui);
@@ -121,7 +126,7 @@
       letter-spacing: -0.02em;
       opacity: 0.6;
       display: inline-flex;
-      align-items: center;
+      align-items: center; /* 确保垂直居中 */
       transition: opacity 0.3s ease;
     }
     .footnote-tag::before { content: '['; margin-right: 1px; }
@@ -950,11 +955,11 @@
           </div>
 
           <!-- 主品牌字 -->
-          <div class="font-jp text-[3.6rem] font-bold text-charcoal leading-none tracking-tighter transition-colors duration-500">見だ</div>
+          <div class="font-display text-[3.6rem] font-bold text-charcoal leading-none tracking-tighter transition-colors duration-500">見だ</div>
         </div>
         <!-- 下方排版：极简横线与副标题 -->
         <div class="w-12 h-[2px] bg-borderline mt-7 mb-4 mx-auto transition-all duration-700 group-hover:w-24 group-hover:bg-ochre/30"></div>
-        <div class="font-sans text-[0.65rem] font-bold tracking-[0.55em] uppercase text-muted transition-colors duration-700 group-hover:text-charcoal/70">Spaced Repetition</div>
+        <div class="font-ui text-[0.65rem] font-bold tracking-[0.55em] uppercase text-muted transition-colors duration-700 group-hover:text-charcoal/70">Spaced Repetition</div>
       </div>
       <form id="loginForm" class="space-y-5">
         <div>
@@ -963,7 +968,7 @@
         <div>
           <input type="password" id="password" required placeholder="密码" class="aesthetic-input w-full px-4 py-3.5 text-charcoal placeholder-muted/60">
         </div>
-        <button type="submit" class="magnetic-btn w-full py-4 text-[0.95rem] tracking-widest-plus mt-2">
+        <button type="submit" class="magnetic-btn w-full py-4 text-[0.95rem] tracking-widest-plus mt-2 font-ui">
           登录系统
         </button>
         <p class="text-center text-[0.8rem] text-muted mt-6">
@@ -1009,25 +1014,25 @@
             </div>
             
             <div class="flex flex-col justify-center leading-none mt-[3px] relative h-[36px] w-[56px] overflow-hidden">
-              <div id="brand-ja" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-0 opacity-100">
+              <div id="brand-ja" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-0 opacity-100 font-display">
                 <div class="flex items-baseline">
-                  <span class="font-jp text-[1.25rem] font-bold text-charcoal tracking-tighter">見だ</span>
+                  <span class="text-[1.25rem] font-bold text-charcoal tracking-tighter">見だ</span>
                   <span class="w-1 h-1 bg-terracotta rounded-full ml-[3px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
                 </div>
-                <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
               </div>
     
-              <div id="brand-en" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-8 opacity-0">
+              <div id="brand-en" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-8 opacity-0 font-display">
                 <div class="flex items-baseline">
-                  <span class="font-sans text-[1.25rem] font-bold text-charcoal tracking-tight">See</span>
+                  <span class="text-[1.25rem] font-bold text-charcoal tracking-tight">See</span>
                   <span class="w-1 h-1 bg-terracotta rounded-full ml-[2px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
                 </div>
-                <span class="font-sans text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[1px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
+                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[1px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center bg-parchment border border-borderline rounded-full p-1 shadow-sm">
+          <div class="flex items-center bg-parchment border border-borderline rounded-full p-1 shadow-sm font-ui">
             <button onclick="switchWorkspace('ja')" id="ws-btn-ja" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm">日</button>
             <button onclick="switchWorkspace('en')" id="ws-btn-en" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal">英</button>
           </div>
@@ -1056,7 +1061,7 @@
                 <span id="navAvatarLetter">U</span>
                 <img id="navAvatarImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10">
               </div>
-              <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase"></span>
+              <span id="welcomeUser" class="text-[0.7rem] font-bold tracking-wider text-charcoal/80 uppercase font-ui"></span>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted transition-transform duration-300" id="userMenuArrow"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
             </button>
 
@@ -1115,17 +1120,17 @@
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div id="tour-stats-area" class="flex gap-4 w-full lg:w-auto">
           <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-1">
-            <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight" id="totalWords">-</span>
-            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1">总词汇量</span>
+            <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight font-display" id="totalWords">-</span>
+            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 font-ui">总词汇量</span>
           </div>
           <div class="glass-card p-6 rounded-[1.5rem] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-2">
             <div class="absolute inset-y-6 left-0 w-[3px] bg-ochre rounded-r-full opacity-80 transition-all duration-500 group-hover:h-[calc(100%-2rem)] group-hover:inset-y-4 group-hover:opacity-100"></div>
-            <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight" id="dueWords">-</span>
-            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2">待复习</span>
+            <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight font-display" id="dueWords">-</span>
+            <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2 font-ui">待复习</span>
           </div>
         </div>
 
-        <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto">
+        <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto font-ui">
           <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[1.25rem] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto animate-soft-in stagger-3">
             <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
@@ -1165,7 +1170,7 @@
               <span>导出库</span>
             </button>
           </div>
-          <button id="tour-study-btn" onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem]">
+          <button id="tour-study-btn" onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[1.25rem] font-ui">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ochre">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -1176,7 +1181,7 @@
 
       <div id="upcomingWidget" class="hidden glass-card rounded-2xl border border-borderline">
         <div class="upcoming-inner flex flex-wrap gap-3 items-center p-4">
-          <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help">
+          <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help font-ui">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
             记忆冷却池
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
@@ -1192,9 +1197,9 @@
           <div class="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none text-muted">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
           </div>
-          <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem]">
+          <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem] font-ui">
         </div>
-        <div class="custom-select relative w-full sm:w-40 flex-shrink-0" id="filterSelectWrapper">
+        <div class="custom-select relative w-full sm:w-40 flex-shrink-0 font-ui" id="filterSelectWrapper">
           <input type="hidden" id="partOfSpeechFilter" value="">
           
           <div class="select-trigger aesthetic-input w-full px-4 py-3 text-charcoal cursor-pointer text-[0.95rem] flex justify-between items-center bg-surface">
@@ -2709,11 +2714,11 @@ function switchWorkspace(lang, isInitial = false) {
   const btnEn = document.getElementById('ws-btn-en');
   if (btnJa && btnEn) {
     btnJa.className = lang === 'ja' 
-      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm' 
-      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal';
+      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm font-ui' 
+      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal font-ui';
     btnEn.className = lang === 'en' 
-      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm' 
-      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal';
+      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm font-ui' 
+      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal font-ui';
   }
 
   const tableHeader = document.getElementById('tableHeaderWord');
@@ -2807,12 +2812,15 @@ function renderWordList(words) {
       <td class="px-5 py-5">
         <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
       </td>
-      <td class="px-6 py-4"><span class="text-lg font-semibold ${fontClass}">${w.japanese}</span><br><span class="text-xs text-muted">${w.reading || ''}</span></td>
-      <td class="px-6 py-4 text-sm font-medium">${w.meaning}</td>
+      <td class="px-6 py-4">
+        <span class="text-xl font-bold font-display leading-tight-display block">${w.japanese}</span>
+        <span class="text-xs text-muted font-display opacity-60">${w.reading || ''}</span>
+      </td>
+      <td class="px-6 py-4 text-sm font-medium font-display opacity-90">${w.meaning}</td>
       <td class="px-4 py-4">
-        <div class="flex flex-wrap gap-2 max-w-[120px]">
-          <span class="footnote-tag">${w.partOfSpeech || '其他'}</span>
-          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40">+${(w.tags || []).length - 2}</span>` : ''}
+        <div class="flex flex-wrap gap-2 max-w-[120px] items-center">
+          <span class="footnote-tag font-ui">${w.partOfSpeech || '其他'}</span>
+          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag font-ui">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40 font-ui">+${(w.tags || []).length - 2}</span>` : ''}
         </div>
       </td>
       <td class="px-6 py-4 due-cell" data-due="${w.due}" data-state="${w.state}">${formatDate(w.due, w.state)}</td>
@@ -3852,14 +3860,14 @@ function getCardHTML(index, word) {
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
       <div class="paper-card back">
-        <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
-        <div class="text-2xl sm:text-3xl font-semibold text-charcoal mb-4 sm:mb-6 text-center">${word.meaning}</div>
-        <div class="footnote-tag uppercase">${word.partOfSpeech || '其他'}</div>
+        <div class="text-xl font-display text-ochre mb-4 font-medium">${word.reading || '-'}</div>
+        <div class="text-2xl sm:text-3xl font-display font-semibold text-charcoal mb-4 sm:mb-6 text-center leading-tight-display">${word.meaning}</div>
+        <div class="footnote-tag uppercase font-ui">${word.partOfSpeech || '其他'}</div>
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
-        <span class="footnote-tag uppercase mb-4">${word.partOfSpeech || '其他'}</span>
-        <div class="${fontClass} font-semibold text-charcoal mb-2">${word.japanese}</div>
-        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center">
+        <span class="footnote-tag uppercase mb-4 font-ui">${word.partOfSpeech || '其他'}</span>
+        <div class="font-display font-bold text-charcoal mb-2 leading-none text-4xl sm:text-5xl md:text-6xl">${word.japanese}</div>
+        <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>
           <div class="hidden sm:flex items-center ml-2">
             <span class="text-[10px] opacity-50 mr-1.5">或按</span>
