@@ -19,14 +19,14 @@
       theme: {
         extend: {
           colors: {
-            parchment: 'var(--color-parchment)',
-            surface: 'var(--color-surface)',
-            charcoal: 'var(--color-charcoal)',
-            ochre: 'var(--color-ochre)',
-            terracotta: 'var(--color-terracotta)',
-            lavender: 'var(--color-lavender)',
-            muted: 'var(--color-muted)',
-            borderline: 'var(--color-borderline)'
+            parchment: 'rgb(var(--color-parchment) / <alpha-value>)',
+            surface: 'rgb(var(--color-surface) / <alpha-value>)',
+            charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
+            ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
+            terracotta: 'rgb(var(--color-terracotta) / <alpha-value>)',
+            lavender: 'rgb(var(--color-lavender) / <alpha-value>)',
+            muted: 'rgb(var(--color-muted) / <alpha-value>)',
+            borderline: 'rgb(var(--color-borderline) / <alpha-value>)'
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -38,40 +38,40 @@
   </script>
 
   <style>
-    /* ========== 主题变量：明亮模式 (原始) ========== */
+    /* ========== 主题 1：素雅明亮 (默认) ========== */
     :root {
-      --color-parchment: #F9F7F1;
-      --color-surface: #FFFFFF;
-      --color-charcoal: #1A2F2B;
-      --color-ochre: #DF9F28;
-      --color-terracotta: #D16B4A;
-      --color-lavender: #C6CBEA;
-      --color-muted: #8B8982;
-      --color-borderline: #E5E1D8;
-      --bg-body: #FDFBF7;
+      --color-parchment: 249 247 241;
+      --color-surface: 255 255 255;
+      --color-charcoal: 26 47 43;
+      --color-ochre: 223 159 40;
+      --color-terracotta: 209 107 74;
+      --color-lavender: 198 203 234;
+      --color-muted: 139 137 130;
+      --color-borderline: 229 225 216;
+      --bg-body: 253 251 247;
     }
 
-    /* ========== 主题变量：黑曜与金缮 (极简侘寂暗调) ========== */
+    /* ========== 主题 2：黑曜与金缮 (极简侘寂暗调) ========== */
     [data-theme="obsidian"] {
-      --color-parchment: #181715;   /* 深夜纸张：极度克制的深灰褐 */
-      --color-surface: #22201D;     /* 浮层暗墨：带有微弱温度的炭黑 */
-      --color-charcoal: #EAE6DB;    /* 骨白：不刺眼的低对比度文字 */
-      --color-ochre: #C29B57;       /* 砂金：金缮工艺的暗金色 */
-      --color-terracotta: #A6523F;  /* 暗朱砂：沉稳的警示色 */
-      --color-lavender: #4A4D66;    /* 幽蓝紫 */
-      --color-muted: #737069;       /* 褪色灰 */
-      --color-borderline: #363430;  /* 隐约的边界线 */
-      --bg-body: #11100F;           /* 极夜底色 */
+      --color-parchment: 24 23 21;
+      --color-surface: 34 32 29;
+      --color-charcoal: 234 230 219;
+      --color-ochre: 194 155 87;
+      --color-terracotta: 166 82 63;
+      --color-lavender: 74 77 102;
+      --color-muted: 115 112 105;
+      --color-borderline: 54 52 48;
+      --bg-body: 17 16 15;
     }
 
     /* ========== 主题 3：复古辞典与暗室 (Editorial & Darkroom) ========== */
     [data-theme="editorial"] {
-      --color-parchment: #F4F1E9;
-      --color-surface: #FDFBF7;     /* 👈 修复：从 transparent 改为更亮的实体纸张白 */
-      --color-charcoal: #111111;
-      --color-ochre: #A6523F;
-      --color-borderline: rgba(17, 17, 17, 0.1);
-      --bg-body: #F4F1E9;
+      --color-parchment: 244 241 233;
+      --color-surface: 253 251 247;
+      --color-charcoal: 17 17 17;
+      --color-ochre: 166 82 63;
+      --color-borderline: 17 17 17;
+      --bg-body: 244 241 233;
       --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -81,11 +81,11 @@
     [data-theme="editorial"] #userDropdown,
     [data-theme="editorial"] .select-options,
     [data-theme="editorial"] .modal-content {
-      background-color: var(--color-parchment) !important;
+      background-color: rgb(var(--color-parchment)) !important;
       backdrop-filter: none !important; /* 拔掉现代感的毛玻璃模糊 */
-      border: 1px solid var(--color-charcoal) !important;
-      border-radius: 2px !important; /* 几乎直角的微小弧度，显得非常克制干练 */
-      /* 核心：硬切边的错位阴影，模拟物理纸张堆叠 */
+      border: 1px solid rgb(var(--color-charcoal)) !important;
+      border-radius: 2px !important; /* 几乎直角的微小弧度，克制干练 */
+      /* 核心：硬切边的错位阴影，模拟物理卡片堆叠 */
       box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.15) !important; 
     }
 
@@ -98,7 +98,7 @@
     /* 抹除下拉菜单顶部的装饰性背景块 */
     [data-theme="editorial"] #userDropdown .bg-parchment\/30 {
       background-color: transparent !important;
-      border-bottom: 1px solid var(--color-borderline);
+      border-bottom: 1px solid rgb(var(--color-borderline) / 0.2) !important;
     }
     
     /* 辞典字体覆盖 */
@@ -120,7 +120,7 @@
       flex-wrap: wrap;
       align-items: baseline;
       padding: 1.5rem 0;
-      border-bottom: 1px solid var(--color-borderline) !important;
+      border-bottom: 1px solid rgb(var(--color-borderline) / 0.2) !important;
       background: transparent !important;
       transition: padding-left 0.4s var(--easing-heavy);
       box-shadow: none !important;
@@ -149,10 +149,10 @@
       color: #EAE6DB !important;
     }
 
-    /* 修复 body 背景色绑定 */
+    /* 必须包裹 rgb() 才能生效 */
     body { 
-      background-color: var(--bg-body) !important;
-      color: var(--color-charcoal);
+      background-color: rgb(var(--bg-body)) !important;
+      color: rgb(var(--color-charcoal));
     }
 
     /* ========== 电影级 View Transitions 光影溶解动画 ========== */
