@@ -52,7 +52,8 @@
       --bg-body: 253 251 247;
       --color-success: 75 115 101;
 
-      --font-ui: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+      /* 核心修复：优先使用 Noto Sans JP 以对正汉字字形 (Han Unification) */
+      --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
       --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
       
       /* Default Scaling Logic */
@@ -128,8 +129,24 @@
       background-size: 40px 40px;
     }
 
+    /* 统一 Body 定义，消除冗余 */
     body {
+      background-color: rgb(var(--bg-body)) !important;
+      color: rgb(var(--color-charcoal));
       font-family: var(--font-ui) !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      transition: background-color 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.4s ease;
+    }
+    
+    /* 深色模式下的弹窗质感与占位符增强 */
+    [data-theme="obsidian"] .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.6) !important;
+      backdrop-filter: blur(8px) !important;
+    }
+    [data-theme="obsidian"] .aesthetic-input::placeholder {
+      color: rgba(234, 230, 219, 0.4) !important;
     }
 
     /* 精准排版工具类 */
@@ -145,7 +162,7 @@
       font-weight: var(--word-weight) !important;
       letter-spacing: var(--word-tracking) !important;
       line-height: 1.1 !important;
-      transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     [data-theme="editorial"] #view-study .paper-card {
@@ -343,14 +360,7 @@
     [data-theme="editorial"] #view-study .answer-btn kbd { display: none !important; }
     [data-theme="editorial"] #view-study .interval-text { background: transparent !important; opacity: 0.5; color: #F9F7F1 !important; }
 
-    /* 必须包裹 rgb() 才能生效 */
-    body { 
-      background-color: rgb(var(--bg-body)) !important;
-      color: rgb(var(--color-charcoal));
-      text-rendering: optimizeLegibility;
-      transition: background-color 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.4s ease;
-      font-family: var(--font-main);
-    }
+    /* 重复 Body 块已合并移动至顶部 */
 
     /* ========== 电影级 View Transitions 光影溶解动画 ========== */
     ::view-transition-old(root),
@@ -375,12 +385,7 @@
     }
 
     /* ========== 全局审美与排版 (Typography & Globals) ========== */
-    body { 
-      font-family: var(--font-ui);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-    } 
+    /* 重复 Body 块已合并 */
     
     .retro-serif-text {
       font-family: Georgia, "Times New Roman", "Yu Mincho", "MS Mincho", "Songti SC", SimSun, serif;
@@ -446,6 +451,12 @@
   transition: grid-template-rows 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
   transform-origin: top center;
   margin-bottom: 1.5rem; /* Equivalent to mb-6 */
+}
+/* 移动端横向滚动条终结补丁 */
+@media (max-width: 640px) {
+  .overflow-x-auto table.min-w-\[800px\] {
+    min-width: 100% !important;
+  }
 }
 
 #upcomingWidget.is-collapsed {
@@ -2869,10 +2880,10 @@ function renderWordList(words) {
         <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
       </td>
       <td class="px-6 py-4">
-        <span class="text-xl font-bold font-display leading-tight-display block">${w.japanese}</span>
-        <span class="text-xs text-muted font-display opacity-60">${w.reading || ''}</span>
+        <span class="text-xl font-bold font-jp leading-tight block">${w.japanese}</span>
+        <span class="text-xs text-muted font-jp opacity-60">${w.reading || ''}</span>
       </td>
-      <td class="px-6 py-4 text-sm font-medium font-display opacity-90">${w.meaning}</td>
+      <td class="px-6 py-4 text-sm font-medium font-ui opacity-90">${w.meaning}</td>
       <td class="px-4 py-4">
         <div class="flex flex-wrap gap-2 max-w-[120px] items-center">
           <span class="footnote-tag font-ui">${w.partOfSpeech || '其他'}</span>
@@ -3909,11 +3920,12 @@ function getCardHTML(index, word) {
   else if (relativeIndex === 1) depth = '1';
   else if (relativeIndex === 2) depth = '2';
 
-  const fontClass = state.currentLang === 'en' 
-    ? 'font-sans text-3xl sm:text-4xl md:text-5xl tracking-tight' 
-    : 'font-jp text-4xl sm:text-5xl md:text-6xl';                 
+  // 1. 获取当前主题状态以应用斜体等细微变化
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const isEditorial = currentTheme === 'editorial';
 
-  const studyWordClasses = `font-display font-bold text-charcoal mb-2 leading-none break-all text-[var(--word-scale)] transition-all duration-500 ${isEditorial ? 'italic tracking-tighter' : ''}`;
+  // 2. 移除冲突的 Tailwind 类，完全交由 CSS 变量控制 (font-size, font-family, font-weight)
+  const studyWordClasses = `mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic' : ''}`;
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
