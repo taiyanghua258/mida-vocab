@@ -52,7 +52,7 @@
       --bg-body: 253 251 247;
       --color-success: 75 115 101;
 
-      /* 核心修复：优先使用 Noto Sans JP 以对正汉字字形 (Han Unification) */
+      /* 核心修复：必须将 Noto Sans JP 提升到最高优先级，防止日语汉字被错误渲染为中文版 */
       --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
       --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
       
@@ -114,11 +114,12 @@
       --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
       
-      /* 深度重构：极端排版 */
+      /* 深度重构：先锋极简大字 */
       --word-font: var(--font-serif);
-      --word-size: clamp(4rem, 12vw, 7rem);
+      --word-size: clamp(4.5rem, 15vw, 8rem); /* 进一步放大，确保冲击力 */
       --word-weight: 800;
-      --word-tracking: -0.05em;
+      --word-tracking: -0.06em; /* 极紧凑的字间距 */
+      
       background-color: #fdfaf5 !important;
     }
 
@@ -164,9 +165,23 @@
       transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    [data-theme="editorial"] #view-study .paper-card {
-      padding-top: 4rem !important;
+    /* 强化“一大一小”设计：让学术模式下的脚注标签变得更小、更淡 */
+    [data-theme="editorial"] .footnote-tag {
+      font-size: 9px !important;
+      letter-spacing: 0.1em;
+      opacity: 0.4;
+      transform: scale(0.9);
     }
+
+    /* 修正重影 Bug：确保切换时旧的字号类不会残留 */
+    #studyWord {
+      font-size: var(--word-size) !important;
+      font-family: var(--word-font) !important;
+      font-weight: var(--word-weight) !important;
+      letter-spacing: var(--word-tracking) !important;
+    }
+
+
 
     /* Refined Footnote Tags */
     .footnote-tag {
@@ -451,6 +466,12 @@
 @media (max-width: 640px) {
   .overflow-x-auto table.min-w-\[800px\] {
     min-width: 100% !important;
+  }
+  [data-theme="editorial"] {
+    --word-size: 3.5rem; /* 手机端适当收敛，但仍保持最大优先级 */
+  }
+  .paper-card {
+    padding: 1.5rem !important;
   }
 }
 
@@ -3910,20 +3931,17 @@ function showTaskAccomplished(stats) {
 function getCardHTML(index, word) {
   const zIndex = 1000 - index;
   const relativeIndex = index - state.studyIndex;
-  let depth = 'hidden';
-  if (relativeIndex === 0) depth = '0';
-  else if (relativeIndex === 1) depth = '1';
-  else if (relativeIndex === 2) depth = '2';
-
-  // 1. 获取当前主题状态以应用斜体等细微变化
+  
+  // 1. 判定当前是否为学术模式
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const isEditorial = currentTheme === 'editorial';
 
-  // 2. 移除冲突的 Tailwind 类，完全交由 CSS 变量控制 (font-size, font-family, font-weight)
-  const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic' : ''}`;
+  // 2. 移除所有 text-4xl/text-5xl 等 Tailwind 字号类
+  // 仅保留基础布局类，字号由 CSS 变量 --word-size 统一控制
+  const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic tracking-tighter' : ''}`;
 
   return `
-    <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
+    <div id="word-group-${index}" class="word-group" data-depth="${relativeIndex <= 2 ? relativeIndex : 'hidden'}" style="z-index: ${zIndex}">
       <div class="paper-card back">
         <div class="text-xl font-display text-ochre mb-4 font-medium">${word.reading || '-'}</div>
         <div class="text-2xl sm:text-3xl font-display font-semibold text-charcoal mb-4 sm:mb-6 text-center leading-tight-display">${word.meaning}</div>
@@ -3937,11 +3955,7 @@ function getCardHTML(index, word) {
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>
           <div class="hidden sm:flex items-center ml-2">
-            <span class="text-[10px] opacity-50 mr-1.5">或按</span>
-            <kbd class="px-2 py-[2px] bg-surface border border-borderline border-b-[3px] rounded-[4px] text-[10px] font-mono text-charcoal font-bold flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M208,80v80H48V80a8,8,0,0,0-16,0v80a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80a8,8,0,0,0-16,0Z"></path></svg>
-              Space
-            </kbd>
+            <kbd class="px-2 py-[2px] bg-surface border border-borderline border-b-[3px] rounded-[4px] text-[10px] font-mono text-charcoal font-bold">Space</kbd>
           </div>
         </div>
       </div>
