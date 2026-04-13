@@ -195,8 +195,8 @@
     [data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
       /* 稍微收敛最大字号，避免压迫感 */
       font-size: clamp(2.5rem, 8vw, 5rem) !important;
-      color: #F9F7F1 !important;
-      text-shadow: 0 0 50px rgba(249, 247, 241, 0.15) !important;
+      color: rgb(var(--color-charcoal)) !important; /* 跟随变量 */
+      text-shadow: none !important; /* 关掉俗气的发光阴影 */
       font-weight: 800 !important;
       margin-top: 3rem !important;
       /* 增加高级排版属性：紧凑字距、优雅折行 */
@@ -212,7 +212,7 @@
 
     /* 极简背面 */
     [data-theme="editorial"] #view-study .paper-card.back .text-ochre { color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; letter-spacing: 0.1em; }
-    [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { color: #F9F7F1 !important; font-size: 1.8rem !important; }
+    [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { color: rgb(var(--color-charcoal)) !important; font-size: 1.8rem !important; }
     [data-theme="editorial"] #view-study .paper-card.back > div:last-child { border: 1px solid rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.6) !important; background: transparent !important;}
 
     /* 结算及无词界面反白 */
@@ -341,27 +341,24 @@
 
     /* 冷却池平滑折叠动画 */
     #upcomingWidget {
-      transition: opacity 0.25s ease, 
-                  transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                  max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                  margin 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                  padding 0.4s ease, 
-                  border-width 0.4s ease;
-      max-height: 300px; /* 预设一个足够容纳标签的高度 */
-      overflow: hidden;
+      display: grid;
+      grid-template-rows: 1fr;
+      opacity: 1;
+      transition: grid-template-rows 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
       transform-origin: top center;
     }
 
-    /* 自定义折叠状态类（用于替代 Tailwind 的 hidden） */
     #upcomingWidget.is-collapsed {
-      max-height: 0 !important;
-      margin-bottom: 0 !important;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-      border-width: 0 !important;
-      opacity: 0 !important;
-      transform: scaleY(0.95);
+      grid-template-rows: 0fr;
+      opacity: 0;
       pointer-events: none;
+      border-color: transparent !important; /* 隐藏边框 */
+    }
+
+    /* 内部容器需设置 min-height: 0 防止撑开 */
+    #upcomingWidget > div.flex-wrap {
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* 进场序列错落感 - 修复闪烁 */
@@ -494,15 +491,15 @@
 
     /* 6. Dashboard 背景卡片精修 */
     .glass-card {
-      background: rgb(var(--color-surface) / 0.65);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgb(var(--color-borderline) / 0.6);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      background: rgb(var(--color-surface));
+      /* 移除 backdrop-filter: blur(12px); */
+      border: 1px solid rgb(var(--color-borderline));
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
     }
     .glass-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
     }
     .airy-row:hover {
       transform: translateY(-1px);
@@ -590,22 +587,23 @@
     /* ========== 答案按钮 ========== */
     #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
     #answerSection.show { opacity: 1; pointer-events: auto; }
-    /* ========== 答案按钮 (物理阴影也挂靠变量) ========== */
+    /* ========== 答案按钮 (物理阴影也挂靠变量，且改为柔和呼吸感) ========== */
     .answer-btn { 
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid rgb(var(--color-charcoal) / 0.6); 
-      box-shadow: 0 4px 0 rgb(var(--color-charcoal) / 0.8); 
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 1px solid rgb(var(--color-borderline)); 
+      /* 移除粗野的 0 4px 0 rgb(...)，换成高级的高斯模糊阴影 */
+      box-shadow: 0 4px 12px rgb(var(--color-charcoal) / 0.03); 
       transform: translateY(0);
       background-color: rgb(var(--color-surface));
     }
     .answer-btn:hover { 
-      border-color: rgb(var(--color-charcoal));
-      transform: translateY(-2px); 
-      box-shadow: 0 6px 0 rgb(var(--color-charcoal)); 
+      border-color: currentColor; /* 跟随不同状态的颜色 */
+      transform: translateY(-3px); 
+      box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.08); 
     }
     .answer-btn:active { 
-      transform: translateY(4px) scale(0.98); 
-      box-shadow: 0 0 0 rgb(var(--color-charcoal));
+      transform: translateY(1px) scale(0.97); 
+      box-shadow: 0 2px 8px rgb(var(--color-charcoal) / 0.05);
     }
 
     /* ========== Toast & Modal ========== */
@@ -701,14 +699,16 @@
       border: none;
       cursor: pointer;
       overflow: hidden;
-      transition: color 0.4s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      transition: color 0.4s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
     }
+
     .btn-study::before {
       content: '';
       position: absolute;
       inset: 0;
       border-radius: 100px;
       padding: 1.5px;
+      /* 统一使用 CSS 变量，干掉硬编码的 #DF9F28 */
       background: linear-gradient(90deg, rgb(var(--color-ochre)), rgb(var(--color-terracotta)), rgb(var(--color-ochre)));
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -717,6 +717,7 @@
       opacity: 0;
       transition: opacity 0.4s ease;
     }
+
     .btn-study::after {
       content: '';
       position: absolute;
@@ -728,33 +729,16 @@
       background: linear-gradient(90deg, transparent, rgb(var(--color-ochre)), transparent);
       transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
     }
-      background: linear-gradient(90deg, #DF9F28, #D16B4A, #DF9F28);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .btn-study::after {
-      content: '';
-      position: absolute;
-      bottom: 0.45rem;
-      left: 50%;
-      transform: translateX(-50%) scaleX(0);
-      width: 40%;
-      height: 1.5px;
-      background: linear-gradient(90deg, transparent, #DF9F28, transparent);
-      transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
-    }
+
     .btn-study:hover {
-      color: #fff;
-      transform: translateY(-1px);
+      color: rgb(var(--color-surface));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgb(var(--color-charcoal) / 0.15);
     }
     .btn-study:hover::before { opacity: 1; }
     .btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
     .btn-study:active { transform: translateY(0) scale(0.98); }
-    .btn-study svg { transition: transform 0.3s ease; }
+    .btn-study svg { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
 
     /* ========== Checkbox 自定义样式 ========== */
@@ -833,8 +817,8 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 </head>
-<body class="text-charcoal font-sans antialiased min-h-screen flex flex-col">
-  <div id="noiseOverlay" class="fixed inset-0 z-[9999] pointer-events-none opacity-0 mix-blend-multiply transition-opacity duration-1000">
+<body class="text-charcoal font-sans antialiased min-h-screen flex flex-col relative z-10">
+  <div id="noiseOverlay" class="fixed inset-0 z-0 pointer-events-none opacity-0 mix-blend-multiply transition-opacity duration-1000">
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full opacity-40">
       <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter>
       <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
