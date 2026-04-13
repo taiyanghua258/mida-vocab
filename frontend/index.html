@@ -292,52 +292,111 @@
     [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) { display: none !important; }
 
     /* ================================================== */
-    /* 极简正面 (Darkroom Front) - 反白修复 */
+    /* 日语词典 / 先锋学术报 排版 (Editorial Dict) */
     /* ================================================== */
-    [data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
-      font-size: clamp(2.5rem, 8vw, 5rem) !important;
-      color: #F9F7F1 !important; /* 关键修复：从 Charcoal 改为明亮的纸张白 */
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1) !important; /* 增加一点底片发光感 */
+    
+    /* 强制作废原有的绝对居中，开启留白词典与报纸感 */
+    [data-theme="editorial"] #view-study .editorial-dict-front,
+    [data-theme="editorial"] #view-study .editorial-dict-back {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      align-items: flex-start !important;
+      text-align: left !important;
+      padding: 3.5rem 3rem !important;
+      background: #0C0D0C !important; /* 沉浸式极黑纸张感 */
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 0 !important; /* 切断圆角，强化严肃学术感 */
+    }
+
+    /* 正面 (Front) */
+    [data-theme="editorial"] #view-study .editorial-dict-top {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(249, 247, 241, 0.8);
+      padding-bottom: 0.5rem;
+      margin-bottom: auto;
+    }
+    
+    [data-theme="editorial"] #view-study .editorial-dict-top .pos,
+    [data-theme="editorial"] #view-study .editorial-dict-top .dict-vol {
+      color: #F9F7F1 !important;
+      font-size: 0.85rem !important;
+      letter-spacing: 0.15em;
+      opacity: 0.9;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    [data-theme="editorial"] #view-study .editorial-dict-front .word {
+      font-size: clamp(4.5rem, 12vw, 7rem) !important;
+      color: #F9F7F1 !important; 
       font-weight: 800 !important;
-      margin-top: 3rem !important;
-      letter-spacing: -0.02em !important;
+      letter-spacing: -0.06em !important;
       line-height: 1.1 !important;
+      margin: auto 0 !important;
       word-break: keep-all !important; 
       overflow-wrap: break-word !important;
-      hyphens: auto !important; 
-      width: 100% !important;
-      text-align: center !important;
-      padding: 0 1rem !important;
+      /* 轻微底片发光感 */
+      text-shadow: 0 0 25px rgba(255, 255, 255, 0.08) !important; 
     }
 
-    /* 正面辅助文字反白处理 */
-    [data-theme="editorial"] #view-study .paper-card.front .footnote-tag {
+    [data-theme="editorial"] #view-study .editorial-dict-footer {
+      margin-top: auto;
       color: rgba(255, 255, 255, 0.4) !important;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      width: 100%;
+      text-align: center;
+      justify-content: center;
     }
-    [data-theme="editorial"] #view-study .paper-card.front .text-muted\/60 {
-      color: rgba(255, 255, 255, 0.3) !important;
-    }
-    [data-theme="editorial"] #view-study .paper-card.front kbd {
+    [data-theme="editorial"] #view-study .editorial-dict-footer kbd {
       background: transparent !important;
-      color: rgba(255, 255, 255, 0.5) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255,255,255,0.6) !important;
+      border: 1px solid rgba(255,255,255,0.2) !important;
+      border-bottom-width: 2px !important;
+      padding: 0px 6px !important;
+      border-radius: 2px !important;
     }
 
-    /* ================================================== */
-    /* 极简背面 (Darkroom Back) - 反白修复 */
-    /* ================================================== */
-    [data-theme="editorial"] #view-study .paper-card.back .text-ochre { 
-      color: rgb(var(--color-ochre)) !important; 
-      font-family: var(--font-ui) !important; 
-      letter-spacing: 0.1em; 
+    /* 背面 (Back) - 日语词典释义 */
+    [data-theme="editorial"] #view-study .editorial-dict-header {
+      width: 100%;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
     }
-    [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { 
-      color: #F9F7F1 !important; /* 关键修复：中文释义反白 */
-      font-size: 1.8rem !important; 
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.05) !important;
+    [data-theme="editorial"] #view-study .editorial-dict-header .reading {
+      font-size: 2.8rem !important;
+      color: rgb(var(--color-ochre)) !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.05em;
     }
-    [data-theme="editorial"] #view-study .paper-card.back .footnote-tag {
-      color: rgba(255, 255, 255, 0.3) !important;
+    [data-theme="editorial"] #view-study .editorial-dict-header .pos {
+      font-size: 1rem !important;
+      color: rgba(255, 255, 255, 0.4) !important;
+      letter-spacing: 0.05em;
+    }
+    
+    [data-theme="editorial"] #view-study .editorial-dict-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+      margin-bottom: 2.5rem;
+    }
+
+    [data-theme="editorial"] #view-study .editorial-dict-back .meaning {
+      font-size: 1.8rem !important;
+      color: #F9F7F1 !important;
+      line-height: 1.6 !important;
+      font-weight: 500 !important;
+      margin-bottom: auto;
+      padding-left: 0.5rem;
+      border-left: 2px solid rgba(223, 159, 40, 0.5); /* Ochre color line */
     }
 
     /* 结算及无词界面反白 */
@@ -349,6 +408,7 @@
       border: 1px solid rgba(255, 255, 255, 0.4) !important;
       color: #F9F7F1 !important;
       transition: all 0.2s ease !important;
+      border-radius: 0 !important; /* 学术模式抹除圆角 */
     }
     [data-theme="editorial"] #studyComplete button:hover, 
     [data-theme="editorial"] #noWords button:hover {
@@ -3936,9 +3996,36 @@ function getCardHTML(index, word) {
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const isEditorial = currentTheme === 'editorial';
 
-  // 2. 移除所有 text-4xl/text-5xl 等 Tailwind 字号类
-  // 仅保留基础布局类，字号由 CSS 变量 --word-size 统一控制
-  const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500 ${isEditorial ? 'italic tracking-tighter' : ''}`;
+  if (isEditorial) {
+    // 学术模式的独立渲染：先锋学术报 / 日语词典排版
+    return `
+      <div id="word-group-${index}" class="word-group" data-depth="${relativeIndex <= 2 ? relativeIndex : 'hidden'}" style="z-index: ${zIndex}">
+        <div class="paper-card back editorial-dict-back">
+          <div class="editorial-dict-header">
+            <span class="reading font-display">${word.reading || '-'}</span>
+            <span class="pos font-ui">[${word.partOfSpeech || '其他'}]</span>
+          </div>
+          <div class="editorial-dict-divider"></div>
+          <div class="meaning font-display text-charcoal">${word.meaning}</div>
+        </div>
+        <div class="paper-card front editorial-dict-front" onclick="revealAnswer()">
+          <div class="editorial-dict-top">
+            <span class="pos font-ui">[${word.partOfSpeech || '其他'}]</span>
+            <span class="dict-vol font-ui">No.${(index + 1).toString().padStart(3, '0')}</span>
+          </div>
+          
+          <div class="word font-display text-charcoal" id="studyWord">${word.japanese}</div>
+          
+          <div class="mt-auto editorial-dict-footer font-ui action-hint">
+            <span>点击或按下 <kbd>Space</kbd> 揭开释义</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 2. 默认与 Obsidian 模式
+  const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500`;
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${relativeIndex <= 2 ? relativeIndex : 'hidden'}" style="z-index: ${zIndex}">
