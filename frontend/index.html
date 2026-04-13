@@ -65,20 +65,19 @@
     }
 
     /* ========================================================= */
-    /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial) - 修复版 */
+    /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial) - 终极修复版 */
     /* ========================================================= */
     [data-theme="editorial"] {
       --color-parchment: 248 247 243;
       --color-surface: 248 247 243;
       --color-charcoal: 20 20 20;
-      --color-ochre: 191 54 46; /* 东方朱砂红，用于注音 */
+      --color-ochre: 191 54 46;
       --color-borderline: 30 30 30;
       --bg-body: 248 247 243;
-      --bg-darkroom: 10 12 11; /* 深邃暗房黑绿 */
+      --bg-darkroom: 10 12 11;
       --font-editorial: 'Shippori Mincho', 'Noto Serif JP', Georgia, 'Times New Roman', serif;
     }
 
-    /* 1. 字体全局接管 (避开 * 选择器，防止破坏 icon 和特殊组件) */
     [data-theme="editorial"] body,
     [data-theme="editorial"] input,
     [data-theme="editorial"] button,
@@ -88,35 +87,35 @@
       font-family: var(--font-editorial) !important;
     }
 
-    /* 2. 精准粉碎现代 UI 的圆角和阴影 */
-    [data-theme="editorial"] .rounded-xl,
-    [data-theme="editorial"] .rounded-2xl,
-    [data-theme="editorial"] .rounded-3xl,
-    [data-theme="editorial"] .rounded-full,
-    [data-theme="editorial"] .rounded-\[1\.5rem\],
-    [data-theme="editorial"] .rounded-\[1\.25rem\],
-    [data-theme="editorial"] .glass-card,
-    [data-theme="editorial"] .modal-content,
-    [data-theme="editorial"] .magnetic-btn,
-    [data-theme="editorial"] .btn-study,
-    [data-theme="editorial"] .aesthetic-input,
-    [data-theme="editorial"] .paper-card,
-    [data-theme="editorial"] .answer-btn {
+    /* 1. 彻底粉碎主页所有导致“杂乱”的容器边框、色块与圆角 */
+    [data-theme="editorial"] * {
       border-radius: 0 !important;
       box-shadow: none !important;
     }
-
-    /* 3. 剥离卡片感：重塑 Dashboard 数据面板与按键 */
-    [data-theme="editorial"] .glass-card {
+    
+    [data-theme="editorial"] .glass-card,
+    [data-theme="editorial"] #tour-action-bar,
+    [data-theme="editorial"] #upcomingWidget,
+    [data-theme="editorial"] #batchActionBar,
+    [data-theme="editorial"] .custom-select .select-trigger,
+    [data-theme="editorial"] .select-options,
+    [data-theme="editorial"] main > div.bg-surface {
       background: transparent !important;
       border: none !important;
-      border-bottom: 2px solid rgb(var(--color-charcoal)) !important;
       backdrop-filter: none !important;
-      padding-left: 0 !important;
-      padding-right: 0 !important;
     }
-    [data-theme="editorial"] .glass-card .absolute { display: none !important; } /* 隐藏装饰彩色线 */
+
+    /* 砍掉动作栏中间的竖线、浮夸的渐变装饰线 */
+    [data-theme="editorial"] #tour-action-bar .w-\[1px\],
+    [data-theme="editorial"] .glass-card .absolute { display: none !important; }
     
+    /* 搜索框只保留极弱的下划线 */
+    [data-theme="editorial"] .aesthetic-input {
+      border-bottom: 1px solid rgba(20, 20, 20, 0.08) !important;
+      background: transparent !important;
+    }
+
+    /* 重塑按钮，极简文字流 */
     [data-theme="editorial"] .magnetic-btn,
     [data-theme="editorial"] .btn-study {
       background: transparent !important;
@@ -124,55 +123,58 @@
       color: rgb(var(--color-charcoal)) !important;
       transform: none !important;
     }
-    [data-theme="editorial"] .magnetic-btn:hover, [data-theme="editorial"] .btn-study:hover { background: rgb(var(--color-charcoal)) !important; color: rgb(var(--color-surface)) !important; }
-    [data-theme="editorial"] .btn-study::before, [data-theme="editorial"] .btn-study::after { display: none !important; }
+    [data-theme="editorial"] .magnetic-btn:hover, 
+    [data-theme="editorial"] .btn-study:hover { 
+      background: rgb(var(--color-charcoal)) !important; 
+      color: rgb(var(--color-surface)) !important; 
+    }
+    [data-theme="editorial"] .btn-study::before, 
+    [data-theme="editorial"] .btn-study::after { display: none !important; }
 
-    /* 4. 空间折叠术：利用 CSS 强行把 HTML Table 渲染为“辞典排版” */
+    /* 2. 空间折叠术：无感辞典排版 */
     [data-theme="editorial"] table { display: block !important; border-top: 2px solid rgb(var(--color-charcoal)) !important; margin-top: 1rem; }
-    [data-theme="editorial"] thead { display: none !important; } /* 砍掉表头 */
+    [data-theme="editorial"] thead { display: none !important; }
     [data-theme="editorial"] tbody { display: block !important; }
     [data-theme="editorial"] tr.airy-row {
       display: grid !important;
-      grid-template-columns: 40px minmax(200px, auto) 1fr 100px; /* 重新划分网格 */
+      grid-template-columns: 40px minmax(200px, auto) 1fr 100px;
       align-items: baseline !important;
       padding: 1.5rem 0 !important;
-      border-bottom: 1px solid rgba(20, 20, 20, 0.1) !important;
+      border-bottom: 1px solid rgba(20, 20, 20, 0.08) !important;
       background: transparent !important;
-      transform: none !important; /* 禁用原主题的果冻悬浮动效 */
-      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-bottom-color 0.4s ease !important;
+      transform: none !important;
+      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     [data-theme="editorial"] tr.airy-row:hover {
       padding-left: 1rem !important;
       border-bottom-color: rgb(var(--color-charcoal)) !important;
-      background: transparent !important;
     }
     [data-theme="editorial"] td { display: block !important; border: none !important; padding: 0 !important; }
     
-    /* 隐藏标签列(td4)和操作列(td6)，保持辞典界面的极度冷峻 */
     [data-theme="editorial"] td:nth-child(4),
     [data-theme="editorial"] td:nth-child(6) { display: none !important; }
     
-    /* 重塑单词本文字号，形成极致对比 */
     [data-theme="editorial"] td:nth-child(2) .text-lg { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 0.02em; }
     [data-theme="editorial"] td:nth-child(2) .text-xs { font-size: 0.75rem !important; color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; display: inline-block; margin-left: 0.5rem; }
     [data-theme="editorial"] td:nth-child(3) { font-size: 0.95rem !important; opacity: 0.8; }
     [data-theme="editorial"] td:nth-child(5) { text-align: right; opacity: 0.4; font-size: 0.75rem; }
 
-    /* 5. 微缩暗室 (Darkroom Mode) 核心重构 */
+    /* 3. 微缩暗室 (Darkroom Mode) 彻底修复重影 Bug */
     [data-theme="editorial"] #view-study { background-color: rgb(var(--bg-darkroom)) !important; }
     [data-theme="editorial"] #view-study nav * { color: rgba(255, 255, 255, 0.3) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+    
     [data-theme="editorial"] #view-study .bg-surface,
-    [data-theme="editorial"] #view-study .bg-parchment { background-color: transparent !important; border-color: rgba(255,255,255,0.1) !important; }
-    
-    /* 彻底消灭实体的背景卡片，让文字悬浮于虚空 */
+    [data-theme="editorial"] #view-study .bg-parchment,
     [data-theme="editorial"] #view-study .paper-card { background: transparent !important; border: none !important; }
-    [data-theme="editorial"] #view-study .paper-card.front { background: transparent !important; }
     
-    /* 隐藏正面多余的提示条和 Tag */
+    /* 🔥 核心隔离法则：杀掉所有导致透明重影的节点 */
+    [data-theme="editorial"] #view-study .word-group:not([data-depth="0"]) { display: none !important; }
+    [data-theme="editorial"] #view-study .paper-card.front.peeled { display: none !important; }
+    [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) { display: none !important; }
+
+    /* 极简正面 */
     [data-theme="editorial"] #view-study .paper-card.front > span,
     [data-theme="editorial"] #view-study .paper-card.front > div.mt-auto { display: none !important; }
-
-    /* 正面发光大字 */
     [data-theme="editorial"] #view-study .paper-card.front > div.text-charcoal {
       font-size: clamp(3.5rem, 12vw, 6.5rem) !important;
       color: #F9F7F1 !important;
@@ -181,24 +183,27 @@
       margin-top: 3rem !important;
     }
 
-    /* 翻开后背面的样式 */
+    /* 极简背面 */
     [data-theme="editorial"] #view-study .paper-card.back .text-ochre { color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; letter-spacing: 0.1em; }
     [data-theme="editorial"] #view-study .paper-card.back .text-charcoal { color: #F9F7F1 !important; font-size: 1.8rem !important; }
-    [data-theme="editorial"] #view-study .paper-card.back > div:last-child { border: 1px solid rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.6) !important; } /* 词性小标签反白 */
+    [data-theme="editorial"] #view-study .paper-card.back > div:last-child { border: 1px solid rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.6) !important; background: transparent !important;}
 
-    /* 底部物理阻尼机械按钮 */
+    /* 结算及无词界面反白 */
+    [data-theme="editorial"] #studyComplete *, [data-theme="editorial"] #noWords * { color: rgba(255,255,255,0.8) !important; border-color: rgba(255,255,255,0.1) !important;}
+    [data-theme="editorial"] #studyComplete h2, [data-theme="editorial"] #noWords h2 { color: #F9F7F1 !important; }
+
+    /* 暗室操作按键 */
     [data-theme="editorial"] #view-study .answer-btn {
       background: transparent !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       border-bottom: 4px solid rgba(255, 255, 255, 0.4) !important;
       color: #F9F7F1 !important;
-      border-radius: 0 !important;
-      transform: none !important; /* 禁用原有的悬浮放缩 */
+      transform: none !important; 
       transition: all 0.1s ease-out !important;
     }
     [data-theme="editorial"] #view-study .answer-btn:hover { background: rgba(255, 255, 255, 0.05) !important; border-bottom-color: rgba(255, 255, 255, 0.8) !important; }
     [data-theme="editorial"] #view-study .answer-btn:active { transform: translateY(3px) !important; border-bottom-width: 1px !important; }
-    [data-theme="editorial"] #view-study .answer-btn kbd { display: none !important; } /* 隐藏键盘快捷键提示，保持冷峻 */
+    [data-theme="editorial"] #view-study .answer-btn kbd { display: none !important; }
     [data-theme="editorial"] #view-study .interval-text { background: transparent !important; opacity: 0.5; color: #F9F7F1 !important; }
 
     /* 必须包裹 rgb() 才能生效 */
