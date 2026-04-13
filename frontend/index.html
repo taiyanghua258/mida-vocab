@@ -3094,6 +3094,7 @@ async function editWord(id) {
 async function deleteWord(id) {
   if (!confirm('确定要删除这个单词吗？')) return;
   await api(`/words/${id}`, { method: 'DELETE' });
+  localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存，防止已删单词幽灵重现
   showToast('已删除', 'success');
   loadWords(state.pagination.page); loadStats();
 }
@@ -3719,6 +3720,7 @@ async function batchDeleteSelected() {
     });
     
     state.selectedWordIds.clear();
+    localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存
     showToast('批量删除成功', 'success');
     loadWords(state.pagination.page);
     loadStats();
@@ -3743,6 +3745,7 @@ async function clearWorkspace() {
       method: 'POST',
       body: JSON.stringify({ language: state.currentLang })
     });
+    localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存
     showToast(`已清空 ${langName} 工作区，删除了 ${res.count} 个单词`, 'success');
     state.currentPage = 1;
     loadWords(1);
