@@ -198,6 +198,13 @@
     [data-theme="editorial"] #view-study {
       background-color: rgb(var(--bg-darkroom)) !important;
     }
+    /* 1. 解决卡片堆叠导致的文字穿透重叠 */
+    /* 既然是光影投影，未轮到的卡片就该彻底隐形，直接暴力隐藏非顶层卡片 */
+    [data-theme="editorial"] #view-study .word-group:not([data-depth="0"]) {
+      opacity: 0 !important; 
+      visibility: hidden !important; 
+      pointer-events: none !important;
+    }
     /* 全域文字反白 */
     [data-theme="editorial"] #view-study *,
     [data-theme="editorial"] #view-study .text-muted,
@@ -212,23 +219,39 @@
       border: none !important;
       box-shadow: none !important;
     }
+    /* 修复底部操作栏（按空格/点击撕下）被挤压的问题 */
+    [data-theme="editorial"] #view-study .paper-card.front {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    [data-theme="editorial"] #view-study .paper-card.front .mt-auto {
+      margin-top: auto !important;
+      padding-top: 2rem !important;
+      z-index: 10 !important;
+    }
 
-    /* 投影发光字效 (Glow Text) */
+    /* 2. 投影发光字效 (Glow Text) - 响应式缩放 */
     [data-theme="editorial"] #view-study .paper-card.front > div:nth-child(2),
     [data-theme="editorial"] #view-study .paper-card.front .font-jp {
-      font-size: 6rem !important; /* 强制超大字号 */
+      font-size: clamp(2.5rem, 8vw, 4.5rem) !important; 
       font-weight: 800 !important;
-      line-height: 1 !important;
+      line-height: 1.2 !important;
+      word-break: break-word !important;
+      text-align: center !important;
       color: #F9F7F1 !important;
-      text-shadow: 0 0 60px rgba(249, 247, 241, 0.2) !important; /* 磷光效应 */
+      text-shadow: 0 0 30px rgba(249, 247, 241, 0.2) !important; 
     }
     
     [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(1) {
       color: rgb(var(--color-ochre)) !important; /* 读音使用暗室的褪色金 */
     }
+    /* 3. 修复背面中文释义过长导致排版错乱 */
     [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(2) {
       color: #F9F7F1 !important;
-      font-size: 1.5rem !important;
+      font-size: clamp(1.2rem, 4vw, 1.8rem) !important;
+      line-height: 1.4 !important;
+      word-break: break-word !important;
+      padding: 0 1rem !important;
     }
 
     /* 暗室中的打字机答案键 */
