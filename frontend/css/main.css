@@ -157,7 +157,20 @@
     .footnote-tag:hover { opacity: 1; }
 
     /* 1. 彻底粉碎主页所有导致“杂乱”的容器边框、色块与圆角 */
-    [data-theme="editorial"] * {
+    [data-theme="editorial"] .glass-card,
+    [data-theme="editorial"] .paper-card,
+    [data-theme="editorial"] .modal-content,
+    [data-theme="editorial"] main > div.bg-surface,
+    [data-theme="editorial"] .aesthetic-input,
+    [data-theme="editorial"] .custom-select .select-options,
+    [data-theme="editorial"] .custom-select .select-trigger,
+    [data-theme="editorial"] .select-options,
+    [data-theme="editorial"] .magnetic-btn,
+    [data-theme="editorial"] .btn-study,
+    [data-theme="editorial"] .answer-btn,
+    [data-theme="editorial"] #tour-action-bar,
+    [data-theme="editorial"] #upcomingWidget,
+    [data-theme="editorial"] #batchActionBar {
       border-radius: 0 !important;
       box-shadow: none !important;
     }
@@ -307,7 +320,7 @@
     
     [data-theme="editorial"] #view-study .editorial-dict-top .pos,
     [data-theme="editorial"] #view-study .editorial-dict-top .dict-vol {
-      color: #F9F7F1 !important;
+      color: rgb(var(--color-parchment)) !important;
       font-size: 0.85rem !important;
       letter-spacing: 0.15em;
       opacity: 0.9;
@@ -317,7 +330,7 @@
 
     [data-theme="editorial"] #view-study .editorial-dict-front .word {
       font-size: clamp(4.5rem, 12vw, 7rem) !important;
-      color: #F9F7F1 !important; 
+      color: rgb(var(--color-parchment)) !important; 
       font-weight: 800 !important;
       letter-spacing: -0.06em !important;
       line-height: 1.1 !important;
@@ -377,7 +390,7 @@
 
     [data-theme="editorial"] #view-study .editorial-dict-back .meaning {
       font-size: 1.8rem !important;
-      color: #F9F7F1 !important;
+      color: rgb(var(--color-parchment)) !important;
       line-height: 1.6 !important;
       font-weight: 500 !important;
       margin-bottom: auto;
@@ -387,12 +400,12 @@
 
     /* 结算及无词界面反白 */
     [data-theme="editorial"] #studyComplete *, [data-theme="editorial"] #noWords * { color: rgba(255,255,255,0.8) !important; border-color: rgba(255,255,255,0.1) !important;}
-    [data-theme="editorial"] #studyComplete h2, [data-theme="editorial"] #noWords h2 { color: #F9F7F1 !important; }
+    [data-theme="editorial"] #studyComplete h2, [data-theme="editorial"] #noWords h2 { color: rgb(var(--color-parchment)) !important; }
     [data-theme="editorial"] #studyComplete button, 
     [data-theme="editorial"] #noWords button {
       background: transparent !important;
       border: 1px solid rgba(255, 255, 255, 0.4) !important;
-      color: #F9F7F1 !important;
+      color: rgb(var(--color-parchment)) !important;
       transition: all 0.2s ease !important;
       border-radius: 0 !important; /* 学术模式抹除圆角 */
     }
@@ -407,14 +420,14 @@
       background: transparent !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       border-bottom: 4px solid rgba(255, 255, 255, 0.4) !important;
-      color: #F9F7F1 !important;
+      color: rgb(var(--color-parchment)) !important;
       transform: none !important; 
       transition: all 0.1s ease-out !important;
     }
     [data-theme="editorial"] #view-study .answer-btn:hover { background: rgba(255, 255, 255, 0.05) !important; border-bottom-color: rgba(255, 255, 255, 0.8) !important; }
     [data-theme="editorial"] #view-study .answer-btn:active { transform: translateY(3px) !important; border-bottom-width: 1px !important; }
     [data-theme="editorial"] #view-study .answer-btn kbd { display: none !important; }
-    [data-theme="editorial"] #view-study .interval-text { background: transparent !important; opacity: 0.5; color: #F9F7F1 !important; }
+    [data-theme="editorial"] #view-study .interval-text { background: transparent !important; opacity: 0.5; color: rgb(var(--color-parchment)) !important; }
 
     /* 重复 Body 块已合并移动至顶部 */
 
@@ -508,11 +521,14 @@
   transform-origin: top center;
   margin-bottom: 1.5rem; /* Equivalent to mb-6 */
 }
-/* 移动端横向滚动条终结补丁 */
+/* 移动端横向滚动条终结补丁与优雅回滚 */
+.overflow-x-auto {
+  scrollbar-width: none;
+}
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
 @media (max-width: 640px) {
-  .overflow-x-auto table.min-w-\[800px\] {
-    min-width: 100% !important;
-  }
   [data-theme="editorial"] {
     --word-size: 3.5rem; /* 手机端适当收敛，但仍保持最大优先级 */
   }
@@ -545,12 +561,6 @@
     @keyframes levitate {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
-    }
-
-    /* 进度条的「流体果冻」反馈 (Jelly Progress) - 修复溢出乱飞 */
-    #progressFill {
-      /* 使用丝滑的减速曲线，避免 width 超过 100% 冲出边框 */
-      transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
     }
 
     /* ========== Niche Aesthetics 组件化 CSS ========== */
