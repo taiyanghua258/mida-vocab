@@ -73,16 +73,23 @@
       --color-borderline: 54 52 48;
       --bg-body: 17 16 15;
       --color-success: 95 145 125;
+      
+      /* Phase 2: Structural Upgrade */
+      --card-bg: #121214;
+      --font-ui: "Inter", sans-serif;
+      --font-display: var(--font-ui); /* Obsidian mode uses tech-sans */
+      --word-scale: 2.25rem;
     }
 
     [data-theme="obsidian"] .paper-card,
-    [data-theme="obsidian"] .glass-card {
-      background: #18181b !important;
+    [data-theme="obsidian"] .glass-card,
+    [data-theme="obsidian"] .study-card {
+      background: var(--card-bg) !important;
       backdrop-filter: none !important;
       box-shadow: 
-        inset 0 1px 1px rgba(255, 255, 255, 0.08),
-        0 20px 40px rgba(0, 0, 0, 0.8) !important;
-      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 25px 50px -12px rgba(0,0,0,0.7) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
     }
 
     /* ========================================================= */
@@ -98,7 +105,13 @@
       --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
       
-      /* Phase 1: Functional Pairings */
+      /* Phase 2: Structural Upgrade */
+      --font-ui: "Inter", system-ui, sans-serif;
+      --font-display: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
+      --word-scale: 4.2rem;
+      --letter-spacing: -0.05em;
+      background-color: #fcfaf2; /* Paper texture */
+
       --font-main: var(--font-ui);
       --font-serif: var(--font-display);
     }
@@ -118,6 +131,13 @@
     .font-display { font-family: var(--font-display) !important; }
     .font-ui { font-family: var(--font-ui) !important; }
     .leading-tight-display { line-height: 1.15 !important; }
+    
+    /* Dedicated Macro-display word */
+    #studyWord {
+      font-size: var(--word-scale, 3.5rem);
+      letter-spacing: var(--letter-spacing, normal);
+      transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
 
     /* Refined Footnote Tags */
     .footnote-tag {
@@ -3857,6 +3877,9 @@ function getCardHTML(index, word) {
     ? 'font-sans text-3xl sm:text-4xl md:text-5xl tracking-tight' 
     : 'font-jp text-4xl sm:text-5xl md:text-6xl';                 
 
+  const isEditorial = document.documentElement.getAttribute('data-theme') === 'editorial';
+  const studyWordClasses = `font-display font-bold text-charcoal mb-2 leading-none break-all ${isEditorial ? 'italic tracking-tighter' : ''}`;
+
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${depth}" style="z-index: ${zIndex}">
       <div class="paper-card back">
@@ -3866,7 +3889,7 @@ function getCardHTML(index, word) {
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
         <span class="footnote-tag uppercase mb-4 font-ui">${word.partOfSpeech || '其他'}</span>
-        <div class="font-display font-bold text-charcoal mb-2 leading-none text-4xl sm:text-5xl md:text-6xl">${word.japanese}</div>
+        <div id="studyWord" class="${studyWordClasses}">${word.japanese}</div>
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>
           <div class="hidden sm:flex items-center ml-2">
