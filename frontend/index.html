@@ -65,182 +65,181 @@
     }
 
     /* ========================================================= */
-    /* 主题 3：纯粹学术极简 (Pure Editorial Minimalism)            */
+    /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial & Darkroom)  */
     /* ========================================================= */
     [data-theme="editorial"] {
-      --color-parchment: 252 251 249; /* 极净纸白，去除暗黄 */
-      --color-surface: 252 251 249;   /* 容器与背景完全同色，消融卡片边界 */
-      --color-charcoal: 20 20 20;     
-      --color-ochre: 160 50 40;       /* 暗朱砂，仅用于极其少量的点缀 */
-      --color-borderline: 20 20 20;   
-      --bg-body: 252 251 249;
-      --bg-darkroom: 15 15 15;        /* 纯净暗室黑 */
+      --color-parchment: 248 247 243; /* 极致干净的冷白纸色 */
+      --color-surface: 248 247 243;   /* 抹平所有层级差异 */
+      --color-charcoal: 15 15 15;     /* 极深的浓墨 */
+      --color-ochre: 191 54 46;       /* 东方朱砂红，仅用于注音和重点警示 */
+      --color-borderline: 25 25 25;   
+      --bg-body: 248 247 243;
+      --bg-darkroom: 8 8 8;           /* 极暗室黑 */
       --font-editorial: 'Shippori Mincho', 'Noto Serif JP', Georgia, 'Times New Roman', serif;
     }
 
-    /* 1. 暴力洗地：全域强制接管字体、强制直角、强制干掉一切阴影 */
+    /* 1. 暴力洗地：强制接管字体、粉碎圆角、抹杀一切阴影 */
     [data-theme="editorial"] * {
       font-family: var(--font-editorial) !important;
       border-radius: 0 !important;
       box-shadow: none !important;
     }
 
-    /* 2. 剥离所有框体伪装：卡片、面板不再有视觉边界 */
+    /* 2. 剥离所有伪装：干掉现代 UI 的“容器卡片”概念，内容直接落纸 */
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] .bg-surface,
-    [data-theme="editorial"] .paper-card,
     [data-theme="editorial"] .modal-content,
     [data-theme="editorial"] #userDropdown,
     [data-theme="editorial"] .select-options {
       background: rgb(var(--color-surface)) !important;
       border: none !important;
       backdrop-filter: none !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    /* 顶部数据统计面板的极简线框化 */
+    [data-theme="editorial"] #tour-stats-area .glass-card {
+      border-bottom: 2px solid rgb(var(--color-charcoal)) !important;
+      margin-bottom: 2rem !important;
     }
 
-    /* 抹杀默认的灰色边框，仅通过下方特定重写保留极少量的结构线 */
-    [data-theme="editorial"] .border-borderline,
-    [data-theme="editorial"] .border {
-      border-color: transparent !important;
-    }
-
-    /* 3. 辞海级排版 (字典主视图) */
-    [data-theme="editorial"] nav { border-bottom: 1px solid rgba(20, 20, 20, 0.1) !important; }
+    /* 3. 辞海级排版 (字典主视图，极端字级对比) */
+    [data-theme="editorial"] nav { border-bottom: 1px solid rgba(15, 15, 15, 0.1) !important; }
     [data-theme="editorial"] table {
-      border-top: 1px solid #141414 !important;
+      border-top: 2px solid rgb(var(--color-charcoal)) !important;
       border-collapse: collapse !important;
       width: 100% !important;
     }
     [data-theme="editorial"] thead th {
-      border-bottom: 1px solid #141414 !important;
+      border-bottom: 1px solid rgb(var(--color-charcoal)) !important;
       text-transform: uppercase !important;
-      font-size: 0.75rem !important;
-      font-weight: normal !important;
-      color: rgba(20, 20, 20, 0.5) !important;
+      letter-spacing: 0.15em !important;
+      font-size: 0.7rem !important;
+      color: rgba(15, 15, 15, 0.4) !important;
       padding: 1rem 0 !important;
-      text-align: left !important;
     }
     [data-theme="editorial"] tr.airy-row {
-      border-bottom: 1px solid rgba(20, 20, 20, 0.1) !important;
+      border-bottom: 1px solid rgba(15, 15, 15, 0.1) !important;
       background: transparent !important;
-      transform: none !important; /* 禁绝一切悬停平移及果冻回弹 */
+      transform: none !important; /* 禁绝一切果冻回弹 */
+      transition: background 0.15s ease !important;
     }
-    [data-theme="editorial"] tr.airy-row:hover { background: rgba(20, 20, 20, 0.02) !important; }
+    [data-theme="editorial"] tr.airy-row:hover { 
+      background: rgba(15, 15, 15, 0.03) !important; 
+      padding-left: 0 !important; /* 去除无意义的悬停位移 */
+    }
     [data-theme="editorial"] td {
       border: none !important;
       padding: 1.5rem 0 !important;
       vertical-align: baseline !important;
     }
-    [data-theme="editorial"] td:nth-child(2) {
-      font-size: 1.5rem !important;
-      font-weight: bold !important;
+    
+    /* 🔥 极端对比：巨大的主单词，与微小的朱砂红读音 */
+    [data-theme="editorial"] td:nth-child(2) .text-lg {
+      font-size: 2.25rem !important;
+      font-weight: 800 !important;
+      line-height: 1 !important;
+      letter-spacing: 0.02em !important;
+      color: rgb(var(--color-charcoal)) !important;
     }
     [data-theme="editorial"] td:nth-child(2) .text-xs,
     [data-theme="editorial"] td:nth-child(2) span {
-      font-size: 0.75rem !important;
-      color: var(--color-ochre) !important;
-      margin-left: 0.5rem !important;
-      display: inline-block !important;
-      font-family: var(--font-editorial) !important;
+      font-size: 0.7rem !important;
+      color: rgb(var(--color-ochre)) !important;
+      display: block !important;
+      margin-top: 0.4rem !important;
+      font-family: monospace, sans-serif !important; /* 注音使用非衬线体，拉开层级 */
+      letter-spacing: 0.05em !important;
+    }
+    [data-theme="editorial"] td:nth-child(3) { /* 释义稍作弱化 */
+      font-size: 0.95rem !important;
+      color: rgba(15, 15, 15, 0.8) !important;
     }
 
-    /* 4. 输入框极简：只留底线 */
+    /* 4. 输入框与按键极简：克制、冷峻 */
     [data-theme="editorial"] .aesthetic-input {
       background: transparent !important;
       border: none !important;
-      border-bottom: 1px solid rgba(20, 20, 20, 0.2) !important;
+      border-bottom: 1px solid rgba(15, 15, 15, 0.2) !important;
       padding-left: 0 !important;
-      padding-right: 0 !important;
     }
-    [data-theme="editorial"] .aesthetic-input:focus { border-bottom-color: #141414 !important; }
+    [data-theme="editorial"] .aesthetic-input:focus { border-bottom-color: rgb(var(--color-charcoal)) !important; }
 
-    /* 5. 按钮极简：细线方框，黑白反转，拒绝下沉位移 */
     [data-theme="editorial"] .magnetic-btn,
-    [data-theme="editorial"] .btn-study,
-    [data-theme="editorial"] button.bg-surface {
+    [data-theme="editorial"] .btn-study {
       background: transparent !important;
-      color: #141414 !important;
-      border: 1px solid rgba(20, 20, 20, 0.6) !important;
+      color: rgb(var(--color-charcoal)) !important;
+      border: 1px solid rgb(var(--color-charcoal)) !important;
       transform: none !important; 
-      transition: all 0.15s ease !important;
-      padding: 0.6rem 1.5rem !important;
+      transition: all 0.1s ease !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.1em !important;
     }
     [data-theme="editorial"] .magnetic-btn:hover,
     [data-theme="editorial"] .btn-study:hover {
-      background: #141414 !important;
-      color: #FCFBF9 !important;
+      background: rgb(var(--color-charcoal)) !important;
+      color: rgb(var(--color-parchment)) !important;
     }
-    [data-theme="editorial"] .magnetic-btn::before,
-    [data-theme="editorial"] .magnetic-btn::after,
-    [data-theme="editorial"] .btn-study::before,
-    [data-theme="editorial"] .btn-study::after { display: none !important; }
-
+    [data-theme="editorial"] .magnetic-btn::before, [data-theme="editorial"] .btn-study::before, [data-theme="editorial"] .btn-study::after { display: none !important; }
 
     /* ========================================================= */
-    /* 6. 学习视图：绝对暗室 (彻底修复透光、重叠、发光问题)      */
+    /* 5. 学习视图：微缩暗室 (修复一切重影与透光灾难)              */
     /* ========================================================= */
-    [data-theme="editorial"] #view-study {
-      background-color: var(--bg-darkroom) !important;
-      background-image: none !important;
-    }
-    [data-theme="editorial"] #view-study *,
-    [data-theme="editorial"] #view-study .text-muted,
-    [data-theme="editorial"] #view-study .text-charcoal {
-      color: rgba(252, 251, 249, 0.5) !important;
-      border-color: rgba(252, 251, 249, 0.2) !important;
-    }
-    [data-theme="editorial"] #view-study .paper-card {
-      background: transparent !important;
-      border: none !important;
-    }
+    [data-theme="editorial"] #view-study { background-color: rgb(var(--bg-darkroom)) !important; }
+    [data-theme="editorial"] #view-study * { color: rgba(255, 255, 255, 0.6) !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+    [data-theme="editorial"] #view-study .paper-card { background: transparent !important; border: none !important; }
 
-    /* 核心物理隔离：所有没排到号的底层卡片全部隐形，断绝重叠穿透 */
+    /* 🔥 物理隔离法则一：除最顶层外，其余排队卡片在 DOM 层彻底抹除，断绝所有透光可能 */
     [data-theme="editorial"] #view-study .word-group:not([data-depth="0"]) {
-      opacity: 0 !important; 
-      visibility: hidden !important; 
-      pointer-events: none !important;
+      display: none !important; 
+    }
+    /* 🔥 物理隔离法则二：背面答案只要没翻开，就不准存在于屏幕上 */
+    [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) {
+      display: none !important;
+    }
+    /* 🔥 物理隔离法则三：正面一旦翻开（撕下），立刻从屏幕抹除，防止原字符残影遮挡答案 */
+    [data-theme="editorial"] #view-study .paper-card.front.peeled {
+      display: none !important;
     }
 
-    /* 正面问题：去除发光阴影，回归朴素的打印字体 */
+    /* 暗室投影大字 (极具张力，且使用 clamp 防止爆屏) */
     [data-theme="editorial"] #view-study .paper-card.front > div:nth-child(2),
     [data-theme="editorial"] #view-study .paper-card.front .font-jp {
-      font-size: clamp(2.5rem, 8vw, 4.5rem) !important;
-      font-weight: normal !important;
+      font-size: clamp(3rem, 10vw, 6rem) !important;
+      font-weight: 800 !important;
+      line-height: 1.1 !important;
       text-align: center !important;
-      color: #FCFBF9 !important;
-      text-shadow: none !important; 
+      color: #FFFFFF !important;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.15) !important; /* 微弱胶片磷光 */
+    }
+    
+    /* 答案显影大字 */
+    [data-theme="editorial"] #view-study .paper-card.back.revealed > div:nth-child(2) {
+      font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+      color: #FFFFFF !important;
+      font-weight: bold !important;
+    }
+    /* 暗室注音红 */
+    [data-theme="editorial"] #view-study .paper-card.back.revealed > div:nth-child(1) {
+      color: rgb(var(--color-ochre)) !important;
     }
 
-    /* 背面答案：没翻开时强制隐藏，翻开后显现 */
-    [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      transition: none !important;
-    }
-    [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(2) {
-      font-size: clamp(1.2rem, 4vw, 1.8rem) !important;
-      color: #FCFBF9 !important;
-      font-weight: normal !important;
-    }
-
-    /* 正面卡片翻开后彻底抹除，防止原字符残影遮挡答案 */
-    [data-theme="editorial"] #view-study .paper-card.front.peeled {
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-
-    /* 底部操作按键极简：纯线框，鼠标悬停底色反相，无厚度 */
+    /* 暗房控制按键：极简底片线框 */
     [data-theme="editorial"] #view-study .answer-btn {
       background: transparent !important;
-      border: 1px solid rgba(252, 251, 249, 0.2) !important;
-      color: #FCFBF9 !important;
-      padding: 0.8rem !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: #FFFFFF !important;
+      padding: 1rem 0 !important;
       transform: none !important;
     }
     [data-theme="editorial"] #view-study .answer-btn:hover {
-      background: #FCFBF9 !important;
-      color: var(--bg-darkroom) !important;
-      border-color: #FCFBF9 !important;
+      background: #FFFFFF !important;
+      color: rgb(var(--bg-darkroom)) !important;
+      border-color: #FFFFFF !important;
     }
+    /* 去除按钮上的不必要装饰 */
+    [data-theme="editorial"] #view-study .answer-btn kbd { display: none !important; }
 
     /* 必须包裹 rgb() 才能生效 */
     body { 
