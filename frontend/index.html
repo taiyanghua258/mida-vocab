@@ -245,7 +245,31 @@
     [data-theme="editorial"] .btn-study::before, 
     [data-theme="editorial"] .btn-study::after { display: none !important; }
 
-    /* 2. 空间折叠术：无感辞典排版 */
+    /* 2. 空间折叠术：无感辞典排版与报纸顶栏 */
+    
+    /* 报纸顶栏重塑 */
+    [data-theme="editorial"] #tour-stats-area {
+      border-top: 3px solid rgb(var(--color-charcoal)) !important;
+      border-bottom: 1px solid rgb(var(--color-charcoal)) !important;
+      padding: 1rem 0 !important;
+      margin-bottom: 2rem !important;
+      width: 100%;
+      gap: 2rem !important;
+    }
+    [data-theme="editorial"] #tour-stats-area .glass-card {
+      padding: 0 !important;
+      border-right: 1px dotted rgba(20, 20, 20, 0.4) !important;
+      border-radius: 0 !important;
+    }
+    [data-theme="editorial"] #tour-stats-area .glass-card:last-child {
+      border-right: none !important;
+    }
+    [data-theme="editorial"] #totalWords,
+    [data-theme="editorial"] #dueWords {
+      font-size: 3rem !important;
+      font-weight: 800 !important;
+    }
+
     [data-theme="editorial"] table { display: block !important; border-top: 2px solid rgb(var(--color-charcoal)) !important; margin-top: 1rem; }
     [data-theme="editorial"] thead { display: none !important; }
     [data-theme="editorial"] tbody { display: block !important; }
@@ -267,10 +291,13 @@
     
     [data-theme="editorial"] td:nth-child(4),
     [data-theme="editorial"] td:nth-child(6) { display: none !important; }
+
+    /* 强制重写表格汉字样式为先锋字体 */
+    [data-theme="editorial"] #wordTableBody td .font-jp { font-family: var(--font-serif) !important; }
     
-    [data-theme="editorial"] td:nth-child(2) .text-lg { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 0.02em; }
-    [data-theme="editorial"] td:nth-child(2) .text-xs { font-size: 0.75rem !important; color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; display: inline-block; margin-left: 0.5rem; }
-    [data-theme="editorial"] td:nth-child(3) { font-size: 0.95rem !important; opacity: 0.8; }
+    [data-theme="editorial"] td:nth-child(2) .text-xl { font-size: 2.4rem !important; font-weight: 800 !important; letter-spacing: 0.02em; line-height: 1.1 !important; color: rgb(var(--color-charcoal)) !important; }
+    [data-theme="editorial"] td:nth-child(2) .text-xs { font-size: 0.75rem !important; color: rgb(var(--color-ochre)) !important; font-family: sans-serif !important; display: inline-block; margin-top: 0.25rem; }
+    [data-theme="editorial"] td:nth-child(3) { font-size: 0.95rem !important; opacity: 0.8; font-family: var(--font-serif) !important; }
     [data-theme="editorial"] td:nth-child(5) { text-align: right; opacity: 0.4; font-size: 0.75rem; }
 
     /* 3. 微缩暗室 (Darkroom Mode) 彻底修复重影 Bug */
