@@ -38,7 +38,7 @@
   </script>
 
   <style>
-    /* ========== 主题 1：素雅明亮 (默认) ========== */
+    /* ========== 主题 1：默认亮色 (Parchment) ========== */
     :root {
       --color-parchment: 249 247 241;
       --color-surface: 255 255 255;
@@ -51,7 +51,7 @@
       --bg-body: 253 251 247;
     }
 
-    /* ========== 主题 2：黑曜与金缮 (极简侘寂暗调) ========== */
+    /* ========== 主题 2：深色模式 (Obsidian & Kintsugi) ========== */
     [data-theme="obsidian"] {
       --color-parchment: 24 23 21;
       --color-surface: 34 32 29;
@@ -4341,10 +4341,10 @@ function applyTheme(theme) {
   const themeIcon = document.getElementById('themeIcon');
   const noiseOverlay = document.getElementById('noiseOverlay');
   
-  // 1. 素雅明亮 (默认)
+  // 1. 默认亮色 (Light)
   if (theme === 'light') {
     document.documentElement.removeAttribute('data-theme');
-    if(toggleText) toggleText.textContent = '切换: 黑曜金缮';
+    if(toggleText) toggleText.textContent = '切换: 深色模式';
     if(themeIcon) {
       themeIcon.style.transform = 'rotate(0deg)';
       themeIcon.innerHTML = `<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"></path>`; // 月亮
@@ -4352,7 +4352,7 @@ function applyTheme(theme) {
     if(noiseOverlay) noiseOverlay.classList.replace('opacity-10', 'opacity-0');
     localStorage.setItem('aesthetic-theme', 'light');
   } 
-  // 2. 黑曜与金缮 (暗调)
+  // 2. 深色模式 (Obsidian)
   else if (theme === 'obsidian') {
     document.documentElement.setAttribute('data-theme', 'obsidian');
     if(toggleText) toggleText.textContent = '切换: 学术辞典';
@@ -4367,7 +4367,7 @@ function applyTheme(theme) {
   // 3. 复古辞典与暗室 (Editorial)
   else if (theme === 'editorial') {
     document.documentElement.setAttribute('data-theme', 'editorial');
-    if(toggleText) toggleText.textContent = '切换: 素雅明亮';
+    if(toggleText) toggleText.textContent = '切换: 默认亮色';
     if(themeIcon) {
       themeIcon.style.transform = 'rotate(90deg)';
       themeIcon.innerHTML = `<path d="M192,48V208a16,16,0,0,1-16,16H80a16,16,0,0,1-16-16V48A16,16,0,0,1,80,32h96A16,16,0,0,1,192,48ZM80,48V208h96V48Z"></path>`; // 书本 Icon
