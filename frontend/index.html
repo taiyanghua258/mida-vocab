@@ -858,14 +858,37 @@
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <style>
-    .driver-popover {
-      font-family: inherit !important;
+    /* =========================================
+       第三方组件适配：Driver.js (新手引导)
+       ========================================= */
+
+    /* 让 Driver.js 强制继承当前主题的 UI 字体，而不是破坏性的 Serif */
+    [data-theme="editorial"] .driver-popover,
+    [data-theme="editorial"] .driver-popover * {
+      font-family: var(--font-main, "Inter", "Noto Sans SC", sans-serif);
+    }
+
+    /* 顺便优化一下 Driver.js 在高级主题下的质感 */
+    [data-theme="editorial"] .driver-popover {
+      border-radius: 0 !important; /* 学术风不需要圆角 */
+      border: 1px solid rgb(var(--color-charcoal) / 0.2) !important;
+      background-color: rgb(var(--color-surface)) !important;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1) !important; /* 加入一点纸张叠放的复古阴影 */
+      padding: 1.5rem !important;
+    }
+
+    /* 黑曜石主题下的 Driver.js 适配 */
+    [data-theme="obsidian"] .driver-popover {
+      background: rgba(30, 30, 30, 0.8) !important;
+      backdrop-filter: blur(10px) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
       border-radius: 1.5rem !important;
       padding: 1.5rem !important;
-      background-color: rgb(var(--color-surface)) !important; 
-      border: 1px solid rgb(var(--color-borderline) / 0.4) !important; 
-      box-shadow: 0 12px 40px rgba(0,0,0,0.2) !important;
     }
+
+    /* 通用 Driver.js 内部精修 */
     .driver-popover-title {
       font-size: 1.1rem !important;
       color: rgb(var(--color-charcoal)) !important; 
