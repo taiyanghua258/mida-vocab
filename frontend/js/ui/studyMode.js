@@ -59,20 +59,16 @@ async function initStudy() {
   if (activeSessionStr) {
     try {
       const activeData = JSON.parse(activeSessionStr);
-      // 只有在真的有剩余单词时才恢复
-      if (activeData.studyWords && activeData.studyIndex < activeData.studyWords.length) {
+      // 只有在真的有剩余单词时，并且不是无痕模式时才恢复
+      if (activeData.studyWords && activeData.studyIndex < activeData.studyWords.length && !activeData.isCramMode) {
         state.studyWords = activeData.studyWords;
         state.studyIndex = activeData.studyIndex;
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-        state.isCramMode = activeData.isCramMode || false; // <--- 恢复无痕模式
+        state.isCramMode = false;
         words = state.studyWords;
         
-        if (state.isCramMode) {
-          showToast('已恢复上次未完成的无痕练习进度', 'info');
-        } else {
-          showToast('已恢复上次未完成的进度', 'info');
-        }
+        showToast('已恢复上次未完成的进度', 'info');
       }
     } catch (e) {}
     localStorage.removeItem(`active_session_${state.currentLang}`);
