@@ -51,6 +51,14 @@
       --color-borderline: 229 225 216;
       --bg-body: 253 251 247;
       --color-success: 75 115 101;
+
+      /* Phase 1: Establish Typography Variables */
+      --font-ui: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+      --font-display: "Shippori Mincho", "Noto Serif JP", serif;
+      
+      /* Defaults */
+      --font-main: var(--font-ui);
+      --font-serif: var(--font-display);
     }
 
     /* ========== 主题 2：深色模式 (Obsidian & Kintsugi) ========== */
@@ -67,6 +75,16 @@
       --color-success: 95 145 125;
     }
 
+    [data-theme="obsidian"] .paper-card,
+    [data-theme="obsidian"] .glass-card {
+      background: rgba(34, 32, 29, 0.6) !important;
+      backdrop-filter: blur(20px);
+      box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.05),
+        0 20px 40px rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
     /* ========================================================= */
     /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial) - 终极修复版 */
     /* ========================================================= */
@@ -79,17 +97,36 @@
       --bg-body: 248 247 243;
       --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
-      --font-editorial: 'Shippori Mincho', 'Noto Serif JP', Georgia, 'Times New Roman', serif;
+      
+      /* Phase 1: Functional Pairings */
+      --font-main: var(--font-ui);
+      --font-serif: var(--font-display);
     }
 
-    [data-theme="editorial"] body,
-    [data-theme="editorial"] input,
-    [data-theme="editorial"] button,
-    [data-theme="editorial"] table,
-    [data-theme="editorial"] span,
-    [data-theme="editorial"] div {
-      font-family: var(--font-editorial) !important;
+    [data-theme="editorial"] .main-container {
+      background-image: 
+        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
+
+    [data-theme="editorial"] body {
+      font-family: var(--font-main);
+    }
+
+    /* Refined Footnote Tags */
+    .footnote-tag {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      letter-spacing: -0.02em;
+      opacity: 0.6;
+      display: inline-flex;
+      align-items: center;
+      transition: opacity 0.3s ease;
+    }
+    .footnote-tag::before { content: '['; margin-right: 1px; }
+    .footnote-tag::after { content: ']'; margin-left: 1px; }
+    .footnote-tag:hover { opacity: 1; }
 
     /* 1. 彻底粉碎主页所有导致“杂乱”的容器边框、色块与圆角 */
     [data-theme="editorial"] * {
@@ -251,6 +288,7 @@
       color: rgb(var(--color-charcoal));
       text-rendering: optimizeLegibility;
       transition: background-color 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.4s ease;
+      font-family: var(--font-main);
     }
 
     /* ========== 电影级 View Transitions 光影溶解动画 ========== */
@@ -277,7 +315,7 @@
 
     /* ========== 全局审美与排版 (Typography & Globals) ========== */
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Yu Gothic", Meiryo, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: var(--font-ui);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
@@ -760,6 +798,45 @@
 
     /* ========== 移动端 UI & 性能优化 ========== */
     @media (max-width: 640px) {
+      /* Table to Card Transformation */
+      .word-table thead { display: none !important; }
+      #wordTableBody tr.airy-row {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 1.5rem 1rem !important;
+        border-bottom: 1px solid rgb(var(--color-borderline) / 0.4) !important;
+        background: rgb(var(--color-surface)) !important;
+        margin-bottom: 0.75rem;
+        border-radius: 1rem;
+        height: auto !important;
+        transform: none !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      }
+      #wordTableBody td {
+        display: block !important;
+        padding: 0.25rem 0 !important;
+        border: none !important;
+      }
+      #wordTableBody td:nth-child(1) { margin-bottom: 0.5rem; } /* Checkbox row */
+      #wordTableBody td:nth-child(2) { 
+        padding-bottom: 0.5rem !important;
+      }
+      #wordTableBody td:nth-child(2) span.text-lg {
+        font-size: 1.5rem !important;
+        font-family: var(--font-serif) !important;
+        display: block;
+      }
+      #wordTableBody td:nth-child(3) {
+        font-size: 1rem !important;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+      }
+      #wordTableBody td:nth-child(6) {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+
       /* 缩小卡片内边距，留出更多呼吸空间 */
       .paper-card {
         padding: 1.25rem !important; 
@@ -2710,9 +2787,9 @@ function renderWordList(words) {
       <td class="px-6 py-4"><span class="text-lg font-semibold ${fontClass}">${w.japanese}</span><br><span class="text-xs text-muted">${w.reading || ''}</span></td>
       <td class="px-6 py-4 text-sm font-medium">${w.meaning}</td>
       <td class="px-4 py-4">
-        <div class="flex flex-wrap gap-1 max-w-[120px]">
-          <span class="px-1.5 py-0.5 bg-parchment rounded text-[10px]">${w.partOfSpeech || '其他'}</span>
-          ${((w.tags || []).slice(0, 2).map(t => `<span class="px-1.5 py-0.5 border border-borderline rounded text-[10px] text-muted">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="px-1.5 py-0.5 text-[10px] text-muted">+${(w.tags || []).length - 2}</span>` : ''}
+        <div class="flex flex-wrap gap-2 max-w-[120px]">
+          <span class="footnote-tag">${w.partOfSpeech || '其他'}</span>
+          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40">+${(w.tags || []).length - 2}</span>` : ''}
         </div>
       </td>
       <td class="px-6 py-4 due-cell" data-due="${w.due}" data-state="${w.state}">${formatDate(w.due, w.state)}</td>
@@ -3754,10 +3831,10 @@ function getCardHTML(index, word) {
       <div class="paper-card back">
         <div class="text-xl font-jp text-ochre mb-4 font-medium">${word.reading || '-'}</div>
         <div class="text-2xl sm:text-3xl font-semibold text-charcoal mb-4 sm:mb-6 text-center">${word.meaning}</div>
-        <div class="px-4 py-1.5 bg-parchment rounded-full text-xs font-medium text-muted uppercase">${word.partOfSpeech || '其他'}</div>
+        <div class="footnote-tag uppercase">${word.partOfSpeech || '其他'}</div>
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
-        <span class="text-[10px] font-bold tracking-widest text-muted uppercase mb-4 px-3 py-1 bg-parchment rounded">${word.partOfSpeech || '其他'}</span>
+        <span class="footnote-tag uppercase mb-4">${word.partOfSpeech || '其他'}</span>
         <div class="${fontClass} font-semibold text-charcoal mb-2">${word.japanese}</div>
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center">
           <span>点击撕下便签</span>
