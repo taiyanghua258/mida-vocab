@@ -1,0 +1,862 @@
+/* ================= DASHBOARD ================= */
+async function initDashboard() { await loadStats(); loadWords(1); checkAndStartOnboarding(); }
+
+async function loadStats() {
+  const data = await api(`/study/stats?language=${state.currentLang}`);
+  document.getElementById('totalWords').textContent = data.totalWords;
+  document.getElementById('dueWords').textContent = data.dueWords;
+  state.lastDueCount = data.dueWords;
+
+  // 👇 新增以下两行：在切换语种或回到主页时，立刻同步并渲染冷却池
+  state.upcomingWords = data.upcomingWords || [];
+  renderUpcomingWidget();
+}
+
+async function loadWords(page = 1) {
+  state.pagination.page = page;
+  const search = document.getElementById('searchInput').value, pos = document.getElementById('partOfSpeechFilter').value;
+  const tbody = document.getElementById('wordTableBody');
+  // Removed destructive tbody clear to prevent layout flicker
+  try {
+    let endpoint = `/words?page=${page}&limit=${state.pagination.limit}&language=${state.currentLang}`;
+    if (search) endpoint += `&search=${encodeURIComponent(search)}`;
+    if (pos) endpoint += `&partOfSpeech=${encodeURIComponent(pos)}`;
+    const data = await api(endpoint);
+    state.pagination.totalPages = data.pages;
+    document.getElementById('pageTotalItems').textContent = data.total || data.words.length;
+    renderWordList(data.words);
+    renderPagination();
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-terracotta">加载失败</td></tr>'; }
+}
+
+function renderWordList(words) {
+  state.currentPageWords = words;
+  const tbody = document.getElementById('wordTableBody');
+  if (!words.length) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-muted">暂无单词</td></tr>'; return; }
+  tbody.innerHTML = words.map(w => {
+    const checked = state.selectedWordIds.has(w._id) ? 'checked' : '';
+    const fontClass = w.language === 'en' ? 'font-sans tracking-tight' : 'font-jp'; // 动态字体
+    return `
+    <tr class="airy-row group ${checked ? 'bg-ochre/5 border-transparent shadow-[inset_4px_0_0_#DF9F28]' : ''}">
+      <td class="px-5 py-5">
+        <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
+      </td>
+      <td class="px-6 py-4">
+        <span class="text-xl font-bold font-jp leading-tight block">${w.japanese}</span>
+        <span class="text-xs text-muted font-jp opacity-60">${w.reading || ''}</span>
+      </td>
+      <td class="px-6 py-4 text-sm font-medium font-ui opacity-90">${w.meaning}</td>
+      <td class="px-4 py-4">
+        <div class="flex flex-wrap gap-2 max-w-[120px] items-center">
+          <span class="footnote-tag font-ui">${w.partOfSpeech || '其他'}</span>
+          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag font-ui">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40 font-ui">+${(w.tags || []).length - 2}</span>` : ''}
+        </div>
+      </td>
+      <td class="px-6 py-4 due-cell" data-due="${w.due}" data-state="${w.state}">${formatDate(w.due, w.state)}</td>
+      <td class="px-6 py-4 text-right">
+        <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="editWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-all flex items-center justify-center" title="编辑">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+          </button>
+          <button onclick="deleteWord('${w._id}')" class="w-8 h-8 rounded-full hover:bg-parchment text-muted hover:text-terracotta transition-all flex items-center justify-center" title="删除">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  updateBatchBar();
+}
+
+function renderPagination() {
+  const nav = document.getElementById('pagination'), { page, totalPages } = state.pagination;
+  if (totalPages <= 1) return nav.innerHTML = '';
+  
+  let html = '';
+  
+  if (page > 1) {
+    html += `<button onclick="loadWords(${page - 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="上一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></button>`;
+  }
+
+  let startPage = Math.max(1, page - 2);
+  let endPage = startPage + 4;
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - 4);
+  }
+
+  if (startPage > 1) {
+    html += `<button onclick="loadWords(1)" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer">1</button>`;
+    if (startPage > 2) html += `<span class="w-8 h-8 flex items-center justify-center text-xs text-muted/50 select-none">...</span>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const active = i === page ? 'bg-charcoal text-surface shadow-md' : 'bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer';
+    html += `<button onclick="loadWords(${i})" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all ${active}">${i}</button>`;
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += `<span class="w-8 h-8 flex items-center justify-center text-xs text-muted/50 select-none">...</span>`;
+    html += `<button onclick="loadWords(${totalPages})" class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-all bg-transparent text-muted hover:text-charcoal hover:bg-parchment/50 cursor-pointer">${totalPages}</button>`;
+  }
+
+  if (page < totalPages) {
+    html += `<button onclick="loadWords(${page + 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="下一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg></button>`;
+  }
+
+  nav.innerHTML = html;
+}
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadWords(1), 250); });
+document.getElementById('partOfSpeechFilter').addEventListener('change', () => loadWords(1));
+
+/* ================= CRUD ================= */
+document.getElementById('wordForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('wordId').value;
+  const data = { 
+    language: state.currentLang,
+    japanese: document.getElementById('japanese').value, 
+    reading: document.getElementById('reading').value, 
+    meaning: document.getElementById('meaning').value, 
+    partOfSpeech: document.getElementById('partOfSpeech').value, 
+    tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean) 
+  };
+  try {
+    if (id) await api(`/words/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    else await api('/words', { method: 'POST', body: JSON.stringify(data) });
+    closeModal('wordModal');
+    showToast('保存成功', 'success');
+    loadWords(state.pagination.page); loadStats();
+  } catch (err) { showToast('保存失败', 'error'); }
+});
+
+async function editWord(id) {
+  try {
+    const word = await api(`/words/${id}`);
+    if (!word) return;
+    document.getElementById('modalTitle').textContent = '编辑单词';
+    document.getElementById('wordId').value = id;
+
+    document.getElementById('japanese').value = word.japanese;
+    document.getElementById('reading').value = word.reading || '';
+    document.getElementById('meaning').value = word.meaning;
+    document.getElementById('partOfSpeech').value = word.partOfSpeech || '名词';
+    document.getElementById('tags').value = (word.tags || []).join(', ');
+    openModal('wordModal');
+  } catch (e) {
+    showToast('加载单词数据失败', 'error');
+  }
+}
+
+async function deleteWord(id) {
+  if (!confirm('确定要删除这个单词吗？')) return;
+  await api(`/words/${id}`, { method: 'DELETE' });
+  localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存，防止已删单词幽灵重现
+  showToast('已删除', 'success');
+  loadWords(state.pagination.page); loadStats();
+}
+
+async function handleAiGenerate() {
+  const japanese = document.getElementById('japanese').value.trim();
+  if (!japanese) return showToast('请先输入单词', 'error');
+
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> 生成中...';
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/ai/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
+      body: JSON.stringify({ japanese, language: state.currentLang })
+    });
+
+    if (!res.ok) throw new Error('生成失败');
+
+    const data = await res.json();
+    document.getElementById('reading').value = data.reading || '';
+    document.getElementById('meaning').value = data.meaning || '';
+    if (data.partOfSpeech) {
+      document.getElementById('partOfSpeech').value = data.partOfSpeech;
+    }
+    document.getElementById('tags').value = (data.tags || []).join(', ');
+
+    showToast('生成成功', 'success');
+  } catch (e) {
+    showToast('生成失败，请重试', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg> AI 补全`;
+  }
+}
+
+/* ================= 词书导入逻辑 ================= */
+function handleDictFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = ''; // 重置以支持重复上传
+
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    try {
+      if (file.name.endsWith('.json')) {
+        const raw = JSON.parse(content);
+        dictBatchWords = Array.isArray(raw) ? raw : (raw.data || []);
+      } else {
+        // CSV 解析逻辑
+        const lines = content.split('\n').filter(l => l.trim());
+        dictBatchWords = lines.slice(1).map(line => {
+          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+          return {
+            japanese: (cols[0] || '').replace(/^"|"$/g, '').trim(),
+            reading: (cols[1] || '').replace(/^"|"$/g, '').trim(),
+            meaning: (cols[2] || '').replace(/^"|"$/g, '').trim(),
+            partOfSpeech: (cols[3] || '').replace(/^"|"$/g, '').trim() || '名词',
+            tags: cols[4] ? cols[4].replace(/^"|"$/g, '').split(';').map(t => t.trim()) : []
+          };
+        });
+      }
+
+      // 自动注入当前语种并校验
+      dictBatchWords = dictBatchWords.map(w => ({
+        ...w,
+        japanese: w.japanese || w.word,
+        language: state.currentLang
+      })).filter(w => w.japanese);
+
+      if (!dictBatchWords.length) throw new Error('未识别到有效单词');
+
+      // 【修复 Bug 6】检查文件语言是否与当前工作区匹配
+      let engCount = 0;
+      dictBatchWords.forEach(w => {
+        if (/^[a-zA-Z\s\-']+$/.test(w.japanese)) engCount++;
+      });
+      
+      if (state.currentLang === 'ja' && engCount > dictBatchWords.length * 0.8) {
+        if (!confirm('⚠️ 语言异常警告\n\n检测到您导入的似乎是【英语】词书，但当前处于【日语】工作区。\n\n这可能导致发音和学习算法异常，确定要强行导入吗？')) {
+          return; // 用户取消导入
+        }
+      } else if (state.currentLang === 'en' && engCount < dictBatchWords.length * 0.2) {
+        if (!confirm('⚠️ 语言异常警告\n\n检测到您导入的似乎是非英语词书，但当前处于【英语】工作区。\n\n确定要强行导入吗？')) {
+          return;
+        }
+      }
+
+      // 切换视图
+      document.getElementById('dictStep1').classList.add('hidden');
+      document.getElementById('dictStep2').classList.remove('hidden');
+      document.getElementById('dictBatchCount').textContent = dictBatchWords.length;
+      
+      const list = document.getElementById('dictBatchPreviewList');
+      const isEn = state.currentLang === 'en';
+      list.innerHTML = dictBatchWords.map((w, i) => `
+        <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40">
+          <div class="flex-1 min-w-0 pr-4">
+            <span class="font-bold text-charcoal truncate block ${isEn ? 'font-sans' : 'font-jp'}">${w.japanese}</span>
+            <span class="text-[10px] text-muted block mt-0.5 truncate">${w.reading || ''} · ${w.meaning}</span>
+          </div>
+          <button onclick="removeDictBatchWord(${i})" class="text-muted/40 hover:text-terracotta transition-colors flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          </button>
+        </div>
+      `).join('');
+
+      showToast(`已解析 ${dictBatchWords.length} 个单词`, 'success');
+    } catch (err) {
+      showToast('文件解析失败，请检查格式', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// 词书批量导入（加入容错与 UI 解锁）
+async function handleDictBatchImport() {
+  const btn = document.getElementById('dictBatchConfirmBtn');
+  const pb = document.getElementById('dictImportProgressBar');
+  const fill = document.getElementById('dictImportProgressFill');
+  const count = document.getElementById('dictImportProgressCount');
+
+  btn.disabled = true;
+  pb.classList.remove('hidden');
+  
+  const total = dictBatchWords.length;
+  const chunkSize = 50;
+  let processed = 0;
+  let hasError = false;
+
+  try {
+    const useAiFix = document.getElementById('aiDictPosToggle')?.checked;
+    if (useAiFix) {
+      document.getElementById('dictImportProgressText').textContent = 'AI正在校验词性并导入...';
+    } else {
+      document.getElementById('dictImportProgressText').textContent = '正在处理词书...';
+    }
+
+    for (let i = 0; i < total; i += chunkSize) {
+      let chunk = dictBatchWords.slice(i, i + chunkSize);
+      
+      // AI 词性修复逻辑
+      if (useAiFix) {
+        try {
+          const aiRes = await api('/ai/generate-pos', {
+            method: 'POST',
+            body: JSON.stringify({ words: chunk, language: state.currentLang })
+          });
+          if (Array.isArray(aiRes) && aiRes.length === chunk.length) {
+            chunk = chunk.map((w, index) => ({
+              ...w,
+              partOfSpeech: aiRes[index] || w.partOfSpeech || '名词'
+            }));
+          }
+        } catch (aiErr) {
+          console.warn('AI 词性修复由于网络或并发限制失败，降级使用原始解析', aiErr);
+        }
+      }
+
+      await api('/words/import', { method: 'POST', body: JSON.stringify({ words: chunk }) });
+      processed += chunk.length;
+      count.textContent = `${processed}/${total}`;
+      fill.style.width = `${(processed / total) * 100}%`;
+    }
+    showToast('词书导入成功', 'success');
+    closeModal('dictImportModal');
+    loadWords(1); loadStats();
+  } catch (e) {
+    hasError = true;
+    showToast('导入中断: ' + (e.message || '发现无法解析的脏数据'), 'error');
+  } finally {
+    btn.disabled = false;
+    // 【修改核心】：不论成功失败，最后都要把进度条藏起来，防止卡死视觉
+    if (hasError) {
+      setTimeout(() => { pb.classList.add('hidden'); }, 1500);
+    } else {
+      pb.classList.add('hidden');
+    }
+  }
+}
+
+// 独立的 APKG 云端转换逻辑（加入渐进式进度条）
+async function handleApkgConvert(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+
+  if (!file.name.endsWith('.apkg')) {
+    showToast('请上传标准 .apkg 格式的文件', 'error');
+    return;
+  }
+
+  const dropZone = document.getElementById('apkgDropZone');
+  const pb = document.getElementById('apkgProgressBar');
+  const fill = document.getElementById('apkgProgressFill');
+  const pctText = document.getElementById('apkgProgressPct');
+
+  // 隐藏拖拽区，显示进度条
+  dropZone.classList.add('hidden');
+  pb.classList.remove('hidden');
+  fill.style.width = '0%';
+  pctText.textContent = '0%';
+
+  // 模拟平滑进度 (渐进式靠近 95%)
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += (95 - progress) * 0.08; 
+    fill.style.width = `${progress}%`;
+    pctText.textContent = `${Math.floor(progress)}%`;
+  }, 500);
+
+  const formData = new FormData();
+  formData.append('dictFile', file);
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/words/upload-apkg`, {
+      method: 'POST',
+      headers: { 'x-auth-token': localStorage.getItem('token') },
+      body: formData
+    });
+
+    clearInterval(interval);
+
+    if (response.ok) {
+      fill.style.width = '100%';
+      pctText.textContent = '100%';
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace('.apkg', '_converted.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      showToast('转换成功！文件已开始下载，完成后拖入上方主区域即可导入', 'success');
+    } else {
+      const result = await response.json();
+      throw new Error(result.message);
+    }
+  } catch (err) {
+    clearInterval(interval);
+    showToast(err.message || '转换失败，请检查文件有效性', 'error');
+  } finally {
+    // 延迟 2 秒后恢复初始界面
+    setTimeout(() => {
+      pb.classList.add('hidden');
+      dropZone.classList.remove('hidden');
+      fill.style.width = '0%';
+    }, 2000);
+  }
+}
+
+function resetDictImport() {
+  dictBatchWords = [];
+  document.getElementById('dictStep1').classList.remove('hidden');
+  document.getElementById('dictStep2').classList.add('hidden');
+}
+
+function removeDictBatchWord(index) {
+  dictBatchWords.splice(index, 1);
+  document.getElementById('dictBatchCount').textContent = dictBatchWords.length;
+  if (!dictBatchWords.length) resetDictImport();
+  else {
+    // 重新渲染列表
+    const list = document.getElementById('dictBatchPreviewList');
+    const isEn = state.currentLang === 'en';
+    list.innerHTML = dictBatchWords.map((w, i) => `
+      <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40">
+        <div class="flex-1 min-w-0 pr-4">
+          <span class="font-bold text-charcoal truncate block ${isEn ? 'font-sans' : 'font-jp'}">${w.japanese}</span>
+          <span class="text-[10px] text-muted block mt-0.5 truncate">${w.reading || ''} · ${w.meaning}</span>
+        </div>
+        <button onclick="removeDictBatchWord(${i})" class="text-muted/40 hover:text-terracotta transition-colors flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+        </button>
+      </div>
+    `).join('');
+  }
+}
+
+/* ================= BATCH IMPORT ================= */
+let dictBatchWords = [];
+let batchGeneratedWords = [];
+
+async function handleBatchGenerate() {
+  const text = document.getElementById('importWordsText').value.trim();
+  const language = state.currentLang; 
+  if (!text) return showToast('请输入单词内容', 'error');
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return showToast('请输入有效的单词', 'error');
+
+  // ================= 新增：语言识别预警 (优化版) =================
+  let engCount = 0;
+  let longChineseNoteCount = 0;
+  const kanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/; // 匹配假名
+
+  lines.forEach(line => {
+    // 统计纯英文字母构成的行
+    if (/^[a-zA-Z\s\-\.,'!]+$/.test(line)) engCount++;
+    // 如果没有假名，全是汉字，且长度超过 8 个字，大概率是用户粘贴的中文笔记/废话
+    else if (!kanaRegex.test(line) && line.length > 8 && /[\u4e00-\u9fa5]/.test(line)) longChineseNoteCount++;
+  });
+
+  if (state.currentLang === 'ja') {
+    if (engCount > lines.length * 0.5) {
+      if (!confirm('⚠️ 语言异常警告\n\n检测到您输入的文本大部分是【英语】，但当前处于【日语】工作区。\nAI 会自动过滤非目标语言。确定要继续吗？')) return;
+    } else if (longChineseNoteCount > 0 && lines.length <= 5) {
+      // 只有当行数较少，且检测到超长无假名的中文字符串时，稍微提醒一下
+      if (!confirm('⚠️ 内容预警\n\n检测到可能包含中文句子或笔记（如解释说明）。\nAI 将会自动丢弃非日语词汇，纯汉字的日语词会被保留。确定要继续吗？')) return;
+    }
+  } else if (state.currentLang === 'en') {
+    if (engCount < lines.length * 0.2) {
+      if (!confirm('⚠️ 语言异常警告\n\n检测到您输入的文本大部分似乎不是【英语】。\n当前处于英语工作区，AI 将会自动丢弃非英语内容。确定要继续吗？')) return;
+    }
+  }
+  // ================= 新增结束 =================
+
+  // ========== 前端轻量级“垃圾阻击”（优化速度与 API 成本） ==========
+  const validLines = [];
+  const kanaRegexForFilter = /[\u3040-\u309F\u30A0-\u30FF]/;
+  
+  lines.forEach(line => {
+    if (state.currentLang === 'ja') {
+      // 1. 如果是纯英文/数字/符号，直接剔除（不发给后端）
+      if (/^[a-zA-Z0-9\s\-\.,'!]+$/.test(line)) return; 
+      // 2. 如果超过 10 个字，且完全没有假名，大概率是长篇中文笔记，直接剔除
+      if (line.length > 10 && !kanaRegexForFilter.test(line)) return; 
+    }
+    // 留下来的加入有效数组
+    validLines.push(line);
+  });
+
+  if (validLines.length === 0) {
+    return showToast('未检测到有效的单词内容，已被自动过滤', 'error');
+  } else if (validLines.length < lines.length) {
+    showToast(`已在前端自动拦截 ${lines.length - validLines.length} 行非目标语言内容`, 'info');
+  }
+
+  // Bug 2: 创建 AbortController 以支持中断
+  if (state.batchAbortController) state.batchAbortController.abort();
+  state.batchAbortController = new AbortController();
+  const signal = state.batchAbortController.signal;
+
+  const btn = document.getElementById('batchGenerateBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'AI 解析中...';
+
+  const pb = document.getElementById('aiProgressBar');
+  const pCount = document.getElementById('aiProgressCount');
+  const pFill = document.getElementById('aiProgressFill');
+  pb.classList.remove('hidden');
+
+  batchGeneratedWords = [];
+  const total = validLines.length;
+  const chunkSize = 10; 
+  let processed = 0;
+
+  pCount.textContent = `0/${total}`;
+  pFill.style.width = `0%`;
+
+  try {
+    for (let i = 0; i < total; i += chunkSize) {
+      if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
+      const chunkLines = validLines.slice(i, i + chunkSize);
+      const chunkText = chunkLines.join('\n');
+
+      const res = await fetch(`${CONFIG.API_BASE}/ai/generate-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('token') && { 'x-auth-token': localStorage.getItem('token') }) },
+        body: JSON.stringify({ text: chunkText, language: state.currentLang }),
+        signal // Bug 2: 传入 signal 以支持 fetch 级别中断
+      });
+
+      if (!res.ok) throw new Error('AI 解析中断');
+      const chunkResult = await res.json();
+      batchGeneratedWords.push(...chunkResult);
+
+      processed += chunkLines.length;
+      pCount.textContent = `${processed}/${total}`;
+      pFill.style.width = `${(processed / total) * 100}%`;
+    }
+
+    document.getElementById('importStep1').classList.add('hidden');
+    document.getElementById('importStep2').classList.remove('hidden');
+    document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+
+    const list = document.getElementById('batchPreviewList');
+    const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
+    list.innerHTML = batchGeneratedWords.map((w, i) => `
+      <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
+        <div>
+          <span class="font-semibold ${fontClass}">${w.japanese}</span>
+          <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
+        </div>
+        <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+      </div>
+    `).join('');
+
+    showToast('全部生成成功', 'success');
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      console.log('AI 批量生成已被用户中断');
+    } else {
+      showToast('生成过程中发生网络错误', 'error');
+    }
+  } finally {
+    state.batchAbortController = null;
+    btn.disabled = false;
+    btn.innerHTML = 'AI 补全';
+    pb.classList.add('hidden'); 
+  }
+}
+
+function removeBatchWord(index) {
+  batchGeneratedWords.splice(index, 1);
+  document.getElementById('batchCount').textContent = batchGeneratedWords.length;
+  const list = document.getElementById('batchPreviewList');
+  const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
+  list.innerHTML = batchGeneratedWords.map((w, i) => `
+    <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
+      <div>
+        <span class="font-semibold ${fontClass}">${w.japanese}</span>
+        <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
+      </div>
+      <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
+    </div>
+  `).join('');
+}
+
+async function handleBatchImport() {
+  if (!batchGeneratedWords.length) return showToast('没有单词可导入', 'error');
+  const btn = document.getElementById('batchImportBtn');
+  const progressBar = document.getElementById('importProgressBar');
+  const progressFill = document.getElementById('importProgressFill');
+  const progressCount = document.getElementById('importProgressCount');
+  const previewList = document.getElementById('batchPreviewList');
+
+  btn.disabled = true; btn.innerHTML = '导入中...';
+  previewList.classList.add('opacity-50');
+  progressBar.classList.remove('hidden');
+  progressBar.style.display = 'block';
+  
+  const total = batchGeneratedWords.length;
+  // 数据库保存速度极快，每次发 50 个
+  const chunkSize = 50; 
+  let processed = 0;
+  let successCount = 0;
+
+  progressCount.textContent = `0/${total}`;
+  progressFill.style.width = '0%';
+
+  try {
+    for (let i = 0; i < total; i += chunkSize) {
+      const chunk = batchGeneratedWords.slice(i, i + chunkSize);
+      
+      const result = await api('/words/import', {
+        method: 'POST',
+        body: JSON.stringify({ words: chunk })
+      });
+      
+      successCount += (result.count || 0);
+      processed += chunk.length;
+      
+      // 真实进度更新
+      progressCount.textContent = `${processed}/${total}`;
+      progressFill.style.width = `${(processed / total) * 100}%`;
+    }
+
+    // 稍微等待 300 毫秒让用户看清 100% 满状态的动画
+    await new Promise(r => setTimeout(r, 300));
+    const userSettings = await api('/auth/settings');
+    const limit = state.currentLang === 'en'
+      ? (userSettings.dailyNewLimitEn || 20)
+      : (userSettings.dailyNewLimitJa || 20);
+    if (successCount > limit) {
+        showToast(`导入 ${successCount} 词。超出今日上限的部分已自动加入明日计划`, 'info');
+    } else {
+        showToast(`成功导入 ${successCount} 个新单词`, 'success');
+    }
+    resetImport();
+    closeModal('importModal');
+    loadWords(1); loadStats();
+  } catch (e) {
+    showToast('导入中断，请重试', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '确认导入';
+    previewList.classList.remove('opacity-50');
+    progressBar.classList.add('hidden');
+  }
+}
+
+function resetImport() {
+  // Bug 2: 中断正在进行的 AI 解析请求
+  if (state.batchAbortController) {
+    state.batchAbortController.abort();
+    state.batchAbortController = null;
+  }
+
+  batchGeneratedWords = [];
+  document.getElementById('importStep1').classList.remove('hidden');
+  document.getElementById('importStep2').classList.add('hidden');
+  document.getElementById('importWordsText').value = '';
+  
+  const pb = document.getElementById('importProgressBar');
+  if (pb) { pb.classList.add('hidden'); pb.style.display = ''; }
+  document.getElementById('importProgressFill').style.width = '0%';
+  
+  // 重置 AI 进度条
+  const aiPb = document.getElementById('aiProgressBar');
+  if (aiPb) { aiPb.classList.add('hidden'); }
+  const aiFill = document.getElementById('aiProgressFill');
+  if (aiFill) { aiFill.style.width = '0%'; }
+
+  const genBtn = document.getElementById('batchGenerateBtn');
+  if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = 'AI 补全'; }
+}
+
+async function exportWords() {
+  try {
+    const data = await api(`/words/export?language=${state.currentLang}`);
+    const blob = new Blob([JSON.stringify(data.data || data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'my-vocab-words.json'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('导出成功', 'success');
+  } catch (e) { showToast('导出失败', 'error'); }
+}
+
+/* ================= BATCH SELECTION ================= */
+function toggleWordSelect(id) {
+  if (state.selectedWordIds.has(id)) {
+    state.selectedWordIds.delete(id);
+  } else {
+    state.selectedWordIds.add(id);
+  }
+  // 直接更新对应行，不重新渲染整个表格
+  const row = document.querySelector(`tr:has(input[value="${id}"])`);
+  if (row) {
+    const cb = row.querySelector('input[type="checkbox"]');
+    cb.checked = state.selectedWordIds.has(id);
+    row.classList.toggle('bg-ochre/5', state.selectedWordIds.has(id));
+  }
+  updateBatchBar();
+}
+
+function toggleSelectAll() {
+  const checkbox = document.getElementById('selectAllCheckbox');
+  if (checkbox.checked) {
+    state.currentPageWords.forEach(w => {
+      state.selectedWordIds.add(w._id);
+      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      if (row) {
+        row.querySelector('input[type="checkbox"]').checked = true;
+        row.classList.add('bg-ochre/5');
+      }
+    });
+  } else {
+    state.currentPageWords.forEach(w => {
+      state.selectedWordIds.delete(w._id);
+      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      if (row) {
+        row.querySelector('input[type="checkbox"]').checked = false;
+        row.classList.remove('bg-ochre/5');
+      }
+    });
+  }
+  updateBatchBar();
+}
+
+function clearWordSelection() {
+  state.selectedWordIds.forEach(id => {
+    const row = document.querySelector(`tr:has(input[value="${id}"])`);
+    if (row) {
+      row.querySelector('input[type="checkbox"]').checked = false;
+      row.classList.remove('bg-ochre/5');
+    }
+  });
+  state.selectedWordIds.clear();
+  const selectAll = document.getElementById('selectAllCheckbox');
+  selectAll.checked = false;
+  selectAll.indeterminate = false;
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  const bar = document.getElementById('batchActionBar');
+  const count = state.selectedWordIds.size;
+  document.getElementById('selectedCount').textContent = count;
+  const selectAll = document.getElementById('selectAllCheckbox');
+  selectAll.checked = state.currentPageWords.length > 0 && state.currentPageWords.every(w => state.selectedWordIds.has(w._id));
+  selectAll.indeterminate = count > 0 && !selectAll.checked;
+  if (count === 0) {
+    bar.classList.add('hidden');
+  } else {
+    bar.classList.remove('hidden');
+  }
+}
+
+async function batchDeleteSelected() {
+  if (state.selectedWordIds.size === 0) return;
+  if (!confirm(`确定删除选中的 ${state.selectedWordIds.size} 个单词吗？此操作不可恢复。`)) return;
+
+  const batchBar = document.getElementById('batchActionBar');
+  const ids = Array.from(state.selectedWordIds);
+  
+  batchBar.classList.add('hidden'); // 隐藏操作栏
+
+  try {
+    // 发送单次批量删除请求
+    await api(`/words/batch-delete`, { 
+      method: 'POST', 
+      body: JSON.stringify({ ids }) 
+    });
+    
+    state.selectedWordIds.clear();
+    localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存
+    showToast('批量删除成功', 'success');
+    loadWords(state.pagination.page);
+    loadStats();
+  } catch (e) {
+    showToast('批量删除失败', 'error');
+  }
+}
+
+async function clearWorkspace() {
+  const langName = state.currentLang === 'en' ? '英语' : '日语';
+  const targetText = state.currentLang === 'en' ? 'CLEAR EN' : 'CLEAR JA';
+  
+  const userInput = prompt(`⚠️ 危险操作警告 ⚠️\n\n您即将清空当前【${langName}】工作区下的所有单词（包括已掌握的进度）！\n此操作不可恢复。\n\n请输入 "${targetText}" 以确认清空：`);
+  
+  if (userInput !== targetText) {
+    if (userInput !== null) showToast('输入不匹配，已取消清空操作', 'info');
+    return;
+  }
+
+  try {
+    const res = await api('/words/clear-all', { 
+      method: 'POST',
+      body: JSON.stringify({ language: state.currentLang })
+    });
+    localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存
+    showToast(`已清空 ${langName} 工作区，删除了 ${res.count} 个单词`, 'success');
+    state.currentPage = 1;
+    loadWords(1);
+    loadStats();
+  } catch (e) {
+    showToast('清空失败，请重试', 'error');
+  }
+}
+
+async function batchExportSelected() {
+  if (state.selectedWordIds.size === 0) return showToast('请先选择要导出的单词', 'error');
+
+  try {
+    // 提示用户正在处理
+    const btn = document.querySelector('button[onclick="batchExportSelected()"]');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '导出中...';
+    btn.disabled = true;
+
+    // 拉取用户所有单词（突破当前页限制）
+    const data = await api(`/words?limit=10000&language=${state.currentLang}`);
+    const allWords = data.words || [];
+
+    // 根据选中的 ID 跨页过滤出需要导出的词
+    const wordsToExport = allWords.filter(w => state.selectedWordIds.has(w._id));
+
+    if (wordsToExport.length === 0) {
+      btn.innerHTML = oldHtml;
+      btn.disabled = false;
+      return showToast('未找到对应的数据', 'error');
+    }
+
+    // 生成文件下载
+    const blob = new Blob([JSON.stringify(wordsToExport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = `my-vocab-selected-${Date.now()}.json`; 
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast(`成功导出 ${wordsToExport.length} 个单词`, 'success');
+
+    // 恢复按钮状态
+    btn.innerHTML = oldHtml;
+    btn.disabled = false;
+  } catch (e) { 
+    showToast('导出失败，请重试', 'error'); 
+    // 恢复按钮状态
+    const btn = document.querySelector('button[onclick="batchExportSelected()"]');
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM93.66,133.66a8,8,0,0,1,11.32-11.32L120,137.38V40a8,8,0,0,1,16,0v97.38l15-15a8,8,0,0,1,11.32,11.32l-28.69,28.68a8,8,0,0,1-11.32,0Z"></path></svg> 导出`;
+    btn.disabled = false;
+  }
+}
+
