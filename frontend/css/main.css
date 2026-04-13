@@ -943,7 +943,9 @@
     /* ========== 移动端 UI & 性能优化 ========== */
     @media (max-width: 640px) {
       /* Table to Card Transformation */
-      .word-table thead { display: none !important; }
+      table { min-width: 0 !important; display: block !important; border: none !important; }
+      table thead { display: none !important; }
+      #wordTableBody, #wordTableBody tr.airy-row { width: 100% !important; }
       #wordTableBody tr.airy-row {
         display: flex !important;
         flex-direction: column !important;
