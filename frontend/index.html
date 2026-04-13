@@ -223,95 +223,53 @@
     }
 
     /* ========================================================= */
-    /* 5. 学习视图：绝对暗室与投影仪 (Absolute Darkroom)           */
+    /* 暗室模式 (Darkroom Mode) - 仅在学习视图生效 */
     /* ========================================================= */
     [data-theme="editorial"] #view-study {
-      background-color: rgb(var(--bg-darkroom)) !important;
+      background-color: #0F1211 !important; /* 极深的黑绿 */
     }
-    /* 1. 解决卡片堆叠导致的文字穿透重叠 */
-    /* 既然是光影投影，未轮到的卡片就该彻底隐形，直接暴力隐藏非顶层卡片 */
+    [data-theme="editorial"] #view-study nav * { color: rgba(255,255,255,0.2) !important; }
+
+    /* 1. 切断深度穿透：隐藏所有没轮到的底部卡片，防止下一张卡片的字透过来 */
     [data-theme="editorial"] #view-study .word-group:not([data-depth="0"]) {
       opacity: 0 !important; 
       visibility: hidden !important; 
       pointer-events: none !important;
     }
-    /* 全域文字反白 */
-    [data-theme="editorial"] #view-study *,
-    [data-theme="editorial"] #view-study .text-muted,
-    [data-theme="editorial"] #view-study .text-charcoal {
-      color: rgba(249, 247, 241, 0.6) !important;
-      border-color: rgba(249, 247, 241, 0.2) !important;
-    }
-    
-    /* 抽离物理纸张卡片，变为悬浮投影 */
+
+    /* 2. 剥离所有卡片的白底黑框 */
     [data-theme="editorial"] #view-study .paper-card {
-      background: transparent !important; /* 隐藏白卡片背景 */
+      background: transparent !important;
       border: none !important;
       box-shadow: none !important;
     }
-    /* 修复底部操作栏（按空格/点击撕下）被挤压的问题 */
+
+    /* 3. 正面投影态：发光文字 */
     [data-theme="editorial"] #view-study .paper-card.front {
-      display: flex !important;
-      flex-direction: column !important;
+      text-shadow: 0 0 30px rgba(244, 241, 233, 0.1) !important;
     }
-    [data-theme="editorial"] #view-study .paper-card.front .mt-auto {
-      margin-top: auto !important;
-      padding-top: 2rem !important;
-      z-index: 10 !important;
+    [data-theme="editorial"] #view-study .paper-card.front .text-charcoal {
+      color: #EAE6DB !important;
     }
 
-    /* 2. 投影发光字效 (Glow Text) - 响应式缩放 */
-    [data-theme="editorial"] #view-study .paper-card.front > div:nth-child(2),
-    [data-theme="editorial"] #view-study .paper-card.front .font-jp {
-      font-size: clamp(2.5rem, 8vw, 4.5rem) !important; 
-      font-weight: 800 !important;
-      line-height: 1.2 !important;
-      word-break: break-word !important;
-      text-align: center !important;
-      color: #F9F7F1 !important;
-      text-shadow: 0 0 30px rgba(249, 247, 241, 0.2) !important; 
-    }
-    
-    [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(1) {
-      color: rgb(var(--color-ochre)) !important; /* 读音使用暗室的褪色金 */
-    }
-    /* 3. 修复背面中文释义过长导致排版错乱 */
-    [data-theme="editorial"] #view-study .paper-card.back > div:nth-child(2) {
-      color: #F9F7F1 !important;
-      font-size: clamp(1.2rem, 4vw, 1.8rem) !important;
-      line-height: 1.4 !important;
-      word-break: break-word !important;
-      padding: 0 1rem !important;
+    /* 4. 核心防御：只要还没翻开（没有 revealed 类），背面答案必须处于强制物理隐形状态 */
+    [data-theme="editorial"] #view-study .paper-card.back:not(.revealed) {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transition: none !important; /* 拔掉过渡动画，防止初始加载时漏光闪烁 */
     }
 
-    /* 暗室中的打字机答案键 */
-    [data-theme="editorial"] #view-study .answer-btn {
-      background: transparent !important;
-      border: 1px solid rgba(249, 247, 241, 0.3) !important;
-      border-bottom: 4px solid rgba(249, 247, 241, 0.6) !important;
-      color: #F9F7F1 !important;
-      box-shadow: none !important;
-      transition: all 0.15s ease-out !important;
-      transform: translateY(0) !important;
+    /* 5. 显影态（按下空格后） */
+    [data-theme="editorial"] #view-study .paper-card.front.peeled {
+      opacity: 0 !important; /* 撕开后正面文字彻底消失，不与答案文字抢视觉 */
+      visibility: hidden !important;
     }
-    [data-theme="editorial"] #view-study .answer-btn:active {
-      transform: translateY(3px) !important;
-      border-bottom-width: 1px !important;
-      background: rgba(249, 247, 241, 0.08) !important;
+    [data-theme="editorial"] #view-study .paper-card.back.revealed {
+      opacity: 1 !important;
+      visibility: visible !important;
     }
-    /* 悬停高亮 */
-    [data-theme="editorial"] #view-study .answer-btn:hover {
-      border-color: #F9F7F1 !important;
-      border-bottom-color: #F9F7F1 !important;
-      background: rgba(249, 247, 241, 0.03) !important;
-    }
-    
-    /* 屏蔽键盘快捷键标签等杂散元素的背景 */
-    [data-theme="editorial"] #view-study kbd,
-    [data-theme="editorial"] #view-study .bg-parchment {
-      background: transparent !important;
-      border: 1px solid rgba(249, 247, 241, 0.2) !important;
-      color: rgba(249, 247, 241, 0.5) !important;
+    [data-theme="editorial"] #view-study .paper-card.back.revealed .text-charcoal {
+      color: #EAE6DB !important; /* 显影后的中文答案也要变白 */
     }
 
     /* 必须包裹 rgb() 才能生效 */
