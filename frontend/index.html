@@ -12,7 +12,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -62,6 +62,65 @@
       --color-muted: #737069;       /* 褪色灰 */
       --color-borderline: #363430;  /* 隐约的边界线 */
       --bg-body: #11100F;           /* 极夜底色 */
+    }
+
+    /* ========== 主题 3：复古辞典与暗室 (Editorial & Darkroom) ========== */
+    [data-theme="editorial"] {
+      --color-parchment: #F4F1E9;
+      --color-surface: transparent;
+      --color-charcoal: #111111;
+      --color-ochre: #A6523F;
+      --color-borderline: rgba(17, 17, 17, 0.1);
+      --bg-body: #F4F1E9;
+      --easing-heavy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* 辞典字体覆盖 */
+    [data-theme="editorial"] .font-jp {
+      font-family: 'Shippori Mincho', "Yu Mincho", serif !important;
+      letter-spacing: -0.02em;
+    }
+
+    /* 砸碎常规表格布局，走向 Editorial 留白 */
+    [data-theme="editorial"] table, 
+    [data-theme="editorial"] tbody, 
+    [data-theme="editorial"] tr.airy-row {
+      display: block;
+      width: 100%;
+    }
+    [data-theme="editorial"] thead { display: none; }
+    [data-theme="editorial"] tr.airy-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--color-borderline) !important;
+      background: transparent !important;
+      transition: padding-left 0.4s var(--easing-heavy);
+      box-shadow: none !important;
+    }
+    [data-theme="editorial"] tr.airy-row:hover { padding-left: 1.5rem; }
+    [data-theme="editorial"] td { display: block; border: none; padding: 0.5rem 1rem 0 0; }
+    
+    /* 强阻尼动效覆盖：抹除果冻回弹 */
+    [data-theme="editorial"] .word-group,
+    [data-theme="editorial"] .paper-card {
+      transition: transform 0.8s var(--easing-heavy), opacity 0.6s ease;
+    }
+    
+    /* 暗室模式 (Darkroom Mode) - 仅在学习视图生效 */
+    [data-theme="editorial"] #view-study {
+      background-color: #0F1211 !important; /* 极深的黑绿 */
+    }
+    [data-theme="editorial"] #view-study nav * { color: rgba(255,255,255,0.2) !important; }
+    [data-theme="editorial"] #view-study .paper-card.front {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      text-shadow: 0 0 30px rgba(244, 241, 233, 0.1);
+    }
+    [data-theme="editorial"] #view-study .paper-card.front .text-charcoal {
+      color: #EAE6DB !important;
     }
 
     /* 修复 body 背景色绑定 */
@@ -599,6 +658,12 @@
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col">
+  <div id="noiseOverlay" class="fixed inset-0 z-[9999] pointer-events-none opacity-0 mix-blend-multiply transition-opacity duration-1000">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full opacity-40">
+      <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter>
+      <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+    </svg>
+  </div>
 
   <div id="toast-container" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
@@ -4161,17 +4226,17 @@ function initCustomSelects() {
 }
 
 /* ================= AESTHETIC THEME ENGINE ================= */
-function toggleAestheticTheme() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'obsidian';
-  const nextTheme = isDark ? 'light' : 'obsidian';
+// 主题循环队列： default -> obsidian -> editorial -> default...
+const THEMES = ['light', 'obsidian', 'editorial'];
 
-  // 检查浏览器是否支持原生的 View Transitions API（极具高级感的光影过渡）
+function toggleAestheticTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentIndex = THEMES.indexOf(currentTheme);
+  const nextTheme = THEMES[(currentIndex + 1) % THEMES.length];
+
   if (document.startViewTransition) {
-    document.startViewTransition(() => {
-      applyTheme(nextTheme);
-    });
+    document.startViewTransition(() => applyTheme(nextTheme));
   } else {
-    // 降级处理
     applyTheme(nextTheme);
   }
 }
@@ -4179,35 +4244,50 @@ function toggleAestheticTheme() {
 function applyTheme(theme) {
   const toggleText = document.getElementById('themeToggleText');
   const themeIcon = document.getElementById('themeIcon');
+  const noiseOverlay = document.getElementById('noiseOverlay');
   
-  if (theme === 'obsidian') {
+  // 1. 素雅明亮 (默认)
+  if (theme === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+    if(toggleText) toggleText.textContent = '切换: 黑曜金缮';
+    if(themeIcon) {
+      themeIcon.style.transform = 'rotate(0deg)';
+      themeIcon.innerHTML = `<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"></path>`; // 月亮
+    }
+    if(noiseOverlay) noiseOverlay.classList.replace('opacity-10', 'opacity-0');
+    localStorage.setItem('aesthetic-theme', 'light');
+  } 
+  // 2. 黑曜与金缮 (暗调)
+  else if (theme === 'obsidian') {
     document.documentElement.setAttribute('data-theme', 'obsidian');
-    if(toggleText) toggleText.textContent = '素雅明亮 (Parchment)';
+    if(toggleText) toggleText.textContent = '切换: 学术辞典';
     if(themeIcon) {
       themeIcon.style.transform = 'rotate(-180deg)';
       // 太阳图标
       themeIcon.innerHTML = `<path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm192-8h-24a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Zm-112,72a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V200A8,8,0,0,0,128,192Z"></path>`;
     }
+    if(noiseOverlay) noiseOverlay.classList.replace('opacity-10', 'opacity-0');
     localStorage.setItem('aesthetic-theme', 'obsidian');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    if(toggleText) toggleText.textContent = '沉浸暗调 (Zen Night)';
+  }
+  // 3. 复古辞典与暗室 (Editorial)
+  else if (theme === 'editorial') {
+    document.documentElement.setAttribute('data-theme', 'editorial');
+    if(toggleText) toggleText.textContent = '切换: 素雅明亮';
     if(themeIcon) {
-      themeIcon.style.transform = 'rotate(0deg)';
-      // 月亮图标
-      themeIcon.innerHTML = `<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23Z"></path>`;
+      themeIcon.style.transform = 'rotate(90deg)';
+      themeIcon.innerHTML = `<path d="M192,48V208a16,16,0,0,1-16,16H80a16,16,0,0,1-16-16V48A16,16,0,0,1,80,32h96A16,16,0,0,1,192,48ZM80,48V208h96V48Z"></path>`; // 书本 Icon
     }
-    localStorage.setItem('aesthetic-theme', 'light');
+    // 开启物理微糙感
+    if(noiseOverlay) noiseOverlay.classList.replace('opacity-0', 'opacity-10');
+    localStorage.setItem('aesthetic-theme', 'editorial');
   }
 }
 
-// 在页面加载时恢复用户选定的质感
+// 页面加载时恢复状态
 document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('aesthetic-theme');
-  if (savedTheme === 'obsidian') {
-    applyTheme('obsidian');
-  }
-  initCustomSelects(); // 原有的初始化
+  const savedTheme = localStorage.getItem('aesthetic-theme') || 'light';
+  applyTheme(savedTheme);
+  initCustomSelects(); 
 });
 </script>
 
