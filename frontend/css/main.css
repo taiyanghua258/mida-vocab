@@ -1111,8 +1111,8 @@ html[data-theme="editorial"],
 [data-theme="editorial"] body {
   background-color: #fdfaf5 !important;
   background-image: 
-    linear-gradient(to right, rgba(20, 20, 20, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(20, 20, 20, 0.04) 1px, transparent 1px) !important;
+    linear-gradient(to right, rgba(20, 20, 20, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 20, 20, 0.08) 1px, transparent 1px) !important;
   background-size: 36px 36px !important;
   background-attachment: fixed !important; 
 }
@@ -1155,4 +1155,11 @@ html[data-theme="editorial"],
   background-color: transparent !important;
   box-shadow: none !important;
   border-bottom-color: rgba(20, 20, 20, 0.8) !important; /* 悬浮时加深下划线，作为交互反馈 */
+}
+
+/* 强制全屏视图变透明，让底层的 body 网格透视出来 */
+[data-theme="editorial"] #view-study,
+[data-theme="editorial"] #view-dashboard {
+  background: transparent !important;
+  background-color: transparent !important;
 }
