@@ -84,11 +84,14 @@
       /* 删除了此处的 background-color: #fdfaf5 !important; 让全局 body 变量自然接管 */
     }
 
-    [data-theme="editorial"] .main-container {
+    /* ========================================================= */
+    /* 1. 修复网格线丢失：将网格直接刻在 body 上，作为全局底纹 */
+    /* ========================================================= */
+    [data-theme="editorial"] body {
       background-image: 
-        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(to right, rgba(20, 20, 20, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 20, 20, 0.04) 1px, transparent 1px) !important;
+      background-size: 36px 36px !important; /* 缩小一点尺寸，让细密网格的复古质感更强烈 */
     }
 
     body { 
@@ -162,7 +165,7 @@
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] .paper-card,
     [data-theme="editorial"] .modal-content,
-    [data-theme="editorial"] .main-container .bg-surface,
+    [data-theme="editorial"] main .bg-surface,
     [data-theme="editorial"] .aesthetic-input,
     [data-theme="editorial"] .custom-select .select-options,
     [data-theme="editorial"] .custom-select .select-trigger,
@@ -177,16 +180,20 @@
       box-shadow: none !important;
     }
     
-    [data-theme="editorial"] .main-container .bg-surface,
+    /* ========================================================= */
+    /* 2. 彻底粉碎白底遮罩：精确打击 HTML 中实际存在的容器 */
+    /* ========================================================= */
+    [data-theme="editorial"] main .bg-surface,
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] #tour-action-bar,
     [data-theme="editorial"] #upcomingWidget,
     [data-theme="editorial"] #batchActionBar,
     [data-theme="editorial"] .custom-select .select-trigger {
       background: transparent !important;
-      background-color: transparent !important; /* 增加 Safari 兼容性 */
+      background-color: transparent !important;
       border: none !important;
       backdrop-filter: none !important;
+      box-shadow: none !important;
     }
     [data-theme="editorial"] .select-options {
       background: rgb(var(--color-surface)) !important;
@@ -245,16 +252,12 @@
       font-weight: 800 !important;
     }
 
-    [data-theme="editorial"] table { 
-      display: block !important; 
-      border-top: 2px solid rgb(var(--color-charcoal)) !important; 
-      margin-top: 1rem; 
-      background-color: transparent !important; /* 新增 */
-    }
-    [data-theme="editorial"] thead { display: none !important; }
-    [data-theme="editorial"] tbody { 
-      display: block !important; 
-      background-color: transparent !important; /* 新增 */
+    /* ========================================================= */
+    /* 3. 表格与单词栏全透：清除深层节点自带的底色和 Hover 脏色 */
+    /* ========================================================= */
+    [data-theme="editorial"] table,
+    [data-theme="editorial"] tbody {
+      background-color: transparent !important;
     }
     [data-theme="editorial"] tr.airy-row {
       display: grid !important;
@@ -266,11 +269,11 @@
       transform: none !important;
       transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
+    [data-theme="editorial"] tr.airy-row,
     [data-theme="editorial"] tr.airy-row:hover {
-      background-color: transparent !important; /* 彻底干掉悬浮时的灰色蒙版 */
-      padding-left: 1rem !important;
-      border-bottom-color: rgb(var(--color-charcoal)) !important;
-      box-shadow: none !important; /* 优雅修复：抹除默认主题带过来的阴影 */
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
     }
     [data-theme="editorial"] td { display: block !important; border: none !important; padding: 0 !important; }
     
