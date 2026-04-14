@@ -1101,3 +1101,58 @@
       text-shadow: none !important;
       border: none !important;
     }
+
+/* ===================================================================== */
+/* 终极学术模式修复：强制穿透所有遮罩，绘制复古印刷网格 */
+/* ===================================================================== */
+
+/* 1. 将底纹网格直接刻在背景上，并固定视角（防止滚动时网格变形） */
+html[data-theme="editorial"],
+[data-theme="editorial"] body {
+  background-color: #fdfaf5 !important;
+  background-image: 
+    linear-gradient(to right, rgba(20, 20, 20, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 20, 20, 0.04) 1px, transparent 1px) !important;
+  background-size: 36px 36px !important;
+  background-attachment: fixed !important; 
+}
+
+/* 2. 连根拔起表格区域的“三层纯色膏药”（外框、表头、表体） */
+[data-theme="editorial"] main > .bg-surface,
+[data-theme="editorial"] #wordTableBody,
+[data-theme="editorial"] #wordTableBody.bg-surface,
+[data-theme="editorial"] thead.bg-surface,
+[data-theme="editorial"] table {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 3. 彻底粉碎上方操作栏与数据卡片的底色与边框 */
+[data-theme="editorial"] .glass-card,
+[data-theme="editorial"] #tour-action-bar,
+[data-theme="editorial"] #upcomingWidget,
+[data-theme="editorial"] #batchActionBar {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* 4. 彻底透明化每一行单词栏，抹除圆角与 Hover 脏色，只留利落的底线 */
+[data-theme="editorial"] tr.airy-row,
+[data-theme="editorial"] #wordTableBody tr.airy-row {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-radius: 0 !important; 
+  border-bottom: 1px solid rgba(20, 20, 20, 0.1) !important;
+}
+[data-theme="editorial"] tr.airy-row:hover,
+[data-theme="editorial"] #wordTableBody tr.airy-row:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-bottom-color: rgba(20, 20, 20, 0.8) !important; /* 悬浮时加深下划线，作为交互反馈 */
+}
