@@ -64,22 +64,24 @@
     /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial) - 终极修复版 */
     /* ========================================================= */
     [data-theme="editorial"] {
-      --color-parchment: 248 247 243;
-      --color-surface: 248 247 243;
+      /* 将纸张与表面色统一为高定质感的 #fdfaf5 (253 251 247) */
+      --color-parchment: 253 251 247;
+      --color-surface: 253 251 247;
+      --bg-body: 253 251 247;
+      
       --color-charcoal: 20 20 20;
       --color-ochre: 191 54 46;
       --color-borderline: 30 30 30;
-      --bg-body: 248 247 243;
       --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
       
       /* 深度重构：先锋极简大字 */
       --word-font: var(--font-serif);
-      --word-size: clamp(4.5rem, 15vw, 8rem); /* 进一步放大，确保冲击力 */
+      --word-size: clamp(4.5rem, 15vw, 8rem);
       --word-weight: 800;
-      --word-tracking: -0.06em; /* 极紧凑的字间距 */
+      --word-tracking: -0.06em;
       
-      background-color: #fdfaf5 !important;
+      /* 删除了此处的 background-color: #fdfaf5 !important; 让全局 body 变量自然接管 */
     }
 
     [data-theme="editorial"] .main-container {
@@ -256,6 +258,7 @@
       transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     [data-theme="editorial"] tr.airy-row:hover {
+      background: transparent !important; /* 彻底干掉悬浮时的灰色蒙版 */
       padding-left: 1rem !important;
       border-bottom-color: rgb(var(--color-charcoal)) !important;
     }
@@ -1020,6 +1023,15 @@
       }
       [data-theme="editorial"] #view-study .editorial-dict-divider {
         margin-bottom: 1.5rem !important;
+      }
+
+      /* 新增：彻底粉碎移动端单词栏的卡片化外观，回归报纸质感 */
+      [data-theme="editorial"] #wordTableBody tr.airy-row {
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border-bottom: 1px solid rgba(20, 20, 20, 0.08) !important;
+        margin-bottom: 0 !important; /* 取消卡片间距，让其像列表一样紧凑 */
       }
     }
     /* =========================================
