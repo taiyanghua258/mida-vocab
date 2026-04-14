@@ -162,7 +162,7 @@
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] .paper-card,
     [data-theme="editorial"] .modal-content,
-    [data-theme="editorial"] main > div.bg-surface,
+    [data-theme="editorial"] .main-container .bg-surface,
     [data-theme="editorial"] .aesthetic-input,
     [data-theme="editorial"] .custom-select .select-options,
     [data-theme="editorial"] .custom-select .select-trigger,
@@ -177,13 +177,14 @@
       box-shadow: none !important;
     }
     
+    [data-theme="editorial"] .main-container .bg-surface,
     [data-theme="editorial"] .glass-card,
     [data-theme="editorial"] #tour-action-bar,
     [data-theme="editorial"] #upcomingWidget,
     [data-theme="editorial"] #batchActionBar,
-    [data-theme="editorial"] .custom-select .select-trigger,
-    [data-theme="editorial"] main > div.bg-surface {
+    [data-theme="editorial"] .custom-select .select-trigger {
       background: transparent !important;
+      background-color: transparent !important; /* 增加 Safari 兼容性 */
       border: none !important;
       backdrop-filter: none !important;
     }
@@ -244,9 +245,17 @@
       font-weight: 800 !important;
     }
 
-    [data-theme="editorial"] table { display: block !important; border-top: 2px solid rgb(var(--color-charcoal)) !important; margin-top: 1rem; }
+    [data-theme="editorial"] table { 
+      display: block !important; 
+      border-top: 2px solid rgb(var(--color-charcoal)) !important; 
+      margin-top: 1rem; 
+      background-color: transparent !important; /* 新增 */
+    }
     [data-theme="editorial"] thead { display: none !important; }
-    [data-theme="editorial"] tbody { display: block !important; }
+    [data-theme="editorial"] tbody { 
+      display: block !important; 
+      background-color: transparent !important; /* 新增 */
+    }
     [data-theme="editorial"] tr.airy-row {
       display: grid !important;
       grid-template-columns: 40px minmax(200px, auto) 1fr 100px;
@@ -258,9 +267,10 @@
       transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     [data-theme="editorial"] tr.airy-row:hover {
-      background: transparent !important; /* 彻底干掉悬浮时的灰色蒙版 */
+      background-color: transparent !important; /* 彻底干掉悬浮时的灰色蒙版 */
       padding-left: 1rem !important;
       border-bottom-color: rgb(var(--color-charcoal)) !important;
+      box-shadow: none !important; /* 优雅修复：抹除默认主题带过来的阴影 */
     }
     [data-theme="editorial"] td { display: block !important; border: none !important; padding: 0 !important; }
     
