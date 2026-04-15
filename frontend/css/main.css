@@ -397,21 +397,43 @@
       border-left: 2px solid rgba(223, 159, 40, 0.5); /* Ochre color line */
     }
 
-    /* 结算及无词界面反白 */
-    [data-theme="editorial"] #studyComplete *, [data-theme="editorial"] #noWords * { color: rgba(255,255,255,0.8) !important; border-color: rgba(255,255,255,0.1) !important;}
-    [data-theme="editorial"] #studyComplete h2, [data-theme="editorial"] #noWords h2 { color: rgb(var(--color-parchment)) !important; }
+    /* 结算及无词界面反白 (隔离污染，使用局部 CSS 变量翻转解决黑底白字问题) */
+    [data-theme="editorial"] #studyComplete, 
+    [data-theme="editorial"] #noWords {
+      /* 将木炭色反转为羊皮纸亮色 */
+      --color-charcoal: 253 251 247;
+      /* 将淡色文字反转为半透明亮色对应值 */
+      --color-muted: 180 180 180;
+      /* 将边框反转为发光暗线 */
+      --color-borderline: 200 200 200;
+      
+      /* 将背景底色变量抽空 */
+      --color-surface: 10 12 11;
+    }
+    
     [data-theme="editorial"] #studyComplete button, 
     [data-theme="editorial"] #noWords button {
-      background: transparent !important;
-      border: 1px solid rgba(255, 255, 255, 0.4) !important;
-      color: rgb(var(--color-parchment)) !important;
-      transition: all 0.2s ease !important;
-      border-radius: 0 !important; /* 学术模式抹除圆角 */
+      border-radius: 0 !important; /* 学术模式强硬抹除圆角 */
     }
-    [data-theme="editorial"] #studyComplete button:hover, 
-    [data-theme="editorial"] #noWords button:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.8) !important;
+    
+    /* 让实心按钮在暗室中显得更加纯粹 */
+    [data-theme="editorial"] #studyComplete button.bg-charcoal,
+    [data-theme="editorial"] #noWords button.bg-charcoal {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      color: rgb(var(--bg-darkroom)) !important;
+      border-color: rgba(255, 255, 255, 0.9) !important;
+    }
+    [data-theme="editorial"] #studyComplete button.bg-charcoal:hover,
+    [data-theme="editorial"] #noWords button.bg-charcoal:hover {
+      background-color: transparent !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+    } 
+    
+    /* 取消父节点强加的 border: none 导致的票据边框消失 */
+    [data-theme="editorial"] #view-study #studyComplete .bg-surface,
+    [data-theme="editorial"] #view-study #noWords .bg-surface {
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: transparent !important;
     }
 
     /* 暗室操作按键 */
