@@ -241,7 +241,7 @@ function getCardHTML(index, word) {
             <span class="dict-vol font-ui">No.${(index + 1).toString().padStart(3, '0')}</span>
           </div>
           
-          <div class="word font-display text-charcoal" id="studyWord">${word.japanese}</div>
+          <div class="word font-display text-charcoal card-front-word">${word.japanese}</div>
           
           <div class="mt-auto editorial-dict-footer font-ui action-hint">
             <span>点击或按下 <kbd>Space</kbd> 揭开释义</span>
@@ -264,7 +264,7 @@ function getCardHTML(index, word) {
       <div class="paper-card front" onclick="revealAnswer()">
         <span class="footnote-tag uppercase mb-4 font-ui">${word.partOfSpeech || '其他'}</span>
         
-        <div id="studyWord" class="${studyWordClasses}">${word.japanese}</div>
+        <div class="card-front-word ${studyWordClasses}">${word.japanese}</div>
         
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>

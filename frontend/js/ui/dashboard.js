@@ -700,7 +700,8 @@ function toggleWordSelect(id) {
     state.selectedWordIds.add(id);
   }
   // 直接更新对应行，不重新渲染整个表格
-  const row = document.querySelector(`tr:has(input[value="${id}"])`);
+  const _cb = document.querySelector(`input[value="${id}"]`);
+  const row = _cb ? _cb.closest('tr') : null;
   if (row) {
     const cb = row.querySelector('input[type="checkbox"]');
     cb.checked = state.selectedWordIds.has(id);
@@ -714,7 +715,8 @@ function toggleSelectAll() {
   if (checkbox.checked) {
     state.currentPageWords.forEach(w => {
       state.selectedWordIds.add(w._id);
-      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      const _cb = document.querySelector(`input[value="${w._id}"]`);
+      const row = _cb ? _cb.closest('tr') : null;
       if (row) {
         row.querySelector('input[type="checkbox"]').checked = true;
         row.classList.add('bg-ochre/5');
@@ -723,7 +725,8 @@ function toggleSelectAll() {
   } else {
     state.currentPageWords.forEach(w => {
       state.selectedWordIds.delete(w._id);
-      const row = document.querySelector(`tr:has(input[value="${w._id}"])`);
+      const _cb = document.querySelector(`input[value="${w._id}"]`);
+      const row = _cb ? _cb.closest('tr') : null;
       if (row) {
         row.querySelector('input[type="checkbox"]').checked = false;
         row.classList.remove('bg-ochre/5');
@@ -735,7 +738,8 @@ function toggleSelectAll() {
 
 function clearWordSelection() {
   state.selectedWordIds.forEach(id => {
-    const row = document.querySelector(`tr:has(input[value="${id}"])`);
+    const _cb = document.querySelector(`input[value="${id}"]`);
+    const row = _cb ? _cb.closest('tr') : null;
     if (row) {
       row.querySelector('input[type="checkbox"]').checked = false;
       row.classList.remove('bg-ochre/5');

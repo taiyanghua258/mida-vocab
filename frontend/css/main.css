@@ -84,15 +84,7 @@
       /* 删除了此处的 background-color: #fdfaf5 !important; 让全局 body 变量自然接管 */
     }
 
-    /* ========================================================= */
-    /* 1. 修复网格线丢失：将网格直接刻在 body 上，作为全局底纹 */
-    /* ========================================================= */
-    [data-theme="editorial"] body {
-      background-image: 
-        linear-gradient(to right, rgba(20, 20, 20, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(20, 20, 20, 0.04) 1px, transparent 1px) !important;
-      background-size: 36px 36px !important; /* 缩小一点尺寸，让细密网格的复古质感更强烈 */
-    }
+    /* 网格底纹声明已合并至文件底部的终极修复块 */
 
     body { 
       font-family: var(--font-ui), sans-serif;
@@ -118,8 +110,7 @@
     .font-ui { font-family: var(--font-ui) !important; }
     .leading-tight-display { line-height: 1.15 !important; }
     
-    /* 核心单词显示逻辑 (变量驱动) */
-    #studyWord, 
+    /* 核心单词显示逻辑 (变量驱动, 已迁移至 class 选择器避免重复 ID) */
     .card-front-word {
       font-family: var(--word-font) !important;
       font-size: var(--word-size) !important;
@@ -137,13 +128,7 @@
       transform: scale(0.9);
     }
 
-    /* 修正重影 Bug：确保切换时旧的字号类不会残留 */
-    #studyWord {
-      font-size: var(--word-size) !important;
-      font-family: var(--word-font) !important;
-      font-weight: var(--word-weight) !important;
-      letter-spacing: var(--word-tracking) !important;
-    }
+    /* #studyWord 已废弃，统一使用 .card-front-word */
 
 
 
@@ -260,22 +245,20 @@
       background-color: transparent !important;
     }
     [data-theme="editorial"] tr.airy-row {
-      display: grid !important;
-      grid-template-columns: 40px minmax(200px, auto) 1fr 100px;
-      align-items: baseline !important;
+      /* 不再使用 display:grid，避免 4 列 vs 6 个 td 错位 */
       padding: 1.5rem 0 !important;
       border-bottom: 1px solid rgba(20, 20, 20, 0.08) !important;
       background: transparent !important;
       transform: none !important;
       transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
-    [data-theme="editorial"] tr.airy-row,
     [data-theme="editorial"] tr.airy-row:hover {
       background: transparent !important;
       background-color: transparent !important;
       box-shadow: none !important;
+      border-bottom-color: rgba(20, 20, 20, 0.8) !important;
     }
-    [data-theme="editorial"] td { display: block !important; border: none !important; padding: 0 !important; }
+    [data-theme="editorial"] td { border: none !important; }
     
     [data-theme="editorial"] td:nth-child(4),
     [data-theme="editorial"] td:nth-child(6) { display: none !important; }
@@ -461,12 +444,12 @@
       animation-name: aesthetic-fade-in;
     }
     @keyframes aesthetic-fade-out {
-      from { opacity: 1; filter: blur(0px) scale(1); }
-      to { opacity: 0; filter: blur(4px) scale(0.98); }
+      from { opacity: 1; filter: blur(0px); transform: scale(1); }
+      to { opacity: 0; filter: blur(4px); transform: scale(0.98); }
     }
     @keyframes aesthetic-fade-in {
-      from { opacity: 0; filter: blur(8px) scale(1.02); }
-      to { opacity: 1; filter: blur(0px) scale(1); }
+      from { opacity: 0; filter: blur(8px); transform: scale(1.02); }
+      to { opacity: 1; filter: blur(0px); transform: scale(1); }
     }
 
     /* ========== 全局审美与排版 (Typography & Globals) ========== */
@@ -491,9 +474,7 @@
       background: rgb(var(--color-muted) / 0.4);
     }
     
-    input[type="checkbox"] {
-      accent-color: rgb(var(--color-ochre));
-    }
+    /* checkbox accent-color: 单一声明已移至下方 L940+ */
     
     /* 工具类：超大间距 (Negative Spaces) */
     .tracking-widest-plus { letter-spacing: 0.18em; }
@@ -537,12 +518,18 @@
   transform-origin: top center;
   margin-bottom: 1.5rem; /* Equivalent to mb-6 */
 }
-/* 移动端横向滚动条终结补丁与优雅回滚 */
-.overflow-x-auto {
-  scrollbar-width: none;
+/* 移动端横向滚动条隐藏（仅限小屏，桌面端保留可发现性） */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    scrollbar-width: none;
+  }
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
 }
-.overflow-x-auto::-webkit-scrollbar {
-  display: none;
+/* P2 #10: 学习模式激活时锁定 body 滚动，避免双滚动条竞态 */
+body:has(#view-study.active) {
+  overflow: hidden;
 }
 @media (max-width: 640px) {
   [data-theme="editorial"] {
@@ -750,7 +737,7 @@
       display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
       transform-origin: bottom left;
       transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, box-shadow 0.6s ease;
-      will-change: transform;
+      /* will-change 已移除：8个合成层在低端设备造成GPU内存溢出 */
     }
     .paper-card.front { 
       z-index: 2; cursor: pointer; 
