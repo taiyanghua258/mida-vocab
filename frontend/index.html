@@ -426,33 +426,47 @@
         </div>
       </div>
 
-      <div id="studyComplete" class="hidden w-full max-w-[320px] mx-auto flex-shrink-0 animate-fade-in-up">
-        <div class="bg-transparent border-[0.5px] border-borderline p-8 text-center rounded-[1px] group hover:border-charcoal/30 transition-colors">
-          <h2 class="text-[2.5rem] font-display font-medium text-charcoal mb-8 tracking-widest leading-none">完了</h2>
+      <div id="studyComplete" class="hidden w-full max-w-[340px] mx-auto flex-shrink-0 animate-fade-in-up">
+        <div class="relative bg-surface border border-borderline/60 shadow-[0_10px_40px_rgba(26,47,43,0.04)] p-8 sm:p-10 rounded-[2px] overflow-hidden group">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-charcoal"></div>
           
-          <div id="completeStats" class="w-full text-center"></div>
+          <div class="text-center mb-8">
+            <div class="font-ui text-[0.55rem] font-bold tracking-[0.4em] uppercase text-muted mb-4">Session Concluded</div>
+            <h2 class="text-3xl font-display font-semibold text-charcoal tracking-widest">研鑽完了</h2>
+          </div>
           
-          <div class="mt-8 flex gap-3 font-ui text-[0.65rem] justify-center">
-            <button onclick="navigate('dashboard')" class="px-5 py-2.5 border-[0.5px] border-borderline text-charcoal hover:bg-charcoal hover:text-surface transition-all tracking-[0.2em] uppercase">EXIT</button>
-            <button onclick="reviewAgain()" class="px-5 py-2.5 border-[0.5px] border-charcoal bg-charcoal text-surface hover:bg-surface hover:text-charcoal transition-all tracking-[0.2em] uppercase shadow-sm">LOOP</button>
+          <div id="completeStats" class="w-full text-left"></div>
+          
+          <div class="mt-8 flex flex-col gap-3 font-ui text-[0.75rem]">
+            <button onclick="navigate('dashboard')" class="w-full py-3.5 border border-borderline text-charcoal hover:bg-parchment hover:border-charcoal/30 transition-all font-bold tracking-[0.2em] uppercase text-center">Return to Base</button>
+            <button onclick="reviewAgain()" class="w-full py-3.5 bg-charcoal text-surface hover:bg-charcoal/90 transition-all font-bold tracking-[0.2em] uppercase shadow-sm text-center">Review Again</button>
           </div>
         </div>
       </div>
 
-      <div id="noWords" class="hidden w-full max-w-[320px] mx-auto flex-shrink-0 animate-fade-in-up">
-        <div class="bg-transparent border-[0.5px] border-borderline p-8 text-center rounded-[1px] group hover:border-charcoal/30 transition-colors">
-          <h2 class="text-[2.5rem] font-display font-medium text-muted/40 mb-8 tracking-widest leading-none">無</h2>
+      <div id="noWords" class="hidden w-full max-w-[340px] mx-auto flex-shrink-0 animate-fade-in-up">
+        <div class="relative bg-surface border border-borderline/60 shadow-[0_10px_40px_rgba(26,47,43,0.04)] p-8 sm:p-10 rounded-[2px] overflow-hidden">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-borderline"></div>
           
-          <div id="coolingCountdown" class="hidden mb-8 text-center"></div>
-          
-          <div class="mt-8 flex gap-3 font-ui text-[0.65rem] justify-center">
-            <button onclick="navigate('dashboard')" class="px-5 py-2.5 border-[0.5px] border-borderline text-charcoal hover:bg-charcoal hover:text-surface transition-all tracking-[0.2em] uppercase">EXIT</button>
-            <button onclick="reviewLastSession()" class="px-5 py-2.5 border-[0.5px] border-transparent text-muted hover:border-borderline hover:text-charcoal transition-all tracking-[0.2em] uppercase">LOOP</button>
+          <div class="text-center mb-6">
+            <div class="font-ui text-[0.55rem] font-bold tracking-[0.4em] uppercase text-muted mb-4">Status Normal</div>
+            <h2 class="text-3xl font-display font-medium text-muted/60 tracking-widest">空白</h2>
+            <p class="font-ui text-[11px] text-muted/80 leading-relaxed mt-4 text-center mx-auto tracking-[0.1em]">当前没有任何需要复习的卡片。精神已达澄澈。</p>
           </div>
           
-          <div id="extraStudySection" class="mt-8 flex items-center justify-center gap-2">
-            <input type="number" id="extraCountInput" min="1" max="50" value="5" class="w-10 px-0 py-1 bg-transparent border-b-[0.5px] border-borderline text-charcoal text-center font-mono text-[10px] outline-none focus:border-ochre transition-colors text-center">
-            <button onclick="handleExtraStudy()" id="extraStudyBtn" class="text-ochre hover:text-charcoal transition-colors text-[10px] tracking-[0.2em] uppercase font-ui font-bold">PULL</button>
+          <div id="coolingCountdown" class="hidden mb-6 text-left border-t border-borderline/40 pt-5"></div>
+          
+          <div class="mt-6 flex flex-col gap-3 font-ui text-[0.75rem]">
+            <button onclick="navigate('dashboard')" class="w-full py-3.5 border border-borderline text-charcoal hover:bg-parchment hover:border-charcoal/30 transition-all font-bold tracking-[0.2em] uppercase text-center">Return to Base</button>
+            <button onclick="reviewLastSession()" class="w-full py-3.5 bg-transparent border border-transparent text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center">Review Last</button>
+          </div>
+          
+          <div id="extraStudySection" class="mt-8 pt-6 border-t border-borderline/40 text-left">
+            <p class="font-ui text-[0.65rem] tracking-widest font-bold text-muted mb-3">加量学习 (Force Retrieve)</p>
+            <div class="flex items-center gap-0 border border-borderline rounded-[2px] overflow-hidden">
+              <input type="number" id="extraCountInput" min="1" max="50" value="5" class="w-14 pl-2 pr-0 py-2.5 bg-transparent text-charcoal text-center font-mono text-xs outline-none focus:bg-surface transition-colors border-r border-borderline">
+              <button onclick="handleExtraStudy()" id="extraStudyBtn" class="flex-1 py-2.5 bg-ochre/5 hover:bg-ochre/15 text-ochre transition-all text-[0.75rem] tracking-[0.1em] uppercase font-bold text-center">抽取新卡片</button>
+            </div>
           </div>
         </div>
       </div>

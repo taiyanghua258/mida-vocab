@@ -203,8 +203,12 @@ function showTaskAccomplished(stats) {
   if (forecast && forecast.coolingWords > 0) {
     countdownEl.classList.remove('hidden');
     countdownEl.innerHTML = `
-      <div class="font-mono text-charcoal text-sm tracking-widest uppercase">
-        ${forecast.coolingWords} <span class="text-muted/50 font-ui text-[10px] mx-1">IN</span> ${forecast.estimatedMinutes}m
+      <div class="flex items-center gap-1.5 mb-2 opacity-60">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
+        <span class="font-bold tracking-widest text-[9px] uppercase font-ui">Pending Cooling</span>
+      </div>
+      <div class="leading-relaxed text-[11px] font-ui tracking-[0.1em]">
+        尚有 <b class="font-mono text-charcoal font-normal text-[13px]">${forecast.coolingWords}</b> 个卡片处于短期冷却池中，预计 <b class="font-mono text-charcoal font-normal text-[13px]">${forecast.estimatedMinutes}</b> 分钟内陆续到期。
       </div>
     `;
   } else {
@@ -532,14 +536,34 @@ function showStudyComplete() {
           // 会话结束，重置标记
           state._sessionActive = false;
           document.getElementById('completeStats').innerHTML = `
-          <div class="font-mono text-[2.5rem] tracking-tighter text-charcoal mb-5 leading-none">
-            ${s.reviewed} <span class="text-muted/30 text-2xl mx-1">/</span> ${state.originalTotal}
+          <div class="border-y border-borderline/40 py-5 mb-5 flex flex-col gap-3">
+            <div class="flex justify-between items-baseline">
+              <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Reviewed Items <span class="font-sans text-[10px] ml-1 opacity-60">复习总数</span></span>
+              <span class="font-mono text-xl text-charcoal leading-none">${s.reviewed}</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Original Quota <span class="font-sans text-[10px] ml-1 opacity-60">原始词汇量</span></span>
+              <span class="font-mono text-xl text-ochre leading-none">${state.originalTotal}</span>
+            </div>
           </div>
-          <div class="flex justify-center gap-5 text-[10px] font-mono text-muted mb-4 uppercase tracking-widest">
-            <span class="text-terracotta">${s.again}</span>
-            <span class="text-ochre opacity-80">${s.hard}</span>
-            <span class="text-charcoal opacity-80">${s.good}</span>
-            <span class="text-success opacity-80">${s.easy}</span>
+          
+          <div class="flex justify-between pt-1 text-center font-ui px-2 pb-4">
+            <div class="flex flex-col gap-1 w-1/4">
+              <span class="text-[10px] tracking-widest text-muted uppercase">Again</span>
+              <span class="font-mono text-sm text-terracotta">${s.again}</span>
+            </div>
+            <div class="flex flex-col gap-1 w-1/4 border-l border-borderline/40">
+              <span class="text-[10px] tracking-widest text-muted uppercase">Hard</span>
+              <span class="font-mono text-sm text-ochre">${s.hard}</span>
+            </div>
+            <div class="flex flex-col gap-1 w-1/4 border-l border-borderline/40">
+              <span class="text-[10px] tracking-widest text-muted uppercase">Good</span>
+              <span class="font-mono text-sm text-charcoal">${s.good}</span>
+            </div>
+            <div class="flex flex-col gap-1 w-1/4 border-l border-borderline/40">
+              <span class="text-[10px] tracking-widest text-muted uppercase">Easy</span>
+              <span class="font-mono text-sm text-success">${s.easy}</span>
+            </div>
           </div>`;
           if (typeof confetti === 'function') {
             const getRGB = (varName) => {
