@@ -28,6 +28,7 @@ function confirmLeaveStudy() {
         studyIndex: state.studyIndex,
         originalTotal: state.originalTotal,
         studyStats: state.studyStats,
+        sessionStats: state.sessionStats,
         isCramMode: state.isCramMode
       }));
     } else {
@@ -65,6 +66,7 @@ async function initStudy() {
         state.studyIndex = activeData.studyIndex;
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+        state.sessionStats = activeData.sessionStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
         state.isCramMode = false;
         words = state.studyWords;
         
@@ -86,6 +88,11 @@ async function initStudy() {
     state.originalTotal = words.length;
     state.studyIndex = 0;
     state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+    // 只在全新开始一局时才重置跨轮次累计统计（冷却回来时不会走这里）
+    if (!state._sessionActive) {
+      state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+    }
+    state._sessionActive = true;
   }
 
   if (state.studyWords.length === 0) {
@@ -185,32 +192,27 @@ function showCoolingState(upcomingWords, stats) {
 
 function showTaskAccomplished(stats) {
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+  state._sessionActive = false; // 会话结束，重置标记
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
   el.classList.add('pop-in');
-
-  el.querySelector('h2').textContent = '任务达成！';
-  el.querySelector('p').textContent = '当前没有需要复习的单词，休息一下吧。';
   
   const countdownEl = document.getElementById('coolingCountdown');
   // Bug 5: 显示今日预估信息
   const forecast = stats ? stats.todayForecast : null;
   if (forecast && forecast.coolingWords > 0) {
     countdownEl.classList.remove('hidden');
-    countdownEl.innerHTML = `<div class="w-full text-xs text-muted">
-      <div class="flex items-center gap-1.5 mb-1">
+    countdownEl.innerHTML = `<div class="w-full text-[10px] text-muted font-ui">
+      <div class="flex items-center gap-1.5 mb-2 opacity-60">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
-        <span>今日预估：还有 <b class="text-charcoal">${forecast.coolingWords}</b> 个单词在较长冷却中，预计未来 <b class="text-charcoal">${forecast.estimatedMinutes}</b> 分钟内陆续到期</span>
+        <span class="uppercase tracking-widest text-[9px] font-bold">Pending Cooling</span>
+      </div>
+      <div class="leading-relaxed">
+        还有 <b class="font-mono text-charcoal font-normal text-[11px]">${forecast.coolingWords}</b> 个暂缓词，预计 <b class="font-mono text-charcoal font-normal text-[11px]">${forecast.estimatedMinutes}</b> 分钟内陆续到期
       </div>
     </div>`;
   } else {
     countdownEl.classList.add('hidden');
-  }
-
-  const rightBtn = el.querySelectorAll('.flex.gap-3 > button')[1];
-  if (rightBtn) {
-    rightBtn.textContent = '再练一次';
-    rightBtn.onclick = () => reviewLastSession();
   }
 }
 
@@ -419,6 +421,9 @@ async function submitReview(result) {
   }
   state.studyStats.reviewed++;
   state.studyStats[result]++;
+  // 跨轮次累计统计
+  state.sessionStats.reviewed++;
+  state.sessionStats[result]++;
 
   // 整组卡片飞走剥离
   if (currentGroup) {
@@ -526,21 +531,38 @@ function showStudyComplete() {
           const el = document.getElementById('studyComplete');
           el.classList.remove('hidden');
           el.classList.add('pop-in');
-          const s = state.studyStats;
+          // 使用跨轮次累计统计，而非仅当前轮次的 studyStats
+          const s = state.sessionStats;
+          // 会话结束，重置标记
+          state._sessionActive = false;
           document.getElementById('completeStats').innerHTML = `
-          <div class="p-4 bg-parchment rounded-xl border border-borderline text-center">
-            <span class="text-2xl font-semibold">${s.reviewed}</span>
-            <span class="block text-xs text-muted mt-1 font-medium">复习次数</span>
+          <div class="border-y border-borderline/40 py-4 mb-4">
+            <div class="flex justify-between items-end mb-2">
+              <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Reviewed Items</span>
+              <span class="font-mono text-xl text-charcoal leading-none drop-shadow-sm">${s.reviewed}</span>
+            </div>
+            <div class="flex justify-between items-end">
+              <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Original Quota</span>
+              <span class="font-mono text-xl text-ochre leading-none drop-shadow-sm">${state.originalTotal}</span>
+            </div>
           </div>
-          <div class="p-4 bg-ochre/10 rounded-xl border border-ochre/20 text-center">
-            <span class="text-2xl font-semibold text-ochre">${state.originalTotal}</span>
-            <span class="block text-xs text-muted mt-1 font-medium">原始词汇量</span>
-          </div>
-          <div class="col-span-2 flex justify-around pt-4 mt-2 border-t border-borderline text-sm font-medium">
-            <span class="text-terracotta">重来: ${s.again}</span>
-            <span class="text-ochre">困难: ${s.hard}</span>
-            <span class="text-charcoal">良好: ${s.good}</span>
-            <span class="text-success">简单: ${s.easy}</span>
+          <div class="grid grid-cols-4 pt-2 text-center font-ui">
+            <div class="flex flex-col gap-1">
+              <span class="text-[0.6rem] tracking-widest text-muted uppercase">Again</span>
+              <span class="text-xs text-terracotta">${s.again}</span>
+            </div>
+            <div class="flex flex-col gap-1 border-l border-borderline/40 block">
+              <span class="text-[0.6rem] tracking-widest text-muted uppercase">Hard</span>
+              <span class="text-xs text-ochre">${s.hard}</span>
+            </div>
+            <div class="flex flex-col gap-1 border-l border-borderline/40 block">
+              <span class="text-[0.6rem] tracking-widest text-muted uppercase">Good</span>
+              <span class="text-xs text-charcoal">${s.good}</span>
+            </div>
+            <div class="flex flex-col gap-1 border-l border-borderline/40 block">
+              <span class="text-[0.6rem] tracking-widest text-muted uppercase">Easy</span>
+              <span class="text-xs text-success">${s.easy}</span>
+            </div>
           </div>`;
           if (typeof confetti === 'function') {
             const getRGB = (varName) => {
@@ -587,6 +609,8 @@ async function reviewAgain() {
   state.originalTotal = wordsToUse.length;
   state.studyIndex = 0;
   state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+  state._sessionActive = true;
   revealAllowed = false;
   
   document.getElementById('studyComplete').classList.add('hidden');
@@ -623,6 +647,9 @@ async function undoLastReview() {
     // 回退统计
     state.studyStats.reviewed = Math.max(0, state.studyStats.reviewed - 1);
     state.studyStats[last.result] = Math.max(0, state.studyStats[last.result] - 1);
+    // 撤回也要同步扣减跨轮次累计统计
+    state.sessionStats.reviewed = Math.max(0, state.sessionStats.reviewed - 1);
+    state.sessionStats[last.result] = Math.max(0, state.sessionStats[last.result] - 1);
 
     // 如果该单词因为 "again" 被追加到末尾，移除末尾的副本
     if (last.result === 'again') {
