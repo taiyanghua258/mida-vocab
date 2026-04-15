@@ -402,51 +402,21 @@
       border-left: 2px solid rgba(223, 159, 40, 0.5); /* Ochre color line */
     }
 
-    /* 结算及无词界面反白 (隔离污染，使用局部 CSS 变量翻转解决黑底白字问题) */
-    [data-theme="editorial"] #studyComplete, 
-    [data-theme="editorial"] #noWords {
-      /* 将木炭色反转为羊皮纸亮色 */
-      --color-charcoal: 253 251 247;
-      /* 将淡色文字反转为半透明亮色对应值 */
-      --color-muted: 180 180 180;
-      /* 将边框反转为发光暗线 */
-      --color-borderline: 200 200 200;
-      
-      /* 将背景底色变量抽空 */
-      --color-surface: 10 12 11;
-    }
-    
+    /* 彻底移除之前的结算与冷冻界面“反白”强制渲染，
+       因为在新的学术主题中，整个学习视图已经被修改为透明网格底，
+       这里需要直接继承深色文字，从而在白底黑字中保持版画极简感。 */
+       
     [data-theme="editorial"] #studyComplete button, 
     [data-theme="editorial"] #noWords button {
       border-radius: 0 !important; /* 学术模式强硬抹除圆角 */
     }
     
-    /* 让实心按钮在暗室中显得更加纯粹 */
-    [data-theme="editorial"] #studyComplete button.bg-charcoal,
-    [data-theme="editorial"] #noWords button.bg-charcoal {
-      background-color: rgba(255, 255, 255, 0.9) !important;
-      color: rgb(var(--bg-darkroom)) !important;
-      border: 1px solid rgba(255, 255, 255, 0.9) !important;
-    }
-    [data-theme="editorial"] #studyComplete button.bg-charcoal:hover,
-    [data-theme="editorial"] #noWords button.bg-charcoal:hover {
-      background-color: transparent !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-      border-color: rgba(255, 255, 255, 0.4) !important;
-    } 
-
-    /* 修复 Bug: 次级按钮在 Hover 时变成白底白字无法看清的问题 */
-    [data-theme="editorial"] #studyComplete button:not(.bg-charcoal):hover,
-    [data-theme="editorial"] #noWords button:not(.bg-charcoal):hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-      border-color: rgba(255, 255, 255, 0.4) !important;
-    }
+    /* 去除不必要的倒置与 hover 冲突修复，因为回归深色字体 */
     
-    /* 取消父节点强加的 border: none 导致的票据边框消失 */
+    /* 保持结算框与网格背景的融为一体但保留极简线框 */
     [data-theme="editorial"] #view-study #studyComplete .bg-surface,
     [data-theme="editorial"] #view-study #noWords .bg-surface {
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(20, 20, 20, 0.15) !important;
       background: transparent !important;
     }
 
