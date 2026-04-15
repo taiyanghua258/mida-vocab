@@ -164,6 +164,11 @@
       border-radius: 0 !important;
       box-shadow: none !important;
     }
+
+    /* 修复窗口纯白重叠无边界的问题：学术模式下必须用实体细线勒出窗口轮廓 */
+    [data-theme="editorial"] .modal-content {
+      border: 1px solid rgba(20, 20, 20, 0.15) !important;
+    }
     
     /* ========================================================= */
     /* 2. 彻底粉碎白底遮罩：精确打击 HTML 中实际存在的容器 */
@@ -421,13 +426,22 @@
     [data-theme="editorial"] #noWords button.bg-charcoal {
       background-color: rgba(255, 255, 255, 0.9) !important;
       color: rgb(var(--bg-darkroom)) !important;
-      border-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid rgba(255, 255, 255, 0.9) !important;
     }
     [data-theme="editorial"] #studyComplete button.bg-charcoal:hover,
     [data-theme="editorial"] #noWords button.bg-charcoal:hover {
       background-color: transparent !important;
       color: rgba(255, 255, 255, 0.9) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
     } 
+
+    /* 修复 Bug: 次级按钮在 Hover 时变成白底白字无法看清的问题 */
+    [data-theme="editorial"] #studyComplete button:not(.bg-charcoal):hover,
+    [data-theme="editorial"] #noWords button:not(.bg-charcoal):hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
     
     /* 取消父节点强加的 border: none 导致的票据边框消失 */
     [data-theme="editorial"] #view-study #studyComplete .bg-surface,
