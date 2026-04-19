@@ -91,6 +91,7 @@ async function initStudy() {
     // 只在全新开始一局时才重置跨轮次累计统计（冷却回来时不会走这里）
     if (!state._sessionActive) {
       state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+      state.sessionOriginalTotal = words.length; // 记录整个会话的初始总量
     }
     state._sessionActive = true;
   }
@@ -183,7 +184,7 @@ function showCoolingState(upcomingWords, stats) {
   updateCoolingCountdown();
   coolingTimer = setInterval(updateCoolingCountdown, 1000);
 
-  const rightBtn = el.querySelectorAll('.flex.gap-3 > button')[1];
+  const rightBtn = document.getElementById('coolingRefreshBtn');
   if (rightBtn) {
     rightBtn.textContent = '刷新复习';
     rightBtn.onclick = () => { initStudy(); };
@@ -543,7 +544,7 @@ function showStudyComplete() {
             </div>
             <div class="flex justify-between items-baseline">
               <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Original Quota <span class="font-sans text-[10px] ml-1 opacity-60">原始词汇量</span></span>
-              <span class="font-mono text-xl text-ochre leading-none">${state.originalTotal}</span>
+              <span class="font-mono text-xl text-ochre leading-none">${state.sessionOriginalTotal || state.originalTotal}</span>
             </div>
           </div>
           

@@ -398,7 +398,7 @@
   </div>
 
   <!-- ========== STUDY VIEW ========== -->
-  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative overflow-y-auto">
+  <div id="view-study" class="view-section flex-1 flex-col h-screen bg-parchment relative overflow-hidden">
     <nav class="p-6 flex justify-between items-center max-w-4xl mx-auto w-full absolute top-0 left-1/2 -translate-x-1/2 z-10">
       <button onclick="confirmLeaveStudy()" class="text-muted hover:text-charcoal flex items-center gap-2 transition-colors font-medium">
         <div class="w-10 h-10 rounded-full bg-surface border border-borderline flex items-center justify-center">
@@ -415,7 +415,7 @@
       </div>
     </nav>
 
-    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 relative pt-20">
+    <div class="flex-1 flex flex-col max-w-2xl w-full mx-auto p-6 relative pt-20 overflow-y-auto">
       <div class="w-full mb-10 max-w-md mx-auto">
         <div class="flex justify-between text-xs text-muted mb-2 font-medium">
           <span>进度</span>
@@ -444,7 +444,7 @@
         </div>
       </div>
 
-      <div id="noWords" class="hidden w-full max-w-[340px] mx-auto flex-shrink-0 animate-fade-in-up">
+      <div id="noWords" class="hidden w-full max-w-[340px] mx-auto flex-shrink-0 animate-fade-in-up pb-8">
         <div class="relative bg-surface border border-borderline/60 shadow-[0_10px_40px_rgba(26,47,43,0.04)] p-8 sm:p-10 rounded-[2px] overflow-hidden">
           <div class="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-borderline"></div>
           
@@ -458,7 +458,7 @@
           
           <div class="mt-6 flex flex-col gap-3 font-ui text-[0.75rem]">
             <button onclick="navigate('dashboard')" class="w-full py-3.5 border border-borderline text-charcoal hover:bg-parchment hover:border-charcoal/30 transition-all font-bold tracking-[0.2em] uppercase text-center">Return to Base</button>
-            <button onclick="reviewLastSession()" class="w-full py-3.5 bg-transparent border border-transparent text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center">Review Last</button>
+            <button id="coolingRefreshBtn" onclick="reviewLastSession()" class="w-full py-3.5 bg-transparent border border-transparent text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center">Review Last</button>
           </div>
           
           <div id="extraStudySection" class="mt-8 pt-6 border-t border-borderline/40 text-left">
