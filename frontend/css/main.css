@@ -539,11 +539,7 @@ body:has(#view-study.active) {
 }
 
 /* 👇 新增以下代码，修复冷却界面过长无法滚动的问题 */
-#view-study.active {
-  height: 100dvh; /* 使用 dvh 完美避开 Safari 底部工具栏 */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
+/* #view-study.active 滚动配置已迁移至 HTML Tailwind 类中 */
 #noWords {
   padding-bottom: 2rem; /* 底部留一点呼吸空间，防止文字贴边 */
 }
