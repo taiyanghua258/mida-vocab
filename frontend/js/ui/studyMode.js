@@ -29,7 +29,10 @@ function confirmLeaveStudy() {
         originalTotal: state.originalTotal,
         studyStats: state.studyStats,
         sessionStats: state.sessionStats,
-        isCramMode: state.isCramMode
+        isCramMode: state.isCramMode,
+        // 👇 【新增这两行】：确保跨轮次状态不丢失
+        sessionOriginalTotal: state.sessionOriginalTotal,
+        _sessionActive: state._sessionActive
       }));
     } else {
       // 无痕模式不保存进度
@@ -67,6 +70,11 @@ async function initStudy() {
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
         state.sessionStats = activeData.sessionStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+        
+        // 👇 【新增这两行】：正确恢复跨轮次总量和会话状态
+        state.sessionOriginalTotal = activeData.sessionOriginalTotal || activeData.originalTotal || activeData.studyWords.length;
+        state._sessionActive = activeData._sessionActive !== undefined ? activeData._sessionActive : true;
+        
         state.isCramMode = false;
         words = state.studyWords;
         
@@ -633,6 +641,10 @@ async function reviewAgain() {
   state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   state._sessionActive = true;
+  
+  // 👇 【新增这一行】：确保无痕模式下的原始词汇量也能覆盖掉之前残留的冷却数量
+  state.sessionOriginalTotal = wordsToUse.length; 
+  
   revealAllowed = false;
   
   document.getElementById('studyComplete').classList.add('hidden');
