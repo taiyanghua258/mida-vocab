@@ -83,7 +83,7 @@ async function initStudy() {
   }
 
   if (words.length === 0) {
-    words = await api(`/study/due?language=${state.currentLang}`);
+    words = await api(`/study/due?language=${state.currentLang}&_t=${Date.now()}`);
     state.studyWords = words;
     state.originalTotal = words.length;
     state.studyIndex = 0;
@@ -114,6 +114,9 @@ async function initStudy() {
 
 function showCoolingState(upcomingWords, stats) {
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+  
+  // 1. 【新增】防抖锁，防止倒计时触发无限循环请求
+  let isRefreshing = false; 
 
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
@@ -132,14 +135,25 @@ function showCoolingState(upcomingWords, stats) {
   let initialCoolingCount = upcomingWords.filter(w => new Date(w.due).getTime() > Date.now()).length;
 
   function updateCoolingCountdown() {
+    if (isRefreshing) return; // 如果已经进入刷新流程，拦截一切后续执行
+
     const now = Date.now();
     const remaining = upcomingWords.filter(w => new Date(w.due).getTime() > now);
     
     // 👇 2. 【修改判断条件】：不仅判断 length === 0，还要判断有没有单词刚刚到期（数量变少了）
     if (remaining.length === 0 || remaining.length < initialCoolingCount) {
+      isRefreshing = true; // 立即上锁
       if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
-      countdownEl.classList.add('hidden');
-      initStudy();
+      
+      // 2. 【核心】不要立刻隐藏界面，给用户视觉反馈，并强制延迟 1.5 秒抹平时差！
+      countdownEl.innerHTML = `
+        <div class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-ochre/10 border border-ochre/20 rounded-xl text-sm animate-pulse mb-3">
+          <span class="font-bold text-ochre">正在召唤记忆...</span>
+        </div>`;
+      
+      setTimeout(() => {
+        initStudy();
+      }, 1500);
       return;
     }
 
@@ -186,7 +200,9 @@ function showCoolingState(upcomingWords, stats) {
   }
 
   updateCoolingCountdown();
-  coolingTimer = setInterval(updateCoolingCountdown, 1000);
+  if (!isRefreshing) {
+    coolingTimer = setInterval(updateCoolingCountdown, 1000);
+  }
 
   const rightBtn = document.getElementById('coolingRefreshBtn');
   if (rightBtn) {
