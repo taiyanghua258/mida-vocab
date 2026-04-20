@@ -538,8 +538,7 @@ body:has(#view-study.active) {
   overflow: hidden;
 }
 
-/* 👇 新增以下代码，修复冷却界面过长无法滚动的问题 */
-/* #view-study.active 滚动配置已迁移至 HTML Tailwind 类中 */
+
 #noWords {
   padding-bottom: 2rem; /* 底部留一点呼吸空间，防止文字贴边 */
 }
