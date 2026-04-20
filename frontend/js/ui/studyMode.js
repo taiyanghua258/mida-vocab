@@ -128,11 +128,15 @@ function showCoolingState(upcomingWords, stats) {
   const dueNow = stats ? stats.dueWords : 0;
   const forecast = stats ? stats.todayForecast : null;
 
+  // 👇 1. 【新增这一行】：记录一开始界面打开时，真正在未来冷却的单词总数
+  let initialCoolingCount = upcomingWords.filter(w => new Date(w.due).getTime() > Date.now()).length;
+
   function updateCoolingCountdown() {
     const now = Date.now();
     const remaining = upcomingWords.filter(w => new Date(w.due).getTime() > now);
     
-    if (remaining.length === 0) {
+    // 👇 2. 【修改判断条件】：不仅判断 length === 0，还要判断有没有单词刚刚到期（数量变少了）
+    if (remaining.length === 0 || remaining.length < initialCoolingCount) {
       if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
       countdownEl.classList.add('hidden');
       initStudy();

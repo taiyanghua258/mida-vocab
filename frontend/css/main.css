@@ -537,6 +537,16 @@
 body:has(#view-study.active) {
   overflow: hidden;
 }
+
+/* 👇 新增以下代码，修复冷却界面过长无法滚动的问题 */
+#view-study.active {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#noWords {
+  padding-bottom: 2rem; /* 底部留一点呼吸空间，防止文字贴边 */
+}
 @media (max-width: 640px) {
   [data-theme="editorial"] {
     --word-size: 3.5rem; /* 手机端适当收敛，但仍保持最大优先级 */
