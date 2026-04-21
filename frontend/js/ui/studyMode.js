@@ -441,6 +441,18 @@ async function submitReview(result) {
       }
     }
   } catch (err) {
+    // 👇 新增防御逻辑：拦截 404 幽灵数据错误，打破死循环
+    if (err.message === 'Word not found') {
+      showToast('检测到该单词已被删除，正在自动清理幽灵缓存并重新加载...', 'info');
+      // 清除掉产生冲突的本地进度
+      localStorage.removeItem(`active_session_${state.currentLang}`);
+      isReviewProcessing = false;
+      // 重新向后端发起真实请求，刷新牌堆
+      initStudy();
+      return; 
+    }
+
+    // 👇 保留原有的常规网络错误处理
     showToast(`复习记录保存失败：${err.message || '网络异常'}`, 'error');
     console.error('Review Error', err);
     isReviewProcessing = false;
