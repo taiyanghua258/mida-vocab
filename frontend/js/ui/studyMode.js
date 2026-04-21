@@ -623,7 +623,10 @@ function showStudyComplete() {
   });
 }
 
+let isLoadingSession = false;
 async function reviewAgain() {
+  if (isLoadingSession) return;
+  isLoadingSession = true;
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
   state.studyHistory = [];
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
@@ -639,6 +642,7 @@ async function reviewAgain() {
     wordsToUse = res.words || [];
   } catch (e) {
     showToast('拉取复习记录失败', 'error');
+    isLoadingSession = false;
     return;
   }
 
@@ -666,6 +670,8 @@ async function reviewAgain() {
 
   renderCardStack();
   updateStudyProgress();
+  
+  isLoadingSession = false;
 }
 
 async function reviewLastSession() {
@@ -738,6 +744,7 @@ async function undoLastReview() {
 
     showToast('已撤回上一步', 'success');
   } catch (err) {
+    state.studyHistory.push(last);
     showToast('撤回失败: ' + err.message, 'error');
   }
 

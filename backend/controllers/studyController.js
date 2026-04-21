@@ -111,22 +111,6 @@ exports.getDueWords = async (req, res) => {
         state: 0,
         due: { $lte: now }
       }).sort({ createdAt: -1 }).limit(remainingNew).select('_id');
-
-      if (quotaNewWords.length < remainingNew) {
-        const deficit = remainingNew - quotaNewWords.length;
-        const postponedWords = await Word.find({
-          userId: req.userId,
-          language,
-          state: 0,
-          due: { $gt: now }
-        }).sort({ createdAt: -1 }).limit(deficit).select('_id');
-        
-        if (postponedWords.length > 0) {
-          const pullIds = postponedWords.map(w => w._id);
-          await Word.updateMany({ _id: { $in: pullIds } }, { $set: { due: now } });
-          quotaNewWords = quotaNewWords.concat(postponedWords);
-        }
-      }
     }
 
     const quotaIds = quotaNewWords.map(w => w._id);
@@ -134,16 +118,6 @@ exports.getDueWords = async (req, res) => {
     if (quotaIds.length > 0) {
       newWords = await Word.find({ _id: { $in: quotaIds } }).sort({ createdAt: -1 });
     }
-
-    // 推迟的只是"配额之外"的词
-    // 如果 quotaIds 为空数组(比如配额用完了)，这里会将今天所有多余的新词推迟到明天，清理掉队列
-    await Word.updateMany({
-      userId: req.userId,
-      language,
-      state: 0,
-      due: { $lte: now },
-      _id: { $nin: quotaIds }
-    }, { $set: { due: tomorrowStart } });
 
     const words = [...reviewWords, ...newWords];
     res.json(words);
