@@ -49,6 +49,9 @@ const reviewLogSchema = new mongoose.Schema({
   },
   scheduled_days: {
     type: Number
+  },
+  prevLearningSteps: {
+    type: Number
   }
 }, {
   timestamps: true

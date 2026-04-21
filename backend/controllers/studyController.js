@@ -50,8 +50,8 @@ function wordToCard(word) {
 
   return {
     due: word.due ? new Date(word.due) : new Date(),
-    stability: word.stability || 0,
-    difficulty: word.difficulty || 0,
+    stability: word.stability ?? 0,
+    difficulty: word.difficulty ?? 0,
     elapsed_days: word.elapsed_days || 0,
     scheduled_days: word.scheduled_days || 0,
     reps: word.reps || 0,
@@ -184,11 +184,10 @@ exports.reviewWord = async (req, res) => {
     const newCard = chosen.card;
     const log = chosen.log;
 
-    // 时区修复：如果是长线复习(>=1天)，使用 dayjs 对齐到本地时区的 00:00:00
-    if (newCard.scheduled_days >= 1) {
-      const alignedDue = dayjs(newCard.due).tz(TIMEZONE).startOf('day').toDate();
-      newCard.due = alignedDue;
-    }
+    // FSRS 审计修复：移除 startOf('day') 对齐
+    // 原逻辑将 due 强制回退到当天凌晨 00:00，会使复习间隔比 FSRS 计算值
+    // 系统性缩短最多 18 小时。对于 2-3 天的短间隔卡片影响尤为严重。
+    // 现在完全信任 FSRS 原生调度的 due 时间，不做任何人为干预。
 
     word.due = newCard.due;
     word.stability = newCard.stability;
@@ -213,6 +212,7 @@ exports.reviewWord = async (req, res) => {
       state: log.state,
       prevStability: log.stability,
       prevDifficulty: log.difficulty,
+      prevLearningSteps: log.learning_steps,
       elapsed_days: log.elapsed_days,
       scheduled_days: log.scheduled_days
     });
@@ -354,7 +354,7 @@ exports.getStats = async (req, res) => {
     }
 
     const dueNewCount = Math.min(remainingNew, dueNewWords);
-    const dueReviewOnlyCount = dueReviewCount - dueLearningWords.length; // 纯 Review(state=2) 词
+    const dueReviewOnlyCount = Math.max(0, dueReviewCount - dueLearningWords.length); // 纯 Review(state=2) 词
     const todayRemainingWords = dueWords + allCoolingToday;
 
     // --- 计算每类词的级联完成时间 & 总复习轮数 ---
@@ -448,10 +448,11 @@ exports.undoReview = async (req, res) => {
     if (prevLog) {
       // 还原到上一次复习后的状态：利用 FSRS 重新计算
       // 但更简单的方式是：用 lastLog 中记录的 prev 字段还原
-      word.stability = lastLog.prevStability || 0;
-      word.difficulty = lastLog.prevDifficulty || 0;
-      word.elapsed_days = lastLog.elapsed_days || 0;
-      word.scheduled_days = lastLog.scheduled_days || 0;
+      word.stability = lastLog.prevStability ?? 0;
+      word.difficulty = lastLog.prevDifficulty ?? 0;
+      word.elapsed_days = lastLog.elapsed_days ?? 0;
+      word.scheduled_days = lastLog.scheduled_days ?? 0;
+      word.learning_steps = lastLog.prevLearningSteps ?? 0;
       word.state = lastLog.state != null ? lastLog.state : 0;
       word.last_review = prevLog.reviewDate;
       word.due = lastLog.reviewDate; // 恢复到复习前的到期时间
