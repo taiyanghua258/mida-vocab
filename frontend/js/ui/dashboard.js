@@ -445,6 +445,44 @@ function removeDictBatchWord(index) {
 let dictBatchWords = [];
 let batchGeneratedWords = [];
 
+// 新增：响应用户在预览列表中的修改
+function updateBatchWord(index, field, value) {
+  if (batchGeneratedWords[index]) {
+    batchGeneratedWords[index][field] = value.trim();
+  }
+}
+
+// 新增：统一渲染可编辑的批量预览列表
+function renderBatchPreviewList() {
+  const list = document.getElementById('batchPreviewList');
+  const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
+  
+  // 简单的转义防止引号破坏 HTML
+  const escapeStr = (str) => (str || '').toString().replace(/"/g, '&quot;');
+
+  list.innerHTML = batchGeneratedWords.map((w, i) => `
+    <div class="flex items-start sm:items-center gap-3 p-3 bg-parchment rounded-xl mb-2 border border-borderline/40 transition-colors focus-within:border-ochre/40">
+      <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div>
+          <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">单词</label>
+          <input type="text" value="${escapeStr(w.japanese)}" onchange="updateBatchWord(${i}, 'japanese', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="单词">
+        </div>
+        <div>
+          <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">读音</label>
+          <input type="text" value="${escapeStr(w.reading)}" onchange="updateBatchWord(${i}, 'reading', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="读音">
+        </div>
+        <div>
+          <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">含义</label>
+          <input type="text" value="${escapeStr(w.meaning)}" onchange="updateBatchWord(${i}, 'meaning', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] bg-surface" placeholder="含义">
+        </div>
+      </div>
+      <button onclick="removeBatchWord(${i})" class="w-8 h-8 mt-5 sm:mt-0 flex items-center justify-center rounded-full hover:bg-surface text-muted/50 hover:text-terracotta transition-all flex-shrink-0" title="移除此项">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
 async function handleBatchGenerate() {
   const text = document.getElementById('importWordsText').value.trim();
   const language = state.currentLang; 
@@ -549,17 +587,8 @@ async function handleBatchGenerate() {
     document.getElementById('importStep2').classList.remove('hidden');
     document.getElementById('batchCount').textContent = batchGeneratedWords.length;
 
-    const list = document.getElementById('batchPreviewList');
-    const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
-    list.innerHTML = batchGeneratedWords.map((w, i) => `
-      <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
-        <div>
-          <span class="font-semibold ${fontClass}">${w.japanese}</span>
-          <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
-        </div>
-        <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
-      </div>
-    `).join('');
+    // 渲染可编辑的列表
+    renderBatchPreviewList();
 
     showToast('全部生成成功', 'success');
   } catch (e) {
@@ -579,17 +608,8 @@ async function handleBatchGenerate() {
 function removeBatchWord(index) {
   batchGeneratedWords.splice(index, 1);
   document.getElementById('batchCount').textContent = batchGeneratedWords.length;
-  const list = document.getElementById('batchPreviewList');
-  const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
-  list.innerHTML = batchGeneratedWords.map((w, i) => `
-    <div class="flex justify-between items-center p-3 bg-parchment rounded-xl mb-2">
-      <div>
-        <span class="font-semibold ${fontClass}">${w.japanese}</span>
-        <span class="text-muted text-sm ml-2">${w.reading || '-'} · ${w.meaning}</span>
-      </div>
-      <button onclick="removeBatchWord(${i})" class="text-muted hover:text-terracotta">&#10005;</button>
-    </div>
-  `).join('');
+  // 重新渲染可编辑列表
+  renderBatchPreviewList();
 }
 
 async function handleBatchImport() {
