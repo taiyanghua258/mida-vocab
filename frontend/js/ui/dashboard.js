@@ -36,20 +36,24 @@ function renderWordList(words) {
   tbody.innerHTML = words.map(w => {
     const checked = state.selectedWordIds.has(w._id) ? 'checked' : '';
     const fontClass = w.language === 'en' ? 'font-sans tracking-tight' : 'font-jp'; // 动态字体
+    const ej = escapeHtml(w.japanese);
+    const er = escapeHtml(w.reading);
+    const em = escapeHtml(w.meaning);
+    const ep = escapeHtml(w.partOfSpeech) || '其他';
     return `
     <tr class="airy-row group ${checked ? 'bg-ochre/5 border-transparent shadow-[inset_4px_0_0_#DF9F28]' : ''}">
       <td class="px-5 py-5">
         <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
       </td>
       <td class="px-6 py-4">
-        <span class="text-xl font-bold font-jp leading-tight block">${w.japanese}</span>
-        <span class="text-xs text-muted font-jp opacity-60">${w.reading || ''}</span>
+        <span class="text-xl font-bold font-jp leading-tight block">${ej}</span>
+        <span class="text-xs text-muted font-jp opacity-60">${er || ''}</span>
       </td>
-      <td class="px-6 py-4 text-sm font-medium font-ui opacity-90">${w.meaning}</td>
+      <td class="px-6 py-4 text-sm font-medium font-ui opacity-90">${em}</td>
       <td class="px-4 py-4">
         <div class="flex flex-wrap gap-2 max-w-[120px] items-center">
-          <span class="footnote-tag font-ui">${w.partOfSpeech || '其他'}</span>
-          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag font-ui">${t}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40 font-ui">+${(w.tags || []).length - 2}</span>` : ''}
+          <span class="footnote-tag font-ui">${ep}</span>
+          ${((w.tags || []).slice(0, 2).map(t => `<span class="footnote-tag font-ui">${escapeHtml(t)}</span>`)).join('')}${(w.tags || []).length > 2 ? `<span class="text-[10px] opacity-40 font-ui">+${(w.tags || []).length - 2}</span>` : ''}
         </div>
       </td>
       <td class="px-6 py-4 due-cell" data-due="${w.due}" data-state="${w.state}">${formatDate(w.due, w.state)}</td>
@@ -848,9 +852,9 @@ async function batchExportSelected() {
     btn.innerHTML = '导出中...';
     btn.disabled = true;
 
-    // 拉取用户所有单词（突破当前页限制）
-    const data = await api(`/words?limit=10000&language=${state.currentLang}`);
-    const allWords = data.words || [];
+    // 拉取用户所有单词（使用 export 接口突破分页限制）
+    const data = await api(`/words/export?language=${state.currentLang}`);
+    const allWords = data.data || [];
 
     // 根据选中的 ID 跨页过滤出需要导出的词
     const wordsToExport = allWords.filter(w => state.selectedWordIds.has(w._id));

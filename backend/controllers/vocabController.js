@@ -201,6 +201,9 @@ exports.deleteWord = async (req, res) => {
       return res.status(404).json({ message: 'Word not found' });
     }
 
+    // 级联清理关联的 ReviewLog，防止孤儿数据虚占新词配额
+    await ReviewLog.deleteMany({ wordId: req.params.id, userId: req.userId });
+
     res.json({ message: 'Word deleted' });
   } catch (err) {
     console.error(err);
@@ -396,6 +399,8 @@ exports.batchDeleteWords = async (req, res) => {
     }
     // 数据库层面一次性删除
     await Word.deleteMany({ _id: { $in: ids }, userId: req.userId });
+    // 级联清理关联的 ReviewLog
+    await ReviewLog.deleteMany({ wordId: { $in: ids }, userId: req.userId });
     res.json({ message: '批量删除成功' });
   } catch (err) {
     console.error(err);
@@ -407,6 +412,8 @@ exports.clearAllWords = async (req, res) => {
   try {
     const { language = 'ja' } = req.body;
     const result = await Word.deleteMany({ userId: req.userId, language });
+    // 级联清理该语种下所有 ReviewLog
+    await ReviewLog.deleteMany({ userId: req.userId, language });
     res.json({ message: '清空成功', count: result.deletedCount });
   } catch (err) {
     console.error(err);

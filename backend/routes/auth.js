@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 const auth = require('../middleware/auth');
 const rateLimiter = require('../middleware/rateLimiter');
 
-router.post('/register', authController.register);
+router.post('/register', rateLimiter, authController.register);
 router.post('/login', rateLimiter, authController.login);
 router.get('/me', auth, authController.getMe);
 router.get('/settings', auth, authController.getSettings);

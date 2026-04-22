@@ -144,9 +144,11 @@ exports.getSchedulingInfo = async (req, res) => {
     const now = new Date();
     const schedulingCards = f.repeat(card, now);
 
+    const RATING_NAMES = { 1: 'again', 2: 'hard', 3: 'good', 4: 'easy' };
     const info = {};
     for (const [ratingKey, recordLog] of Object.entries(schedulingCards)) {
-      const ratingName = Rating[ratingKey].toLowerCase();
+      const ratingName = RATING_NAMES[ratingKey];
+      if (!ratingName) continue; // Skip unknown keys safely
       info[ratingName] = {
         interval: formatInterval(recordLog.card.due, now),
         scheduled_days: recordLog.card.scheduled_days

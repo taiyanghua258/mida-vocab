@@ -256,23 +256,27 @@ function getCardHTML(index, word) {
 
   if (isEditorial) {
     // 学术模式的独立渲染：先锋学术报 / 日语词典排版
+    const ej = escapeHtml(word.japanese);
+    const er = escapeHtml(word.reading) || '-';
+    const em = escapeHtml(word.meaning);
+    const ep = escapeHtml(word.partOfSpeech) || '其他';
     return `
       <div id="word-group-${index}" class="word-group" data-depth="${relativeIndex <= 2 ? relativeIndex : 'hidden'}" style="z-index: ${zIndex}">
         <div class="paper-card back editorial-dict-back">
           <div class="editorial-dict-header">
-            <span class="reading font-display">${word.reading || '-'}</span>
-            <span class="pos font-ui">[${word.partOfSpeech || '其他'}]</span>
+            <span class="reading font-display">${er}</span>
+            <span class="pos font-ui">[${ep}]</span>
           </div>
           <div class="editorial-dict-divider"></div>
-          <div class="meaning font-display text-charcoal">${word.meaning}</div>
+          <div class="meaning font-display text-charcoal">${em}</div>
         </div>
         <div class="paper-card front editorial-dict-front" onclick="revealAnswer()">
           <div class="editorial-dict-top">
-            <span class="pos font-ui">[${word.partOfSpeech || '其他'}]</span>
+            <span class="pos font-ui">[${ep}]</span>
             <span class="dict-vol font-ui">No.${(index + 1).toString().padStart(3, '0')}</span>
           </div>
           
-          <div class="word font-display text-charcoal card-front-word">${word.japanese}</div>
+          <div class="word font-display text-charcoal card-front-word">${ej}</div>
           
           <div class="mt-auto editorial-dict-footer font-ui action-hint">
             <span>点击或按下 <kbd>Space</kbd> 揭开释义</span>
@@ -283,19 +287,23 @@ function getCardHTML(index, word) {
   }
 
   // 2. 默认与 Obsidian 模式
+  const ej = escapeHtml(word.japanese);
+  const er = escapeHtml(word.reading) || '-';
+  const em = escapeHtml(word.meaning);
+  const ep = escapeHtml(word.partOfSpeech) || '其他';
   const studyWordClasses = `text-charcoal mb-2 leading-none break-all transition-all duration-500`;
 
   return `
     <div id="word-group-${index}" class="word-group" data-depth="${relativeIndex <= 2 ? relativeIndex : 'hidden'}" style="z-index: ${zIndex}">
       <div class="paper-card back">
-        <div class="text-xl font-display text-ochre mb-4 font-medium">${word.reading || '-'}</div>
-        <div class="text-2xl sm:text-3xl font-display font-semibold text-charcoal mb-4 sm:mb-6 text-center leading-tight-display">${word.meaning}</div>
-        <div class="footnote-tag uppercase font-ui">${word.partOfSpeech || '其他'}</div>
+        <div class="text-xl font-display text-ochre mb-4 font-medium">${er}</div>
+        <div class="text-2xl sm:text-3xl font-display font-semibold text-charcoal mb-4 sm:mb-6 text-center leading-tight-display">${em}</div>
+        <div class="footnote-tag uppercase font-ui">${ep}</div>
       </div>
       <div class="paper-card front" onclick="revealAnswer()">
-        <span class="footnote-tag uppercase mb-4 font-ui">${word.partOfSpeech || '其他'}</span>
+        <span class="footnote-tag uppercase mb-4 font-ui">${ep}</span>
         
-        <div class="card-front-word ${studyWordClasses}">${word.japanese}</div>
+        <div class="card-front-word ${studyWordClasses}">${ej}</div>
         
         <div class="mt-auto pt-8 text-sm text-muted/60 flex items-center justify-center font-ui">
           <span>点击撕下便签</span>
@@ -609,7 +617,8 @@ function showStudyComplete() {
           if (typeof confetti === 'function') {
             const getRGB = (varName) => {
               const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-              return `rgb(${val})`;
+              const parts = val.split(/\s+/);
+              return parts.length === 3 ? `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})` : `rgb(${val})`;
             };
             const themeColors = [
               getRGB('--color-ochre'),
@@ -648,6 +657,7 @@ async function reviewAgain() {
 
   if (wordsToUse.length === 0) {
     showToast('今日没有可复习的记录', 'error');
+    isLoadingSession = false;
     return;
   }
 

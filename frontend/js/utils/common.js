@@ -1,5 +1,16 @@
 const CONFIG = { USE_MOCK_API: false, API_BASE: '/api' };
 
+/* ================= XSS 防御 ================= */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /* ================= TOAST ================= */
 function showToast(msg, type = 'info') {
   const c = document.getElementById('toast-container');
@@ -96,8 +107,8 @@ window.toggleCoolingDropdown = function(event, min) {
 
   const wordListHtml = wordsForThisMin.map(w => `
     <div class="py-1.5 border-b border-borderline/40 last:border-0 flex flex-col gap-0.5">
-      <span class="font-display font-medium text-charcoal text-[13px] leading-tight break-words">${w.japanese || w.word || '-'}</span>
-      ${w.meaning ? `<span class="font-ui text-[10px] text-muted leading-tight truncate">${w.meaning}</span>` : ''}
+      <span class="font-display font-medium text-charcoal text-[13px] leading-tight break-words">${escapeHtml(w.japanese || w.word) || '-'}</span>
+      ${w.meaning ? `<span class="font-ui text-[10px] text-muted leading-tight truncate">${escapeHtml(w.meaning)}</span>` : ''}
     </div>
   `).join('');
 
@@ -182,11 +193,12 @@ function navigate(viewId) {
   if (viewId === 'dashboard') initDashboard();
   if (viewId === 'study') initStudy();
   if (viewId === 'auth') {
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-    document.getElementById('regUsername').value = '';
-    document.getElementById('regPassword').value = '';
-    document.getElementById('regConfirmPassword').value = '';
+    const el = (id) => document.getElementById(id);
+    if (el('username')) el('username').value = '';
+    if (el('password')) el('password').value = '';
+    if (el('regUsername')) el('regUsername').value = '';
+    if (el('regPassword')) el('regPassword').value = '';
+    if (el('regConfirmPassword')) el('regConfirmPassword').value = '';
     const loginBtn = document.querySelector('#loginForm button[type="submit"]');
     if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '登录系统'; }
     const regBtn = document.querySelector('#registerForm button[type="submit"]');
