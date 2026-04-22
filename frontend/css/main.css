@@ -11,6 +11,13 @@
       --bg-body: 253 251 247;
       --color-success: 75 115 101;
 
+      /* 动画持续时间变量 */
+      --duration-micro: 150ms;
+      --duration-fast: 250ms;
+      --duration-normal: 400ms;
+      --duration-slow: 600ms;
+      --duration-xslow: 700ms;
+
       /* 核心修复：必须将 Noto Sans JP 提升到最高优先级，防止日语汉字被错误渲染为中文版 */
       --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
       --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
@@ -28,6 +35,7 @@
       --radius-panel: 1.25rem;
       --radius-card: 1.5rem;
       --radius-modal: 2rem;
+      --radius-pill: 100px;
       
       --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.03);
       --shadow-card: 0 10px 40px rgba(26, 47, 43, 0.04);
@@ -58,7 +66,6 @@
       --color-success: 95 145 125;
       
       /* Phase 2: Structural Upgrade */
-      --card-bg: #121214;
       --word-font: var(--font-ui);
       --word-size: 3.5rem;
       --word-weight: 600;
@@ -91,12 +98,14 @@
       --color-charcoal: 20 20 20;
       --color-ochre: 191 54 46;
       --color-borderline: 30 30 30;
-      --bg-darkroom: 10 12 11;
       --color-success: 60 90 80;
+      --color-lavender: 200 200 200;
+      --color-muted: 120 120 120;
+      --color-terracotta: 170 60 50;
       
       /* 深度重构：先锋极简大字 */
       --word-font: var(--font-serif);
-      --word-size: clamp(4.5rem, 15vw, 8rem);
+      --word-size: clamp(3.5rem, 10vw, 5.5rem);
       --word-weight: 800;
       --word-tracking: -0.06em;
       --radius-sm: 0;
@@ -127,13 +136,92 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
-      transition: background-color 0.6s var(--ease-fluid), color 0.4s ease;
+      transition: background-color var(--duration-slow) var(--ease-fluid), color var(--duration-normal) ease;
     }
     
     /* 深色模式下的弹窗质感与占位符增强 */
     
     [data-theme="obsidian"] .aesthetic-input::placeholder {
       color: rgba(234, 230, 219, 0.4) !important;
+    }
+
+    /* ========================================================= */
+    /* 补全的幽灵类定义 (Phantom Classes Resolved) */
+    /* ========================================================= */
+    .magnetic-btn {
+      background: rgb(var(--color-charcoal));
+      color: rgb(var(--bg-body));
+      border-radius: var(--radius-pill);
+      border: none;
+      transition: all var(--duration-fast) var(--ease-fluid);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .aesthetic-input {
+      background-color: transparent;
+      border: 1px solid rgb(var(--color-borderline));
+      border-radius: var(--radius-btn);
+      outline: none;
+      transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, background-color var(--duration-fast) ease;
+    }
+    .aesthetic-input:focus {
+      border-color: rgb(var(--color-ochre));
+      box-shadow: 0 0 0 3px rgba(var(--color-ochre), 0.1);
+      background-color: rgb(var(--color-surface));
+    }
+    
+    .glass-card {
+      background-color: var(--glass-bg);
+      border: var(--glass-border);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(8px);
+    }
+
+    .tracking-widest-plus {
+      letter-spacing: 0.15em;
+    }
+
+    /* 动画系统补全 */
+    .animate-soft-in {
+      animation: softIn var(--duration-slow) var(--ease-spring) backwards;
+    }
+    @keyframes softIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stagger-1 { animation-delay: 50ms; }
+    .stagger-2 { animation-delay: 100ms; }
+    .stagger-3 { animation-delay: 150ms; }
+
+    .animate-fade-in-up {
+      animation: fadeInUp var(--duration-slow) var(--ease-spring) backwards;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 冷却池折叠过渡 */
+    .is-collapsed {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      overflow: hidden !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      border-width: 0 !important;
+      pointer-events: none;
+    }
+    #upcomingWidget {
+      max-height: 500px;
+      opacity: 1;
+      overflow: hidden;
+      transition: all var(--duration-slow) var(--ease-in-out);
     }
 
     /* 精准排版工具类 */
@@ -148,7 +236,7 @@
       font-weight: var(--word-weight) !important;
       letter-spacing: var(--word-tracking) !important;
       line-height: 1.1 !important;
-      transition: all 0.4s var(--ease-spring);
+      transition: all var(--duration-normal) var(--ease-spring);
     }
 
     /* 强化“一大一小”设计：让学术模式下的脚注标签变得更小、更淡 */
@@ -171,7 +259,7 @@
       opacity: 0.6;
       display: inline-flex;
       align-items: center; /* 确保垂直居中 */
-      transition: opacity 0.3s ease;
+      transition: opacity var(--duration-normal) ease;
     }
     .footnote-tag::before { content: '['; margin-right: 1px; }
     .footnote-tag::after { content: ']'; margin-left: 1px; }
@@ -211,7 +299,7 @@
       position: relative;
       display: inline-flex;
       background: transparent;
-      transition: color 0.3s ease;
+      transition: color var(--duration-normal) ease;
     }
     .ghost-underline-btn::after {
       content: '';
@@ -223,7 +311,7 @@
       background-color: currentColor;
       transform: scaleX(0);
       transform-origin: right center;
-      transition: transform 0.4s var(--ease-fluid);
+      transition: transform var(--duration-normal) var(--ease-fluid);
     }
     .ghost-underline-btn:hover::after {
       transform: scaleX(1);
@@ -232,7 +320,7 @@
 
     /* 4. 无边界空气表格 (Airy Table/ListRow) */
     .airy-row {
-      transition: transform 0.35s var(--ease-fluid), background-color 0.3s ease, box-shadow 0.3s ease;
+      transition: transform var(--duration-normal) var(--ease-fluid), background-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
       border-bottom: 1px solid rgb(var(--color-borderline) / 0.3);
     }
 
@@ -240,7 +328,7 @@
     .modal-overlay {
   opacity: 0; pointer-events: none; backdrop-filter: blur(4px);
   background-color: var(--modal-overlay-bg);
-  transition: opacity 0.35s ease; 
+  transition: opacity var(--duration-normal) ease; 
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-content {
@@ -250,17 +338,16 @@
   border: var(--glass-border);
   box-shadow: var(--shadow-modal);
   border-radius: var(--radius-modal);
-      transition: all 0.4s var(--ease-spring); 
+      transition: all var(--duration-normal) var(--ease-spring); 
     }
     .modal-overlay.active .modal-content {
   transform: scale(1) translateY(0);
   opacity: 1;
     }
 
-    /* ========== 单词卡片组 ========== */
     .word-group {
       position: absolute; width: 100%; height: 100%;
-      transition: transform 0.6s var(--ease-spring), opacity 0.5s ease;
+      transition: transform var(--duration-slow) var(--ease-spring), opacity var(--duration-slow) ease;
       transform-style: preserve-3d;
       /* 修复 GPU 爆炸：已移除 will-change */
     }
@@ -290,7 +377,7 @@
       border: var(--glass-border);
       display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
       transform-origin: bottom left;
-      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, box-shadow 0.6s ease;
+      transition: transform var(--duration-slow) var(--ease-spring), opacity var(--duration-normal) ease, box-shadow var(--duration-slow) ease;
       /* will-change 已移除：8个合成层在低端设备造成GPU内存溢出 */
     }
     .paper-card.front { 
@@ -320,7 +407,7 @@
     .paper-card.back.revealed { 
       transform: scale(1) translateY(0); 
       box-shadow: 0 12px 40px rgb(var(--color-charcoal) / 0.1); 
-      transition: all 0.5s var(--ease-spring) 0.05s; 
+      transition: all var(--duration-slow) var(--ease-spring) 0.05s; 
     }
 
     /* ========== 答案按钮 ========== */
@@ -328,7 +415,7 @@
     #answerSection.show { opacity: 1; pointer-events: auto; }
 /* ========== 答案按钮 (移除硬阴影，使用高斯模糊软阴影) ========== */
 .answer-btn { 
-  transition: all 0.25s var(--ease-spring);
+  transition: all var(--duration-fast) var(--ease-spring);
   border: 1px solid rgb(var(--color-borderline)); 
   box-shadow: 0 4px 12px rgb(var(--color-charcoal) / 0.03); 
   transform: translateY(0);
@@ -346,7 +433,7 @@
 
     /* ========== Toast & Modal ========== */
     .toast { 
-      opacity: 0; transform: translateY(-12px) scale(0.95); transition: all 0.35s var(--ease-spring); 
+      opacity: 0; transform: translateY(-12px) scale(0.95); transition: all var(--duration-normal) var(--ease-spring); 
       background: rgb(var(--color-surface)); 
       color: rgb(var(--color-charcoal)); 
       border: 1px solid rgb(var(--color-borderline)); 
@@ -437,7 +524,7 @@
   border: none;
   cursor: pointer;
   overflow: hidden;
-  transition: color 0.4s ease, transform 0.2s var(--ease-spring), box-shadow 0.3s ease;
+  transition: color var(--duration-normal) ease, transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-normal) ease;
 }
 
 .btn-study::before {
@@ -452,7 +539,7 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity var(--duration-normal) ease;
 }
 
 .btn-study::after {
@@ -464,7 +551,7 @@
   width: 40%;
   height: 1.5px;
   background: linear-gradient(90deg, transparent, rgb(var(--color-ochre)), transparent);
-  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform var(--duration-normal) var(--ease-in-out);
 }
 
 .btn-study:hover {
@@ -475,7 +562,7 @@
 .btn-study:hover::before { opacity: 1; }
 .btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
 .btn-study:active { transform: translateY(0) scale(0.98); }
-.btn-study svg { transition: transform 0.4s var(--ease-spring); }
+.btn-study svg { transition: transform var(--duration-normal) var(--ease-spring); }
 .btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
 
     /* ========== Checkbox 自定义样式 ========== */
@@ -644,7 +731,7 @@
     }
 
 /* ===================================================================== */
-/* 终极学术模式修复：强制穿透所有遮罩，绘制复古印刷网格 */
+/* 终极学术模式修复：桌面端原生定义与网格底纹 */
 /* ===================================================================== */
 
 /* 1. 将底纹网格直接刻在背景上，并固定视角（防止滚动时网格变形） */
@@ -658,49 +745,68 @@ html[data-theme="editorial"],
   background-attachment: fixed !important; 
 }
 
-/* 2. 连根拔起表格区域的“三层纯色膏药”（外框、表头、表体） */
-[data-theme="editorial"] main > .bg-surface,
-[data-theme="editorial"] #wordTableBody,
-[data-theme="editorial"] #wordTableBody.bg-surface,
-[data-theme="editorial"] thead.bg-surface,
-[data-theme="editorial"] table {
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+/* 2. 补写 Editorial 桌面端原生样式，替代 !important 穿透 */
+.editorial-dict-front,
+.editorial-dict-back {
+  padding: 3rem;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
-/* 3. 彻底粉碎上方操作栏与数据卡片的底色与边框 */
-[data-theme="editorial"] .glass-card,
-[data-theme="editorial"] #tour-action-bar,
-[data-theme="editorial"] #upcomingWidget,
-[data-theme="editorial"] #batchActionBar {
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
+.editorial-dict-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 2rem;
+  color: rgb(var(--color-muted));
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
 }
 
-/* 4. 彻底透明化每一行单词栏，抹除圆角与 Hover 脏色，只留利落的底线 */
-[data-theme="editorial"] tr.airy-row,
+.editorial-dict-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.editorial-dict-header .reading {
+  font-size: 2.5rem;
+  color: rgb(var(--color-ochre));
+}
+
+.editorial-dict-header .pos {
+  font-size: 0.85rem;
+  color: rgb(var(--color-muted));
+  letter-spacing: 0.1em;
+}
+
+.editorial-dict-divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgb(var(--color-borderline));
+  margin-bottom: 2rem;
+}
+
+.editorial-dict-back .meaning {
+  font-size: 1.75rem;
+  line-height: 1.4;
+  color: rgb(var(--color-charcoal));
+}
+
+.editorial-dict-footer {
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgb(var(--color-muted) / 0.6);
+  letter-spacing: 0.05em;
+  padding-top: 2rem;
+}
+
+/* 3. 保留极简必要的重置，利用 CSS 层叠覆盖而非全局 !important */
 [data-theme="editorial"] #wordTableBody tr.airy-row {
-  background: transparent !important;
-  background-color: transparent !important;
-  border-radius: 0 !important; 
-  border-bottom: 1px solid rgba(20, 20, 20, 0.1) !important;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.1);
 }
-[data-theme="editorial"] tr.airy-row:hover,
 [data-theme="editorial"] #wordTableBody tr.airy-row:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border-bottom-color: rgba(20, 20, 20, 0.8) !important; /* 悬浮时加深下划线，作为交互反馈 */
-}
-
-/* 强制全屏视图变透明，让底层的 body 网格透视出来 */
-[data-theme="editorial"] #view-study,
-[data-theme="editorial"] #view-dashboard {
-  background: transparent !important;
-  background-color: transparent !important;
+  border-bottom-color: rgba(20, 20, 20, 0.8);
 }
