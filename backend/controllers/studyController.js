@@ -306,7 +306,7 @@ exports.getStats = async (req, res) => {
       language,
       state: { $ne: 0 },
       due: { $gt: now, $lte: oneHourLater }
-    }).select('_id due').sort({ due: 1 }).lean();
+    }).select('_id due japanese reading meaning').sort({ due: 1 }).lean();
 
     // ===== 级联感知的今日预估 =====
     // 考虑 FSRS learning steps 的完整级联效应：
