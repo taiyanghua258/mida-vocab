@@ -445,10 +445,10 @@ function removeDictBatchWord(index) {
 let dictBatchWords = [];
 let batchGeneratedWords = [];
 
-// 新增：响应用户在预览列表中的修改
+// 新增：响应用户在预览列表中的修改（使用 oninput 实时同步）
 function updateBatchWord(index, field, value) {
   if (batchGeneratedWords[index]) {
-    batchGeneratedWords[index][field] = value.trim();
+    batchGeneratedWords[index][field] = value;
   }
 }
 
@@ -458,22 +458,22 @@ function renderBatchPreviewList() {
   const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
   
   // 简单的转义防止引号破坏 HTML
-  const escapeStr = (str) => (str || '').toString().replace(/"/g, '&quot;');
+  const esc = (str) => (str || '').toString().replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
   list.innerHTML = batchGeneratedWords.map((w, i) => `
     <div class="flex items-start sm:items-center gap-3 p-3 bg-parchment rounded-xl mb-2 border border-borderline/40 transition-colors focus-within:border-ochre/40">
       <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <div>
           <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">单词</label>
-          <input type="text" value="${escapeStr(w.japanese)}" onchange="updateBatchWord(${i}, 'japanese', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="单词">
+          <input type="text" value="${esc(w.japanese)}" oninput="updateBatchWord(${i}, 'japanese', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="单词">
         </div>
         <div>
           <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">读音</label>
-          <input type="text" value="${escapeStr(w.reading)}" onchange="updateBatchWord(${i}, 'reading', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="读音">
+          <input type="text" value="${esc(w.reading)}" oninput="updateBatchWord(${i}, 'reading', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] ${fontClass} bg-surface" placeholder="读音">
         </div>
         <div>
           <label class="block text-[10px] text-muted mb-0.5 ml-1 tracking-widest uppercase">含义</label>
-          <input type="text" value="${escapeStr(w.meaning)}" onchange="updateBatchWord(${i}, 'meaning', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] bg-surface" placeholder="含义">
+          <input type="text" value="${esc(w.meaning)}" oninput="updateBatchWord(${i}, 'meaning', this.value)" class="aesthetic-input w-full px-2 py-1.5 text-[0.85rem] bg-surface" placeholder="含义">
         </div>
       </div>
       <button onclick="removeBatchWord(${i})" class="w-8 h-8 mt-5 sm:mt-0 flex items-center justify-center rounded-full hover:bg-surface text-muted/50 hover:text-terracotta transition-all flex-shrink-0" title="移除此项">
