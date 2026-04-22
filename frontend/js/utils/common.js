@@ -48,6 +48,123 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// 切换显示/隐藏特定分钟的冷却池单词列表 (全局单例 Tooltip，防止被 overflow-hidden 裁剪)
+window.toggleCoolingDropdown = function(event, min) {
+  event.stopPropagation();
+  const btn = event.currentTarget;
+  let tooltip = document.getElementById('global-cooling-tooltip');
+  
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'global-cooling-tooltip';
+    // 增加 z-[9999] 确保在最上层
+    tooltip.className = 'absolute z-[9999] p-2.5 bg-surface/95 backdrop-blur-md border border-borderline rounded-2xl shadow-[0_12px_40px_rgba(26,47,43,0.15)] opacity-0 invisible -translate-y-2 scale-95 transition-all duration-200 cursor-default origin-bottom';
+    document.body.appendChild(tooltip);
+    
+    // 全局点击取消
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#global-cooling-tooltip') && !e.target.closest('.cooling-item-btn')) {
+        tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+        tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+      }
+    });
+    
+    // 滚动时隐藏，防止悬浮位置错乱
+    window.addEventListener('scroll', () => {
+      if (tooltip.classList.contains('opacity-100')) {
+        tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+        tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+      }
+    }, { passive: true });
+  }
+
+  // 如果已经打开了当前的，则关闭
+  if (tooltip.dataset.min === String(min) && tooltip.classList.contains('opacity-100')) {
+    tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+    tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+    return;
+  }
+
+  // 计算该分钟对应的单词
+  const now = Date.now();
+  const wordsForThisMin = state.upcomingWords.filter(w => {
+    const diffMs = new Date(w.due).getTime() - now;
+    const diffMin = Math.ceil(diffMs / 60000);
+    const key = diffMin > 0 ? diffMin : 1;
+    return key === min;
+  });
+
+  const wordListHtml = wordsForThisMin.map(w => `
+    <div class="py-1.5 border-b border-borderline/40 last:border-0 flex flex-col gap-0.5">
+      <span class="font-display font-medium text-charcoal text-[13px] leading-tight break-words">${w.japanese || w.word || '-'}</span>
+      ${w.meaning ? `<span class="font-ui text-[10px] text-muted leading-tight truncate">${w.meaning}</span>` : ''}
+    </div>
+  `).join('');
+
+  tooltip.innerHTML = `
+    <div class="text-[9px] font-bold text-muted/80 uppercase mb-1.5 px-1 tracking-widest border-b border-borderline/40 pb-1.5 flex justify-between items-center font-ui w-44 sm:w-48">
+      <span>待复习单词</span>
+      <span class="text-ochre">${wordsForThisMin.length}</span>
+    </div>
+    <div class="max-h-48 overflow-y-auto px-1 custom-scrollbar">
+      ${wordListHtml}
+    </div>
+    <div class="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-surface border-b border-r border-borderline rotate-45"></div>
+  `;
+
+  tooltip.dataset.min = min;
+
+  // 定位计算
+  const rect = btn.getBoundingClientRect();
+  const scrollY = window.scrollY || document.documentElement.scrollTop;
+  const scrollX = window.scrollX || document.documentElement.scrollLeft;
+  
+  // 先设为 block 但透明，以便获取高度
+  tooltip.style.display = 'block';
+  tooltip.classList.remove('invisible');
+  
+  const tooltipRect = tooltip.getBoundingClientRect();
+  
+  let top = rect.top + scrollY - tooltipRect.height - 12;
+  let left = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2);
+  
+  // 防止左侧或右侧超出屏幕
+  if (left < 10) left = 10;
+  if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
+  
+  // 若上方空间不足，显示在下方
+  if (top < scrollY + 10) {
+    top = rect.bottom + scrollY + 12;
+    // 此时小箭头需要移到上方
+    const arrow = tooltip.querySelector('.rotate-45');
+    if (arrow) {
+      arrow.classList.remove('-bottom-[5px]', 'border-b', 'border-r');
+      arrow.classList.add('-top-[5px]', 'border-t', 'border-l');
+    }
+    tooltip.classList.remove('origin-bottom');
+    tooltip.classList.add('origin-top');
+  } else {
+    // 空间充足，显示在上方，重置箭头到底部
+    const arrow = tooltip.querySelector('.rotate-45');
+    if (arrow) {
+      arrow.classList.remove('-top-[5px]', 'border-t', 'border-l');
+      arrow.classList.add('-bottom-[5px]', 'border-b', 'border-r');
+    }
+    tooltip.classList.add('origin-bottom');
+    tooltip.classList.remove('origin-top');
+  }
+  
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+  
+  // 触发动画显示
+  // 延迟一帧确保 translate 位置先生效
+  requestAnimationFrame(() => {
+    tooltip.classList.add('visible', 'opacity-100', 'translate-y-0', 'scale-100');
+    tooltip.classList.remove('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+  });
+};
+
 // .apkg 转换工具教程
 function showQuickGuide() {
   const guide = `
@@ -440,10 +557,10 @@ function renderUpcomingWidget() {
 
   const sortedKeys = Object.keys(groups).map(Number).sort((a,b)=>a-b);
   timeline.innerHTML = sortedKeys.map((min, i) => `
-    <div class="px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all ${i === 0 ? 'pulse-ochre' : ''}">
+    <button type="button" onclick="toggleCoolingDropdown(event, ${min})" class="cooling-item-btn px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all hover:bg-ochre/15 active:scale-95 ${i === 0 ? 'pulse-ochre' : ''}">
        <span class="font-mono font-bold">${min}</span> 分钟后
        <span class="bg-surface text-charcoal px-1.5 py-0.5 rounded text-[10px] shadow-sm">${groups[min]} 词</span>
-    </div>
+    </button>
   `).join('');
 
   // 展开时移除 is-collapsed，触发 css 的 max-height 过渡
