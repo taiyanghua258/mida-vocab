@@ -105,6 +105,8 @@
       
       /* 深度重构：先锋极简大字与专属印刷字体 */
       --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", "Source Han Serif SC", "STSong", serif;
+      --font-serif: var(--font-editorial);
+      --font-display: var(--font-editorial);
       --word-font: var(--font-editorial);
       --word-size: clamp(3.2rem, 9vw, 5rem);
       --word-weight: 700;
