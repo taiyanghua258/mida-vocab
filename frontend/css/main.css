@@ -138,6 +138,39 @@
       text-rendering: optimizeLegibility;
       transition: background-color var(--duration-slow) var(--ease-fluid), color var(--duration-normal) ease;
     }
+
+    /* ========== 视图路由核心：隐藏/显示视图面板 ========== */
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: flex;
+    }
+
+    /* ========== 语言工作区切换过渡动效 ========== */
+    .workspace-switching #tour-stats-area,
+    .workspace-switching #wordTableBody,
+    .workspace-switching #upcomingWidget {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    body:not(.workspace-switching) #tour-stats-area,
+    body:not(.workspace-switching) #wordTableBody,
+    body:not(.workspace-switching) #upcomingWidget {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 350ms ease 50ms, transform 350ms var(--ease-spring) 50ms;
+    }
+
+    /* ========== 登录页 Logo 悬浮微动效 ========== */
+    .idle-float {
+      animation: idleFloat 4s ease-in-out infinite;
+    }
+    @keyframes idleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
     
     /* 深色模式下的弹窗质感与占位符增强 */
     
@@ -408,6 +441,32 @@
       transform: scale(1) translateY(0); 
       box-shadow: 0 12px 40px rgb(var(--color-charcoal) / 0.1); 
       transition: all var(--duration-slow) var(--ease-spring) 0.05s; 
+    }
+
+    /* ========== 卡堆入场动画 (incoming) ========== */
+    .card-stack-container.incoming {
+      animation: stackIncoming var(--duration-slow) var(--ease-spring) backwards;
+    }
+    @keyframes stackIncoming {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ========== 学术模式卡片操作提示 ========== */
+    .action-hint {
+      opacity: 0.4;
+      transition: opacity var(--duration-normal) ease;
+    }
+    .action-hint kbd {
+      display: inline-block;
+      padding: 0 4px;
+      border: 1px solid rgb(var(--color-borderline));
+      border-bottom-width: 2px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 10px;
+      line-height: 1.6;
+      background: rgb(var(--color-surface));
     }
 
     /* ========== 答案按钮 ========== */
