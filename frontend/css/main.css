@@ -103,11 +103,12 @@
       --color-muted: 120 120 120;
       --color-terracotta: 170 60 50;
       
-      /* 深度重构：先锋极简大字 */
-      --word-font: var(--font-serif);
-      --word-size: clamp(3.5rem, 10vw, 5.5rem);
-      --word-weight: 800;
-      --word-tracking: -0.06em;
+      /* 深度重构：先锋极简大字与专属印刷字体 */
+      --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", "Source Han Serif SC", "STSong", serif;
+      --word-font: var(--font-editorial);
+      --word-size: clamp(3.2rem, 9vw, 5rem);
+      --word-weight: 700;
+      --word-tracking: -0.04em;
       --radius-sm: 0;
       --radius-btn: 0;
       --radius-panel: 0;
@@ -728,17 +729,19 @@
         padding: 1.5rem 1.25rem !important;
       }
       [data-theme="editorial"] #view-study .editorial-dict-front .word {
-        font-size: clamp(2.8rem, 15vw, 4rem) !important;
+        font-size: clamp(2.6rem, 12vw, 3.8rem) !important;
       }
       [data-theme="editorial"] #view-study .editorial-dict-header .reading {
-        font-size: 1.8rem !important;
+        font-size: 1.6rem !important;
+        font-family: var(--font-editorial) !important;
       }
       [data-theme="editorial"] #view-study .editorial-dict-back .meaning {
-        font-size: 1.2rem !important;
-        line-height: 1.5 !important;
+        font-size: 1.15rem !important;
+        line-height: 1.65 !important;
+        font-family: var(--font-editorial) !important;
       }
       [data-theme="editorial"] #view-study .editorial-dict-divider {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
       }
 
       /* 新增：彻底粉碎移动端单词栏的卡片化外观，回归报纸质感 */
@@ -842,31 +845,41 @@ html[data-theme="editorial"],
   display: flex;
   align-items: baseline;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .editorial-dict-header .reading {
-  font-size: 2.5rem;
+  font-family: var(--font-editorial) !important;
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: rgb(var(--color-ochre));
 }
 
-.editorial-dict-header .pos {
-  font-size: 0.85rem;
+.editorial-dict-header .pos,
+.editorial-dict-top .pos {
+  font-family: var(--font-editorial) !important;
+  font-style: italic;
+  font-size: 0.95rem;
   color: rgb(var(--color-muted));
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
 }
 
 .editorial-dict-divider {
   width: 100%;
   height: 1px;
-  background-color: rgb(var(--color-borderline));
-  margin-bottom: 2rem;
+  background-color: rgba(20, 20, 20, 0.25);
+  margin-bottom: 1.75rem;
 }
 
 .editorial-dict-back .meaning {
-  font-size: 1.75rem;
-  line-height: 1.4;
+  font-family: var(--font-editorial) !important;
+  font-size: 1.65rem;
+  line-height: 1.65;
   color: rgb(var(--color-charcoal));
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .editorial-dict-footer {
@@ -875,7 +888,11 @@ html[data-theme="editorial"],
   font-size: 0.75rem;
   color: rgb(var(--color-muted) / 0.6);
   letter-spacing: 0.05em;
-  padding-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+[data-theme="editorial"] .card-front-word {
+  font-family: var(--font-editorial) !important;
 }
 
 /* 3. 保留极简必要的重置，利用 CSS 层叠覆盖而非全局 !important */
