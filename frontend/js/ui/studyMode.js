@@ -214,8 +214,12 @@ function showCoolingState(upcomingWords, stats) {
 
   const rightBtn = document.getElementById('coolingRefreshBtn');
   if (rightBtn) {
-    rightBtn.textContent = '刷新复习';
-    rightBtn.onclick = () => { initStudy(); };
+    if (rightBtn.tagName === 'DIV') {
+      rightBtn.outerHTML = `<button id="coolingRefreshBtn" onclick="initStudy()" class="w-full py-3.5 bg-transparent border border-transparent text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center rounded-sm text-[0.75rem] font-ui">刷新复习</button>`;
+    } else {
+      rightBtn.textContent = '刷新复习';
+      rightBtn.onclick = () => { initStudy(); };
+    }
   }
 }
 
@@ -227,6 +231,16 @@ function showTaskAccomplished(stats) {
   el.classList.add('pop-in');
   
   const countdownEl = document.getElementById('coolingCountdown');
+  const rightBtn = document.getElementById('coolingRefreshBtn');
+  if (rightBtn) {
+    if (rightBtn.tagName === 'BUTTON') {
+      rightBtn.outerHTML = `<div id="coolingRefreshBtn" class="flex items-center gap-2 w-full">
+              <button onclick="reviewLastSession('ja')" class="flex-1 py-3.5 bg-transparent border border-borderline/50 text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center text-[0.75rem] rounded-sm">无痕 (日)</button>
+              <button onclick="reviewLastSession('en')" class="flex-1 py-3.5 bg-transparent border border-borderline/50 text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center text-[0.75rem] rounded-sm">无痕 (英)</button>
+            </div>`;
+    }
+  }
+
   // Bug 5: 显示今日预估信息
   const forecast = stats ? stats.todayForecast : null;
   if (forecast && forecast.coolingWords > 0) {
@@ -633,9 +647,14 @@ function showStudyComplete() {
 }
 
 let isLoadingSession = false;
-async function reviewAgain() {
+async function reviewAgain(lang) {
   if (isLoadingSession) return;
   isLoadingSession = true;
+
+  if (lang && lang !== state.currentLang) {
+    switchWorkspace(lang, true);
+  }
+
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
   state.studyHistory = [];
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
@@ -684,8 +703,8 @@ async function reviewAgain() {
   isLoadingSession = false;
 }
 
-async function reviewLastSession() {
-  await reviewAgain(); // 逻辑完全一致，直接复用
+async function reviewLastSession(lang) {
+  await reviewAgain(lang); // 逻辑完全一致，直接复用
 }
 
 // Bug 2+3: 撤回上一步复习（修复 DOM 状态恢复）

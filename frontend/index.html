@@ -441,7 +441,10 @@
           
           <div class="mt-8 flex flex-col gap-3 font-ui text-[0.75rem]">
             <button onclick="navigate('dashboard')" class="w-full py-3.5 border border-borderline text-charcoal hover:bg-parchment hover:border-charcoal/30 transition-all font-bold tracking-[0.2em] uppercase text-center">Return to Base</button>
-            <button onclick="reviewAgain()" class="w-full py-3.5 bg-charcoal text-surface hover:bg-charcoal/90 transition-all font-bold tracking-[0.2em] uppercase shadow-sm text-center">Review Again</button>
+            <div class="flex items-center gap-2 w-full">
+              <button onclick="reviewAgain('ja')" class="flex-1 py-3.5 bg-charcoal text-surface hover:bg-charcoal/90 transition-all font-bold tracking-[0.2em] uppercase shadow-sm text-center rounded-sm">无痕 (日)</button>
+              <button onclick="reviewAgain('en')" class="flex-1 py-3.5 bg-charcoal text-surface hover:bg-charcoal/90 transition-all font-bold tracking-[0.2em] uppercase shadow-sm text-center rounded-sm">无痕 (英)</button>
+            </div>
           </div>
         </div>
       </div>
@@ -460,7 +463,10 @@
           
           <div class="mt-6 flex flex-col gap-3 font-ui text-[0.75rem]">
             <button onclick="navigate('dashboard')" class="w-full py-3.5 border border-borderline text-charcoal hover:bg-parchment hover:border-charcoal/30 transition-all font-bold tracking-[0.2em] uppercase text-center">Return to Base</button>
-            <button id="coolingRefreshBtn" onclick="reviewLastSession()" class="w-full py-3.5 bg-transparent border border-transparent text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center">Review Last</button>
+            <div id="coolingRefreshBtn" class="flex items-center gap-2 w-full">
+              <button onclick="reviewLastSession('ja')" class="flex-1 py-3.5 bg-transparent border border-borderline/50 text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center text-[0.75rem] rounded-sm">无痕 (日)</button>
+              <button onclick="reviewLastSession('en')" class="flex-1 py-3.5 bg-transparent border border-borderline/50 text-muted hover:text-charcoal hover:bg-surface transition-all font-bold tracking-[0.2em] uppercase text-center text-[0.75rem] rounded-sm">无痕 (英)</button>
+            </div>
           </div>
           
           <div id="extraStudySection" class="mt-8 pt-6 border-t border-borderline/40 text-left">
