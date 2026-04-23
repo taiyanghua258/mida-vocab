@@ -17,7 +17,7 @@ function showToast(msg, type = 'info') {
   const t = document.createElement('div');
   // 加入 pointer-events-auto 保证弹窗自身可以点击
   t.className = `toast toast-${type} flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 bg-surface shadow-lg text-sm font-medium pointer-events-auto`;
-  t.innerHTML = `<span>${msg}</span>`;
+  t.innerHTML = `<span>${escapeHtml(msg)}</span>`;
   c.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
@@ -124,6 +124,10 @@ window.toggleCoolingDropdown = function(event, min) {
   `;
 
   tooltip.dataset.min = min;
+
+  // 定位计算 - 先重置所有动态类
+  tooltip.classList.remove('origin-bottom', 'origin-top');
+  tooltip.classList.add('origin-bottom'); // 默认从底部弹出
 
   // 定位计算
   const rect = btn.getBoundingClientRect();

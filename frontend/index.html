@@ -37,7 +37,7 @@
     }
   </script>
 
-  <link rel="stylesheet" href="css/main.css?v=4">
+  <link rel="stylesheet" href="css/main.css?v=5">
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col relative z-10">
@@ -53,7 +53,8 @@
         <!-- 左右对齐结构 -->
         <div class="flex items-center justify-center gap-7 mb-6 group cursor-default">
           <!-- Stacked Flashcards Logo (Large Presentation) -->
-          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110 idle-float">
+          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110">
+            <div class="idle-float">
             <!-- Back Card (Parchment) -->
             <div class="absolute w-[44px] h-[58px] border-[2px] border-borderline rounded-[4px] -rotate-[8deg] translate-x-[-6px] translate-y-[4px] bg-parchment shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[22deg] group-hover:translate-x-[-14px] group-hover:translate-y-[8px]"></div>
             
@@ -68,6 +69,7 @@
             
             <!-- Dynamic Floating Dot representing memory retention -->
             <div class="absolute w-2.5 h-2.5 bg-terracotta rounded-full -top-1 -right-1 opacity-0 -translate-y-4 scale-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100"></div>
+            </div>
           </div>
 
           <!-- 主品牌字 -->
@@ -310,7 +312,7 @@
       </div>
       <div class="mb-5 flex flex-col sm:flex-row gap-4">
         <div class="relative flex-1">
-          <div class="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none text-muted">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
           </div>
           <input type="text" id="searchInput" placeholder="搜索词库..." class="aesthetic-input w-full pl-8 pr-4 py-3 text-charcoal placeholder-muted/60 text-[0.95rem] font-ui">
@@ -505,7 +507,7 @@
   </div>
 
   <!-- ========== MODALS ========== -->
-  <div id="wordModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div id="wordModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
     <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal" id="modalTitle">添加单词</h3>
@@ -574,7 +576,7 @@
     </div>
   </div>
 
-  <div id="importModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div id="importModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
     <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">批量导入</h3>
@@ -632,7 +634,7 @@
     </div>
   </div>
 
-  <div id="dictImportModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div id="dictImportModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
     <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">上传词书</h3>
@@ -742,7 +744,7 @@
   </div>
 
   <!-- ========== SETTINGS MODAL ========== -->
-  <div id="settingsModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div id="settingsModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
     <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">记忆算法设置</h3>
@@ -855,7 +857,7 @@
     </div>
   </div>
 
-  <div id="profileModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div id="profileModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
     <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-sm max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-8 py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">个人资料</h3>
@@ -890,12 +892,12 @@
     </div>
   </div>
 
-<script src="js/state.js?v=3"></script>
-<script src="js/utils/common.js?v=4"></script>
-<script src="js/api.js?v=3"></script>
-<script src="js/ui/dashboard.js?v=3"></script>
-<script src="js/ui/studyMode.js?v=3"></script>
-<script src="js/ui/theme.js?v=3"></script>
+<script src="js/state.js?v=5"></script>
+<script src="js/utils/common.js?v=5"></script>
+<script src="js/api.js?v=5"></script>
+<script src="js/ui/dashboard.js?v=5"></script>
+<script src="js/ui/studyMode.js?v=5"></script>
+<script src="js/ui/theme.js?v=5"></script>
 
 
 

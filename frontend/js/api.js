@@ -260,6 +260,7 @@ function switchWorkspace(lang, isInitial = false) {
   if (dashActive) {
     if (isInitial) {
       // 初始进入页面，直接加载，不播切换动画
+      document.body.classList.remove('workspace-switching'); // 清除可能残留的切换态
       loadStats();
       loadWords(1);
     } else {

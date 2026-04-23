@@ -178,6 +178,22 @@
       color: rgba(234, 230, 219, 0.4) !important;
     }
 
+    /* Obsidian 模式输入框需要深色背景，防止透明底色导致文字不可见 */
+    [data-theme="obsidian"] .aesthetic-input {
+      background-color: rgba(34, 32, 29, 0.8);
+    }
+    [data-theme="obsidian"] .aesthetic-input:focus {
+      background-color: rgb(34, 32, 29);
+    }
+
+    /* Obsidian 自定义下拉框触发器 */
+    [data-theme="obsidian"] .select-trigger {
+      background-color: rgba(34, 32, 29, 0.8) !important;
+    }
+    [data-theme="obsidian"] .select-options {
+      background-color: rgb(34, 32, 29) !important;
+    }
+
     /* ========================================================= */
     /* 补全的幽灵类定义 (Phantom Classes Resolved) */
     /* ========================================================= */
@@ -868,4 +884,52 @@ html[data-theme="editorial"],
 }
 [data-theme="editorial"] #wordTableBody tr.airy-row:hover {
   border-bottom-color: rgba(20, 20, 20, 0.8);
+}
+
+/* ===================================================================== */
+/* Bug 6 Fix: Editorial 模式下弹窗必须有实体背景和可见边界 */
+/* ===================================================================== */
+[data-theme="editorial"] .modal-content {
+  background: #fdfaf5 !important;
+  border: 1.5px solid rgba(20, 20, 20, 0.25) !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Bug 7 Fix: Editorial 模式下输入框需要实体背景，防止网格底纹穿透 */
+[data-theme="editorial"] .aesthetic-input {
+  background-color: #fdfaf5 !important;
+  border-color: rgba(20, 20, 20, 0.2);
+}
+[data-theme="editorial"] .aesthetic-input:focus {
+  background-color: #fff !important;
+  border-color: rgb(var(--color-ochre));
+}
+
+/* Editorial toast 也需要实体背景 */
+[data-theme="editorial"] .toast {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(20, 20, 20, 0.15) !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Editorial 用户下拉菜单 */
+[data-theme="editorial"] #userDropdown {
+  background: #fdfaf5 !important;
+  border: 1.5px solid rgba(20, 20, 20, 0.2) !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.08) !important;
+  border-radius: 0 !important;
+}
+
+/* Editorial 下拉选项列表 */
+[data-theme="editorial"] .select-options {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(20, 20, 20, 0.2) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Bug 9 修复的安全网：Editorial 下不让主 CTA 按钮彻底失去圆角 */
+[data-theme="editorial"] .magnetic-btn {
+  border-radius: 0 !important;
+  border: 1.5px solid rgb(var(--color-charcoal)) !important;
 }

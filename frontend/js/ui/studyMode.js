@@ -995,9 +995,9 @@ function initCustomSelects() {
   document.addEventListener('click', () => {
     document.querySelectorAll('.select-options.is-open').forEach(list => {
       list.classList.remove('is-open');
-      const prevElement = list.previousElementSibling;
-      if (prevElement) {
-        const arrow = prevElement.querySelector('.select-arrow');
+      const wrapper = list.closest('.custom-select');
+      if (wrapper) {
+        const arrow = wrapper.querySelector('.select-arrow');
         if (arrow) arrow.style.transform = 'rotate(0deg)';
       }
     });
