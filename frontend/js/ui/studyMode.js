@@ -230,6 +230,12 @@ function showTaskAccomplished(stats) {
   el.classList.remove('hidden');
   el.classList.add('pop-in');
   
+  // Bug 1 Fix: 必须重置标题和描述，否则会残留之前的 "记忆冷却中"
+  const h2 = el.querySelector('h2');
+  if (h2) h2.textContent = '空白';
+  const p = el.querySelector('p');
+  if (p) p.textContent = '当前没有任何需要复习的卡片。精神已达澄澈。';
+  
   const countdownEl = document.getElementById('coolingCountdown');
   const rightBtn = document.getElementById('coolingRefreshBtn');
   if (rightBtn) {
@@ -651,6 +657,7 @@ async function reviewAgain(lang) {
   if (isLoadingSession) return;
   isLoadingSession = true;
 
+  let originalLang = state.currentLang;
   if (lang && lang !== state.currentLang) {
     switchWorkspace(lang, true);
   }
@@ -675,7 +682,14 @@ async function reviewAgain(lang) {
   }
 
   if (wordsToUse.length === 0) {
-    showToast('今日没有可复习的记录', 'error');
+    const langName = state.currentLang === 'ja' ? '日语' : '英语';
+    showToast(`今日没有可复习的 ${langName} 记录`, 'error');
+    
+    // 如果跨语种拉取失败，将语种回退到点击前，防止用户卡在幽灵状态
+    if (lang && originalLang !== lang) {
+      switchWorkspace(originalLang, true);
+    }
+    
     isLoadingSession = false;
     return;
   }
