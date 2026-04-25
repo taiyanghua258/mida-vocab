@@ -3,6 +3,7 @@ async function initDashboard() { await loadStats(); loadWords(1); checkAndStartO
 
 async function loadStats() {
   const data = await api(`/study/stats?language=${state.currentLang}`);
+  window.currentStatsData = data; // store for theme switching
   document.getElementById('totalWords').textContent = data.totalWords;
   document.getElementById('dueWords').textContent = data.dueWords;
   state.lastDueCount = data.dueWords;
@@ -10,7 +11,154 @@ async function loadStats() {
   // 👇 新增以下两行：在切换语种或回到主页时，立刻同步并渲染冷却池
   state.upcomingWords = data.upcomingWords || [];
   renderUpcomingWidget();
+  
+  if (typeof renderStatsChart === 'function') {
+    renderStatsChart(data);
+  }
 }
+
+let myStatsChart = null;
+
+function renderStatsChart(statsData) {
+  const chartDom = document.getElementById('statsChart');
+  if (!chartDom) return;
+  document.getElementById('statsChartWrapper').classList.remove('hidden');
+
+  if (!myStatsChart) {
+    myStatsChart = echarts.init(chartDom);
+    window.addEventListener('resize', () => myStatsChart.resize());
+    
+    myStatsChart.on('click', async (params) => {
+      await showDetailedReviewList(params.name);
+    });
+  }
+
+  const rootStyle = getComputedStyle(document.documentElement);
+  
+  const getColor = (varName, fallback) => {
+    const val = rootStyle.getPropertyValue(varName).trim();
+    return val ? `rgb(${val})` : fallback;
+  };
+
+  const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
+  const cOchre = getColor('--color-ochre', '#df9f28');
+  const cTerracotta = getColor('--color-terracotta', '#d16b4a');
+  const cSuccess = getColor('--color-success', '#4b7365');
+  const cMuted = getColor('--color-muted', '#8b8982');
+  const cSurface = getColor('--color-surface', '#ffffff');
+  const cBorderline = getColor('--color-borderline', '#e5e1d8');
+  const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
+
+  const dataArray = [
+    { value: statsData.newWords || 0, name: '新词 (New)', itemStyle: { color: cTerracotta } },
+    { value: statsData.learningWords || 0, name: '学习中 (Learning)', itemStyle: { color: cOchre } },
+    { value: statsData.reviewWords || 0, name: '待复习 (Review)', itemStyle: { color: cMuted } },
+    { value: statsData.masteredWords || 0, name: '已掌握 (Mastered)', itemStyle: { color: cSuccess } }
+  ].filter(item => item.value > 0);
+
+  const option = {
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: `rgba(${rootStyle.getPropertyValue('--color-surface').trim() || '255,255,255'}, 0.9)`,
+      borderColor: cBorderline,
+      textStyle: {
+        color: cCharcoal,
+        fontFamily: fontUi
+      }
+    },
+    legend: {
+      bottom: '0%',
+      left: 'center',
+      textStyle: {
+        color: cCharcoal,
+        fontFamily: fontUi
+      }
+    },
+    series: [
+      {
+        name: '学习状态',
+        type: 'pie',
+        radius: ['45%', '75%'],
+        center: ['50%', '42%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 8,
+          borderColor: cSurface,
+          borderWidth: 2
+        },
+        label: { show: false, position: 'center' },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: cCharcoal,
+            formatter: '{b}\\n{c} 词'
+          }
+        },
+        labelLine: { show: false },
+        data: dataArray.length > 0 ? dataArray : [{ value: 1, name: '无数据', itemStyle: { color: cBorderline } }]
+      }
+    ]
+  };
+
+  myStatsChart.setOption(option);
+}
+
+async function showDetailedReviewList(categoryName) {
+  if (categoryName === '无数据') return;
+
+  let statusFilter = '';
+  if (categoryName.includes('New')) statusFilter = 'new';
+  else if (categoryName.includes('Learning')) statusFilter = 'learning';
+  else if (categoryName.includes('Review')) statusFilter = 'review';
+  else if (categoryName.includes('Mastered')) statusFilter = 'mastered';
+
+  if (!statusFilter) return;
+
+  document.getElementById('reviewListModalTitle').textContent = `详情：${categoryName}`;
+  const listContainer = document.getElementById('reviewListContent');
+  listContainer.innerHTML = '<div class="text-center py-6 text-muted">加载中...</div>';
+  
+  openModal('reviewListModal');
+
+  try {
+    const data = await api(`/words?limit=100&language=${state.currentLang}&status=${statusFilter}`);
+    const words = data.words || [];
+
+    if (words.length === 0) {
+      listContainer.innerHTML = '<div class="text-center py-6 text-muted">该分类下暂无单词</div>';
+      return;
+    }
+
+    const isEn = state.currentLang === 'en';
+    const fontClass = isEn ? 'font-sans tracking-tight' : 'font-jp';
+
+    listContainer.innerHTML = words.map((w) => {
+      let stateBadge = 'Review';
+      if (w.state === 0) stateBadge = 'New';
+      else if (w.state === 1 || w.state === 3) stateBadge = 'Learning';
+      else if (w.state === 2 && (w.reps || 0) >= 5) stateBadge = 'Mastered';
+
+      return \`
+      <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40 hover:border-ochre/30 transition-colors">
+        <div class="flex-1 min-w-0 pr-4">
+          <span class="font-bold text-charcoal truncate block \${fontClass} text-[1.1rem]">\${escapeHtml(w.japanese)}</span>
+          <span class="text-xs text-muted block mt-1 truncate">\${escapeHtml(w.reading || '')} \${w.reading ? '·' : ''} \${escapeHtml(w.meaning)}</span>
+        </div>
+        <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
+          <span class="footnote-tag font-ui">\${stateBadge}</span>
+          <span class="text-[10px] text-muted">复习 \${w.reps || 0} 次</span>
+        </div>
+      </div>
+      \`;
+    }).join('');
+
+  } catch (err) {
+    listContainer.innerHTML = '<div class="text-center py-6 text-terracotta">加载失败，请重试</div>';
+  }
+}
+
 
 async function loadWords(page = 1) {
   state.pagination.page = page;

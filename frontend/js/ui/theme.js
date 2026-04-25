@@ -60,6 +60,11 @@ function applyTheme(theme) {
   if (viewStudy && viewStudy.classList.contains('active') && typeof renderCardStack === 'function') {
     renderCardStack();
   }
+
+  // ECharts Theme Switch
+  if (typeof renderStatsChart === 'function' && window.currentStatsData) {
+    setTimeout(() => renderStatsChart(window.currentStatsData), 50);
+  }
 }
 
 // 页面加载时恢复状态

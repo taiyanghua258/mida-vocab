@@ -63,6 +63,17 @@ exports.getWords = async (req, res) => {
     if (partOfSpeech) query.partOfSpeech = partOfSpeech;
     if (tag) query.tags = tag;
 
+    if (req.query.status === 'mastered') {
+      query.state = 2;
+      query.reps = { $gte: 5 };
+    } else if (req.query.status === 'review') {
+      query.state = 2;
+    } else if (req.query.status === 'learning') {
+      query.state = { $in: [1, 3] };
+    } else if (req.query.status === 'new') {
+      query.state = 0;
+    }
+
     // 数据库级别的模糊搜索
     if (search) {
       const searchStr = search.trim();
