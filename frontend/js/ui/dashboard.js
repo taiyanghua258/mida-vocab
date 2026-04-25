@@ -24,6 +24,11 @@ let myStatsChart = null;
 let myCalendarChart = null;
 
 function renderStatsChart(statsData) {
+  if (typeof echarts === 'undefined') {
+    console.warn('ECharts is not defined. Skipping stats chart render.');
+    return;
+  }
+
   const chartDom = document.getElementById('statsChart');
   if (!chartDom) return;
   document.getElementById('statsChartWrapper').classList.remove('hidden');
@@ -110,6 +115,11 @@ function renderStatsChart(statsData) {
 }
 
 async function renderCalendarChart() {
+  if (typeof echarts === 'undefined') {
+    console.warn('ECharts is not defined. Skipping calendar chart render.');
+    return;
+  }
+
   const chartDom = document.getElementById('calendarChart');
   if (!chartDom) return;
   document.getElementById('calendarChartWrapper').classList.remove('hidden');
