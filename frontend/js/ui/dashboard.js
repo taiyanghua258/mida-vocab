@@ -290,18 +290,18 @@ async function showDetailedReviewList(categoryName) {
       else if (w.state === 1 || w.state === 3) stateBadge = 'Learning';
       else if (w.state === 2 && (w.reps || 0) >= 5) stateBadge = 'Mastered';
 
-      return \`
+      return `
       <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40 hover:border-ochre/30 transition-colors">
         <div class="flex-1 min-w-0 pr-4">
-          <span class="font-bold text-charcoal truncate block \${fontClass} text-[1.1rem]">\${escapeHtml(w.japanese)}</span>
-          <span class="text-xs text-muted block mt-1 truncate">\${escapeHtml(w.reading || '')} \${w.reading ? '·' : ''} \${escapeHtml(w.meaning)}</span>
+          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]">${escapeHtml(w.japanese)}</span>
+          <span class="text-xs text-muted block mt-1 truncate">${escapeHtml(w.reading || '')} ${w.reading ? '·' : ''} ${escapeHtml(w.meaning)}</span>
         </div>
         <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
-          <span class="footnote-tag font-ui">\${stateBadge}</span>
-          <span class="text-[10px] text-muted">复习 \${w.reps || 0} 次</span>
+          <span class="footnote-tag font-ui">${stateBadge}</span>
+          <span class="text-[10px] text-muted">复习 ${w.reps || 0} 次</span>
         </div>
       </div>
-      \`;
+      `;
     }).join('');
 
   } catch (err) {
