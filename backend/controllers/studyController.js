@@ -545,13 +545,20 @@ exports.addExtraNewWords = async (req, res) => {
 exports.getTodayReviewedWords = async (req, res) => {
   try {
     const language = req.query.language || 'ja';
-    const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
-    const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
+    const dateStr = req.query.date;
+    
+    let targetStart;
+    if (dateStr) {
+      targetStart = dayjs.tz(dateStr, TIMEZONE).startOf('day').toDate();
+    } else {
+      targetStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
+    }
+    const targetEnd = dayjs(targetStart).add(1, 'day').toDate();
 
     const logs = await ReviewLog.find({
       userId: req.userId,
       language,
-      reviewDate: { $gte: todayStart, $lt: tomorrowStart }
+      reviewDate: { $gte: targetStart, $lt: targetEnd }
     }).select('wordId').lean();
 
     const wordIds = [...new Set(logs.map(log => log.wordId.toString()))];
@@ -566,6 +573,37 @@ exports.getTodayReviewedWords = async (req, res) => {
     }).lean();
 
     res.json({ words });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getCalendarStats = async (req, res) => {
+  try {
+    const language = req.query.language || 'ja';
+    
+    const oneYearAgo = dayjs().tz(TIMEZONE).subtract(1, 'year').startOf('day').toDate();
+    
+    const stats = await ReviewLog.aggregate([
+      { 
+        $match: { 
+          userId: new mongoose.Types.ObjectId(req.userId),
+          language,
+          reviewDate: { $gte: oneYearAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$reviewDate", timezone: TIMEZONE } },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const calendarData = stats.map(item => [item._id, item.count]);
+    
+    res.json(calendarData);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

@@ -298,23 +298,28 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
         <div id="statsChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-4 md:col-span-1 h-56 sm:h-64 flex flex-col animate-soft-in stagger-4">
           <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mb-1 font-ui">学习状态分布</div>
           <div id="statsChart" class="w-full flex-1"></div>
         </div>
-        <div id="upcomingWidget" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline md:col-span-2 overflow-hidden flex flex-col animate-soft-in stagger-5">
-          <div class="upcoming-inner flex flex-wrap gap-3 items-center p-4">
-            <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help font-ui">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
-              记忆冷却池
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
-              <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-charcoal text-surface text-[10px] leading-relaxed rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                仅显示未来 1 小时内即将到期的短期记忆步骤（如 1 分钟、10 分钟冷却）。表格中显示的「2 小时后」等较长间隔是 FSRS 算法安排的正常复习周期，不在冷却池中。
-              </div>
+        <div id="calendarChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-4 md:col-span-3 h-56 sm:h-64 flex flex-col animate-soft-in stagger-5">
+          <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mb-1 font-ui">每日复习热力图</div>
+          <div id="calendarChart" class="w-full flex-1"></div>
+        </div>
+      </div>
+
+      <div id="upcomingWidget" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline mb-5 overflow-hidden flex flex-col animate-soft-in stagger-6">
+        <div class="upcoming-inner flex flex-wrap gap-3 items-center p-4">
+          <div class="text-sm font-bold tracking-widest text-charcoal/70 flex items-center gap-2 mr-2 relative group cursor-help font-ui">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path></svg>
+            记忆冷却池
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted/50"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-4-136a12,12,0,1,1,12,12A12,12,0,0,1,124,80Zm12,36a8,8,0,0,0-8,8v40a8,8,0,0,0,16,0V124A8,8,0,0,0,136,116Z"></path></svg>
+            <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-charcoal text-surface text-[10px] leading-relaxed rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+              仅显示未来 1 小时内即将到期的短期记忆步骤（如 1 分钟、10 分钟冷却）。表格中显示的「2 小时后」等较长间隔是 FSRS 算法安排的正常复习周期，不在冷却池中。
             </div>
-            <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
           </div>
+          <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
       <div class="mb-5 flex flex-col sm:flex-row gap-4">

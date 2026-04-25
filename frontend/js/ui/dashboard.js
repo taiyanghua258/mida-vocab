@@ -15,9 +15,13 @@ async function loadStats() {
   if (typeof renderStatsChart === 'function') {
     renderStatsChart(data);
   }
+  if (typeof renderCalendarChart === 'function') {
+    renderCalendarChart();
+  }
 }
 
 let myStatsChart = null;
+let myCalendarChart = null;
 
 function renderStatsChart(statsData) {
   const chartDom = document.getElementById('statsChart');
@@ -93,7 +97,7 @@ function renderStatsChart(statsData) {
             fontSize: 16,
             fontWeight: 'bold',
             color: cCharcoal,
-            formatter: '{b}\\n{c} 词'
+            formatter: '{b}\n{c} 词'
           }
         },
         labelLine: { show: false },
@@ -103,6 +107,142 @@ function renderStatsChart(statsData) {
   };
 
   myStatsChart.setOption(option);
+}
+
+async function renderCalendarChart() {
+  const chartDom = document.getElementById('calendarChart');
+  if (!chartDom) return;
+  document.getElementById('calendarChartWrapper').classList.remove('hidden');
+
+  if (!myCalendarChart) {
+    myCalendarChart = echarts.init(chartDom);
+    window.addEventListener('resize', () => myCalendarChart.resize());
+    
+    myCalendarChart.on('click', async (params) => {
+      // params.data is [dateStr, count]
+      const dateStr = params.data[0];
+      await showDetailedReviewListForDate(dateStr);
+    });
+  }
+
+  try {
+    const calendarData = await api(`/study/calendar?language=${state.currentLang}`);
+    window.currentCalendarData = calendarData;
+    
+    const rootStyle = getComputedStyle(document.documentElement);
+    const getColor = (varName, fallback) => {
+      const val = rootStyle.getPropertyValue(varName).trim();
+      return val ? `rgb(${val})` : fallback;
+    };
+
+    const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
+    const cOchre = getColor('--color-ochre', '#df9f28');
+    const cBorderline = getColor('--color-borderline', '#e5e1d8');
+    const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
+
+    // Get current year
+    const today = new Date();
+    const year = today.getFullYear();
+    const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = today.toISOString().split('T')[0];
+
+    const option = {
+      tooltip: {
+        backgroundColor: `rgba(${rootStyle.getPropertyValue('--color-surface').trim() || '255,255,255'}, 0.9)`,
+        borderColor: cBorderline,
+        textStyle: { color: cCharcoal, fontFamily: fontUi },
+        formatter: function (p) {
+          return `${p.data[0]}: 复习了 ${p.data[1]} 个词`;
+        }
+      },
+      visualMap: {
+        min: 0,
+        max: 200,
+        type: 'piecewise',
+        orient: 'horizontal',
+        left: 'center',
+        top: 0,
+        textStyle: { color: cCharcoal, fontFamily: fontUi },
+        pieces: [
+          {min: 100, label: '100+'},
+          {min: 50, max: 99, label: '50-99'},
+          {min: 20, max: 49, label: '20-49'},
+          {min: 1, max: 19, label: '1-19'}
+        ],
+        inRange: {
+          color: [getColor('--color-borderline', '#e5e1d8'), getColor('--color-ochre', '#df9f28'), getColor('--color-terracotta', '#d16b4a')]
+        }
+      },
+      calendar: {
+        top: 50,
+        left: 30,
+        right: 30,
+        cellSize: ['auto', 16],
+        range: [startDateStr, endDateStr],
+        itemStyle: {
+          borderWidth: 1,
+          borderColor: getColor('--color-surface', '#ffffff'),
+          color: 'rgba(0,0,0,0.03)'
+        },
+        yearLabel: { show: false },
+        monthLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn' },
+        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn' }
+      },
+      series: {
+        type: 'heatmap',
+        coordinateSystem: 'calendar',
+        data: calendarData || []
+      }
+    };
+    
+    myCalendarChart.setOption(option);
+  } catch (err) {
+    console.error("Failed to load calendar data:", err);
+  }
+}
+
+async function showDetailedReviewListForDate(dateStr) {
+  document.getElementById('reviewListModalTitle').textContent = `详情：${dateStr} 的复习记录`;
+  const listContainer = document.getElementById('reviewListContent');
+  listContainer.innerHTML = '<div class="text-center py-6 text-muted">加载中...</div>';
+  openModal('reviewListModal');
+
+  try {
+    const data = await api(`/study/reviewed_today?language=${state.currentLang}&date=${dateStr}`);
+    const words = data.words || [];
+
+    if (words.length === 0) {
+      listContainer.innerHTML = '<div class="text-center py-6 text-muted">当日暂无复习记录</div>';
+      return;
+    }
+
+    const isEn = state.currentLang === 'en';
+    const fontClass = isEn ? 'font-sans tracking-tight' : 'font-jp';
+
+    listContainer.innerHTML = words.map((w) => {
+      let stateBadge = 'Review';
+      if (w.state === 0) stateBadge = 'New';
+      else if (w.state === 1 || w.state === 3) stateBadge = 'Learning';
+      else if (w.state === 2 && (w.reps || 0) >= 5) stateBadge = 'Mastered';
+
+      return `
+      <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40 hover:border-ochre/30 transition-colors">
+        <div class="flex-1 min-w-0 pr-4">
+          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]">${escapeHtml(w.japanese)}</span>
+          <span class="text-xs text-muted block mt-1 truncate">${escapeHtml(w.reading || '')} ${w.reading ? '·' : ''} ${escapeHtml(w.meaning)}</span>
+        </div>
+        <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
+          <span class="footnote-tag font-ui">${stateBadge}</span>
+          <span class="text-[10px] text-muted">复习 ${w.reps || 0} 次</span>
+        </div>
+      </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    listContainer.innerHTML = '<div class="text-center py-6 text-terracotta">加载失败，请重试</div>';
+  }
 }
 
 async function showDetailedReviewList(categoryName) {

@@ -12,4 +12,5 @@ router.post('/undo', studyController.undoReview);
 router.post('/extra', studyController.addExtraNewWords);
 router.get('/stats', studyController.getStats);
 router.get('/reviewed_today', studyController.getTodayReviewedWords);
+router.get('/calendar', studyController.getCalendarStats);
 module.exports = router;

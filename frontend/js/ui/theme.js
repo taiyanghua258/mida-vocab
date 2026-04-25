@@ -65,6 +65,9 @@ function applyTheme(theme) {
   if (typeof renderStatsChart === 'function' && window.currentStatsData) {
     setTimeout(() => renderStatsChart(window.currentStatsData), 50);
   }
+  if (typeof renderCalendarChart === 'function' && window.currentCalendarData) {
+    setTimeout(() => renderCalendarChart(), 50);
+  }
 }
 
 // 页面加载时恢复状态
