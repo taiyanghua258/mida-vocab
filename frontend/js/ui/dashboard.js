@@ -25,6 +25,7 @@ async function loadStats() {
     renderStatsChart(data);
   }
   if (typeof renderCalendarChart === 'function') {
+    window.currentCalendarData = null; // 切换语种后重新获取日历数据
     renderCalendarChart();
   }
 }
@@ -136,18 +137,39 @@ async function renderCalendarChart() {
   if (!myCalendarChart) {
     myCalendarChart = echarts.init(chartDom);
     window.addEventListener('resize', () => myCalendarChart.resize());
-    
+
     myCalendarChart.on('click', async (params) => {
-      // params.data is [dateStr, count]
       const dateStr = params.data[0];
       await showDetailedReviewListForDate(dateStr);
     });
   }
 
+  // 确保布局计算完成后再操作 chart
+  await new Promise(r => setTimeout(r, 0));
+  myCalendarChart.resize();
+
+  // 初始化月份视图状态（默认当月）
+  if (!window.calendarViewMonth) {
+    const now = new Date();
+    window.calendarViewMonth = { year: now.getFullYear(), month: now.getMonth() + 1 };
+  }
+
+  const vm = window.calendarViewMonth;
+
+  // 更新月份标签
+  const monthLabel = document.getElementById('calendarMonthLabel');
+  if (monthLabel) {
+    monthLabel.textContent = `${vm.year}年${vm.month}月`;
+  }
+
   try {
-    const calendarData = await api(`/study/calendar?language=${state.currentLang}`);
-    window.currentCalendarData = calendarData;
-    
+    // 首次加载时获取全年数据，后续切换月份用缓存
+    if (!window.currentCalendarData) {
+      const calendarData = await api(`/study/calendar?language=${state.currentLang}`);
+      window.currentCalendarData = calendarData || [];
+    }
+    const allData = window.currentCalendarData;
+
     const rootStyle = getComputedStyle(document.documentElement);
     const getColor = (varName, fallback) => {
       const val = rootStyle.getPropertyValue(varName).trim();
@@ -155,16 +177,14 @@ async function renderCalendarChart() {
     };
 
     const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
-    const cOchre = getColor('--color-ochre', '#df9f28');
     const cBorderline = getColor('--color-borderline', '#e5e1d8');
     const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
 
-    // Get current year
-    const today = new Date();
-    const year = today.getFullYear();
-    const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = today.toISOString().split('T')[0];
+    // 计算当前月范围
+    const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
+
+    // 过滤当月数据
+    const monthData = allData.filter(item => item[0].startsWith(monthStr));
 
     const option = {
       tooltip: {
@@ -177,48 +197,59 @@ async function renderCalendarChart() {
       },
       visualMap: {
         min: 0,
-        max: 200,
+        max: 50,
         type: 'piecewise',
         orient: 'horizontal',
         left: 'center',
         top: 0,
         textStyle: { color: cCharcoal, fontFamily: fontUi },
         pieces: [
-          {min: 100, label: '100+'},
-          {min: 50, max: 99, label: '50-99'},
-          {min: 20, max: 49, label: '20-49'},
-          {min: 1, max: 19, label: '1-19'}
+          { min: 30, label: '30+' },
+          { min: 15, max: 29, label: '15-29' },
+          { min: 5, max: 14, label: '5-14' },
+          { min: 1, max: 4, label: '1-4' }
         ],
         inRange: {
           color: [getColor('--color-borderline', '#e5e1d8'), getColor('--color-ochre', '#df9f28'), getColor('--color-terracotta', '#d16b4a')]
         }
       },
       calendar: {
-        top: 50,
-        left: 30,
+        top: 40,
+        left: 40,
         right: 30,
-        cellSize: ['auto', 16],
-        range: [startDateStr, endDateStr],
+        cellSize: ['auto', 20],
+        range: monthStr,
         itemStyle: {
-          borderWidth: 1,
+          borderWidth: 2,
           borderColor: getColor('--color-surface', '#ffffff'),
           color: 'rgba(0,0,0,0.03)'
         },
         yearLabel: { show: false },
-        monthLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn' },
-        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn' }
+        monthLabel: { show: false },
+        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn', fontSize: 11 },
+        splitLine: { show: false }
       },
       series: {
         type: 'heatmap',
         coordinateSystem: 'calendar',
-        data: calendarData || []
+        data: monthData
       }
     };
-    
-    myCalendarChart.setOption(option);
+
+    myCalendarChart.setOption(option, true);
   } catch (err) {
     console.error("Failed to load calendar data:", err);
   }
+}
+
+function navigateCalendarMonth(offset) {
+  if (!window.calendarViewMonth) return;
+  let { year, month } = window.calendarViewMonth;
+  month += offset;
+  if (month < 1) { month = 12; year--; }
+  if (month > 12) { month = 1; year++; }
+  window.calendarViewMonth = { year, month };
+  renderCalendarChart();
 }
 
 async function showDetailedReviewListForDate(dateStr) {
