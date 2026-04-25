@@ -823,13 +823,21 @@ async function handleExtraStudy() {
   }
 }
 
+let _onboardingRetryCount = 0;
+const _ONBOARDING_MAX_RETRIES = 5;
+
 function checkAndStartOnboarding() {
   try {
     if (localStorage.getItem('hasSeenOnboarding')) return;
 
-    // 等待 Driver.js 加载完成
+    // 等待 Driver.js 加载完成（带重试上限，防止 CDN 失败时无限递归）
     if (!window.driver || !window.driver.js || !window.driver.js.driver) {
-      console.warn('[Onboarding] Driver.js 尚未加载，1秒后重试...');
+      _onboardingRetryCount++;
+      if (_onboardingRetryCount > _ONBOARDING_MAX_RETRIES) {
+        console.warn('[Onboarding] Driver.js 加载超时（已重试' + _ONBOARDING_MAX_RETRIES + '次），放弃引导流程。');
+        return;
+      }
+      console.warn('[Onboarding] Driver.js 尚未加载，1秒后重试... (' + _onboardingRetryCount + '/' + _ONBOARDING_MAX_RETRIES + ')');
       setTimeout(checkAndStartOnboarding, 1000);
       return;
     }
@@ -893,7 +901,6 @@ function checkAndStartOnboarding() {
 
     // 最后一步：桌面端指向用户菜单，手机端指向设置齿轮按钮
     if (isMobile) {
-      // 手机上 #userMenuContainer 是 hidden 的，改为指向齿轮按钮
       steps.push({
         popover: {
           title: '最后一步：个性化设置',
@@ -912,6 +919,9 @@ function checkAndStartOnboarding() {
       });
     }
 
+    // 防重入标志：防止 onDestroyStarted 内部 destroy() 再次触发自身
+    let _isDestroyingOnboarding = false;
+
     const driverInstance = window.driver.js.driver({
       showProgress: true,
       allowClose: true,
@@ -921,6 +931,10 @@ function checkAndStartOnboarding() {
       doneBtnText: '✓ 完成设置',
       steps: steps,
       onDestroyStarted: () => {
+        // 防重入：destroy() 会再次触发 onDestroyStarted
+        if (_isDestroyingOnboarding) return;
+        _isDestroyingOnboarding = true;
+
         localStorage.setItem('hasSeenOnboarding', 'true');
         driverInstance.destroy();
         setTimeout(() => {
@@ -935,6 +949,8 @@ function checkAndStartOnboarding() {
 
   } catch (err) {
     console.error('[Onboarding] 引导流程启动失败：', err);
+    // 引导失败不应阻塞用户，标记为已看过避免反复弹出
+    localStorage.setItem('hasSeenOnboarding', 'true');
   }
 }
 

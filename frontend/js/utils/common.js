@@ -60,10 +60,18 @@ document.addEventListener('click', (e) => {
 });
 
 // 切换显示/隐藏特定分钟的冷却池单词列表 (全局单例 Tooltip，防止被 overflow-hidden 裁剪)
+let _coolingTooltipListenersAdded = false;
+
 window.toggleCoolingDropdown = function(event, min) {
   event.stopPropagation();
-  const btn = event.currentTarget;
   let tooltip = document.getElementById('global-cooling-tooltip');
+  
+  // 关闭 tooltip 的通用函数
+  function hideCoolingTooltip() {
+    if (!tooltip) return;
+    tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+    tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+  }
   
   if (!tooltip) {
     tooltip = document.createElement('div');
@@ -71,28 +79,35 @@ window.toggleCoolingDropdown = function(event, min) {
     // 增加 z-[9999] 确保在最上层
     tooltip.className = 'absolute z-[9999] p-2.5 bg-surface/95 backdrop-blur-md border border-borderline rounded-2xl shadow-[0_12px_40px_rgba(26,47,43,0.15)] opacity-0 invisible -translate-y-2 scale-95 transition-all duration-200 cursor-default origin-bottom';
     document.body.appendChild(tooltip);
-    
+  }
+
+  // 只注册一次全局事件监听器，防止重复绑定
+  if (!_coolingTooltipListenersAdded) {
+    _coolingTooltipListenersAdded = true;
+
     // 全局点击取消
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#global-cooling-tooltip') && !e.target.closest('.cooling-item-btn')) {
-        tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
-        tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
-      }
+      const tooltipEl = document.getElementById('global-cooling-tooltip');
+      if (!tooltipEl) return;
+      // 如果点击了 tooltip 自身内部 或 冷却按钮自身，不关闭（按钮自身的关闭由 toggle 逻辑处理）
+      if (e.target.closest('#global-cooling-tooltip')) return;
+      if (e.target.closest('.cooling-item-btn')) return;
+      hideCoolingTooltip();
     });
     
     // 滚动时隐藏，防止悬浮位置错乱
     window.addEventListener('scroll', () => {
-      if (tooltip.classList.contains('opacity-100')) {
-        tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
-        tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+      const tooltipEl = document.getElementById('global-cooling-tooltip');
+      if (tooltipEl && tooltipEl.classList.contains('opacity-100')) {
+        tooltipEl.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
+        tooltipEl.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
       }
     }, { passive: true });
   }
 
   // 如果已经打开了当前的，则关闭
   if (tooltip.dataset.min === String(min) && tooltip.classList.contains('opacity-100')) {
-    tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
-    tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
+    hideCoolingTooltip();
     return;
   }
 
@@ -120,7 +135,7 @@ window.toggleCoolingDropdown = function(event, min) {
     <div class="max-h-48 overflow-y-auto px-1 custom-scrollbar">
       ${wordListHtml}
     </div>
-    <div class="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-surface border-b border-r border-borderline rotate-45"></div>
+    <div class="tooltip-arrow absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-surface border-b border-r border-borderline rotate-45"></div>
   `;
 
   tooltip.dataset.min = min;
@@ -130,12 +145,14 @@ window.toggleCoolingDropdown = function(event, min) {
   tooltip.classList.add('origin-bottom'); // 默认从底部弹出
 
   // 定位计算
+  const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
   const scrollY = window.scrollY || document.documentElement.scrollTop;
   const scrollX = window.scrollX || document.documentElement.scrollLeft;
   
-  // 先设为 block 但透明，以便获取高度
+  // 先设为可见但透明，以便获取高度（用 visibility: hidden 避免闪现）
   tooltip.style.display = 'block';
+  tooltip.style.visibility = 'hidden';
   tooltip.classList.remove('invisible');
   
   const tooltipRect = tooltip.getBoundingClientRect();
@@ -148,10 +165,10 @@ window.toggleCoolingDropdown = function(event, min) {
   if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
   
   // 若上方空间不足，显示在下方
+  const arrow = tooltip.querySelector('.tooltip-arrow');
   if (top < scrollY + 10) {
     top = rect.bottom + scrollY + 12;
     // 此时小箭头需要移到上方
-    const arrow = tooltip.querySelector('.rotate-45');
     if (arrow) {
       arrow.classList.remove('-bottom-[5px]', 'border-b', 'border-r');
       arrow.classList.add('-top-[5px]', 'border-t', 'border-l');
@@ -160,7 +177,6 @@ window.toggleCoolingDropdown = function(event, min) {
     tooltip.classList.add('origin-top');
   } else {
     // 空间充足，显示在上方，重置箭头到底部
-    const arrow = tooltip.querySelector('.rotate-45');
     if (arrow) {
       arrow.classList.remove('-top-[5px]', 'border-t', 'border-l');
       arrow.classList.add('-bottom-[5px]', 'border-b', 'border-r');
@@ -171,6 +187,7 @@ window.toggleCoolingDropdown = function(event, min) {
   
   tooltip.style.top = `${top}px`;
   tooltip.style.left = `${left}px`;
+  tooltip.style.visibility = ''; // 恢复 visibility
   
   // 触发动画显示
   // 延迟一帧确保 translate 位置先生效
@@ -189,6 +206,54 @@ function showQuickGuide() {
   `;
   alert(guide.replace(/^\s+/gm, ''));
 }
+
+// 冷却池说明 tooltip：click 切换 + 桌面 hover 显示/隐藏（修复 touch 设备 hover 卡死问题）
+(function() {
+  let _infoTooltipTimer = null;
+
+  function showInfoTooltip() {
+    const tip = document.getElementById('coolingPoolInfoTooltip');
+    if (tip) { tip.classList.add('opacity-100'); tip.classList.remove('pointer-events-none'); }
+  }
+  function hideInfoTooltip() {
+    const tip = document.getElementById('coolingPoolInfoTooltip');
+    if (tip) { tip.classList.remove('opacity-100'); tip.classList.add('pointer-events-none'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const trigger = document.getElementById('coolingPoolInfoTrigger');
+    if (!trigger) return;
+
+    // 桌面 hover：延迟显示/隐藏
+    trigger.addEventListener('mouseenter', () => {
+      clearTimeout(_infoTooltipTimer);
+      _infoTooltipTimer = setTimeout(showInfoTooltip, 150);
+    });
+    trigger.addEventListener('mouseleave', () => {
+      clearTimeout(_infoTooltipTimer);
+      _infoTooltipTimer = setTimeout(hideInfoTooltip, 200);
+    });
+
+    // 点击切换（移动端主要交互方式）
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tip = document.getElementById('coolingPoolInfoTooltip');
+      if (!tip) return;
+      if (tip.classList.contains('opacity-100')) {
+        hideInfoTooltip();
+      } else {
+        showInfoTooltip();
+      }
+    });
+
+    // 全局点击关闭
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#coolingPoolInfoTrigger')) {
+        hideInfoTooltip();
+      }
+    });
+  });
+})();
 
 
 function navigate(viewId) {
@@ -217,8 +282,19 @@ function openModal(id) {
 function closeModal(id) {
   const modal = document.getElementById(id);
   modal.classList.remove('active');
-  if (id === 'wordModal') document.getElementById('wordForm').reset();
+  if (id === 'wordModal') {
+    document.getElementById('wordForm').reset();
+    // 同步自定义下拉框的视觉文字回到默认值（form.reset 只重置 hidden input，不会更新 UI）
+    const addWordSelect = document.getElementById('addWordSelectWrapper');
+    if (addWordSelect) {
+      const textEl = addWordSelect.querySelector('.select-text');
+      if (textEl) textEl.textContent = '名词';
+    }
+    // 同时重置 modalTitle 为默认标题
+    document.getElementById('modalTitle').textContent = '添加单词';
+  }
   if (id === 'importModal') resetImport();
+  if (id === 'dictImportModal') resetDictImport();
 }
 
 /* ================= FSRS SETTINGS ================= */

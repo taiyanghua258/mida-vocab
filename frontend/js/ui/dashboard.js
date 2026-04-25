@@ -1,5 +1,14 @@
 /* ================= DASHBOARD ================= */
-async function initDashboard() { await loadStats(); loadWords(1); checkAndStartOnboarding(); }
+let _onboardingChecked = false;
+async function initDashboard() {
+  await loadStats();
+  loadWords(1);
+  // 引导只在首次加载时检查一次，避免切换工作区/返回时重复弹出
+  if (!_onboardingChecked) {
+    _onboardingChecked = true;
+    checkAndStartOnboarding();
+  }
+}
 
 async function loadStats() {
   const data = await api(`/study/stats?language=${state.currentLang}`);
@@ -411,7 +420,7 @@ function renderPagination() {
 
 let searchTimer;
 document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadWords(1), 250); });
-document.getElementById('partOfSpeechFilter').addEventListener('change', () => loadWords(1));
+// 注：partOfSpeechFilter 的筛选触发已在 initCustomSelects() 中直接调用 loadWords(1) 实现
 
 /* ================= CRUD ================= */
 document.getElementById('wordForm').addEventListener('submit', async (e) => {
