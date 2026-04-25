@@ -52,6 +52,9 @@ const reviewLogSchema = new mongoose.Schema({
   },
   prevLearningSteps: {
     type: Number
+  },
+  wordSnapshot: {
+    type: mongoose.Schema.Types.Mixed
   }
 }, {
   timestamps: true
@@ -60,6 +63,5 @@ const reviewLogSchema = new mongoose.Schema({
 reviewLogSchema.index({ userId: 1, language: 1, reviewDate: -1, state: 1 });
 
 const ReviewLog = mongoose.model('ReviewLog', reviewLogSchema);
-ReviewLog.syncIndexes().then(() => console.log('ReviewLog 表索引已同步'));
 
 module.exports = ReviewLog;

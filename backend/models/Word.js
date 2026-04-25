@@ -79,7 +79,8 @@ const wordSchema = new mongoose.Schema({
     default: null
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  optimisticConcurrency: true
 });
 
 wordSchema.index({ userId: 1, language: 1, japanese: 1 });
@@ -87,8 +88,5 @@ wordSchema.index({ userId: 1, language: 1, due: 1 }); // 加入 language
 wordSchema.index({ userId: 1, language: 1, state: 1, due: 1 }); // 加入 language
 
 const Word = mongoose.model('Word', wordSchema);
-
-// 👇 新增这一行：强制同步并重建数据库真实索引
-Word.syncIndexes().then(() => console.log('Word 表索引已强制同步！'));
 
 module.exports = Word;

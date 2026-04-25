@@ -186,6 +186,13 @@ exports.reviewWord = async (req, res) => {
     const newCard = chosen.card;
     const log = chosen.log;
 
+    // 抓取复习前的完整 Word 快照，用于精确撤回
+    const wordSnapshot = word.toObject();
+    delete wordSnapshot._id;
+    delete wordSnapshot.__v;
+    delete wordSnapshot.createdAt;
+    delete wordSnapshot.updatedAt;
+
     // FSRS 审计修复：移除 startOf('day') 对齐
     // 原逻辑将 due 强制回退到当天凌晨 00:00，会使复习间隔比 FSRS 计算值
     // 系统性缩短最多 18 小时。对于 2-3 天的短间隔卡片影响尤为严重。
@@ -216,7 +223,8 @@ exports.reviewWord = async (req, res) => {
       prevDifficulty: log.difficulty,
       prevLearningSteps: log.learning_steps,
       elapsed_days: log.elapsed_days,
-      scheduled_days: log.scheduled_days
+      scheduled_days: log.scheduled_days,
+      wordSnapshot
     });
     await reviewLog.save();
 
@@ -231,6 +239,9 @@ exports.reviewWord = async (req, res) => {
       interval: formatInterval(newCard.due, now)
     });
   } catch (err) {
+    if (err.name === 'VersionError') {
+      return res.status(409).json({ message: '并发请求冲突，请稍后再试' });
+    }
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
@@ -447,9 +458,21 @@ exports.undoReview = async (req, res) => {
       _id: { $ne: lastLog._id }
     }).sort({ createdAt: -1 });
 
-    if (prevLog) {
-      // 还原到上一次复习后的状态：利用 FSRS 重新计算
-      // 但更简单的方式是：用 lastLog 中记录的 prev 字段还原
+    if (lastLog.wordSnapshot) {
+      // 精确还原：使用复习前的完整快照
+      const snap = lastLog.wordSnapshot;
+      word.due = snap.due;
+      word.stability = snap.stability;
+      word.difficulty = snap.difficulty;
+      word.elapsed_days = snap.elapsed_days;
+      word.scheduled_days = snap.scheduled_days;
+      word.learning_steps = snap.learning_steps;
+      word.reps = snap.reps;
+      word.lapses = snap.lapses;
+      word.state = snap.state;
+      word.last_review = snap.last_review;
+    } else if (prevLog) {
+      // 旧数据兼容：还原到上一次复习后的状态
       word.stability = lastLog.prevStability ?? 0;
       word.difficulty = lastLog.prevDifficulty ?? 0;
       word.elapsed_days = lastLog.elapsed_days ?? 0;
@@ -457,11 +480,11 @@ exports.undoReview = async (req, res) => {
       word.learning_steps = lastLog.prevLearningSteps ?? 0;
       word.state = lastLog.state != null ? lastLog.state : 0;
       word.last_review = prevLog.reviewDate;
-      word.due = lastLog.reviewDate; // 恢复到复习前的到期时间
+      word.due = lastLog.reviewDate; 
       word.reps = Math.max(0, (word.reps || 1) - 1);
       word.lapses = lastLog.rating === 1 ? Math.max(0, (word.lapses || 1) - 1) : word.lapses;
     } else {
-      // 没有前一条记录，说明是第一次复习，恢复到新卡状态
+      // 旧数据兼容：没有前一条记录，说明是第一次复习，恢复到新卡状态
       word.stability = 0;
       word.difficulty = 0;
       word.elapsed_days = 0;
@@ -479,6 +502,9 @@ exports.undoReview = async (req, res) => {
 
     res.json({ message: '已撤回', word });
   } catch (err) {
+    if (err.name === 'VersionError') {
+      return res.status(409).json({ message: '并发请求冲突，请稍后再试' });
+    }
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
