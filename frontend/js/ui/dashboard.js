@@ -6,7 +6,11 @@ async function initDashboard() {
   // 引导只在首次加载时检查一次，避免切换工作区/返回时重复弹出
   if (!_onboardingChecked) {
     _onboardingChecked = true;
-    checkAndStartOnboarding();
+    if (typeof checkAndStartOnboarding === 'function') {
+      setTimeout(() => {
+        checkAndStartOnboarding();
+      }, 800);
+    }
   }
 }
 
