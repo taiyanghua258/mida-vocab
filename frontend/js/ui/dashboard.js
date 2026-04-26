@@ -91,7 +91,13 @@ function renderStatsChart(statsData) {
     },
     series: [
       {
-        name: '学习状态', type: 'pie', radius: ['45%', '75%'], center: ['50%', '40%'],
+        name: '学习状态', 
+        type: 'pie', 
+        // 👇 修复 1：缩小内外半径，并将圆心整体上移，给底部图例留出充足的换行空间
+        radius: ['35%', '60%'], 
+        center: ['50%', '35%'],
+        // 👇 修复 2：增加 minAngle (最小扇区角度)，强制即使只有 1 个词也能渲染出可见的色块
+        minAngle: 15,
         avoidLabelOverlap: false,
         itemStyle: { borderRadius: 6, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
