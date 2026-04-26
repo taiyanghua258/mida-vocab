@@ -45,15 +45,16 @@ function renderStatsChart(statsData) {
 
   if (!myStatsChart) {
     myStatsChart = echarts.init(chartDom);
-    window.addEventListener('resize', () => myStatsChart.resize());
+    // 💡 修复动效冲突：使用 ResizeObserver 替代 window resize，完美跟随 CSS 动画自适应
+    new ResizeObserver(() => myStatsChart.resize()).observe(chartDom);
     
     myStatsChart.on('click', async (params) => {
       await showDetailedReviewList(params.name);
     });
   }
 
-  const rootStyle = getComputedStyle(document.documentElement);
-  
+  // 💡 修复深色模式取值：改为监听 body，确保完全继承动态主题变量
+  const rootStyle = getComputedStyle(document.body);
   const getColor = (varName, fallback) => {
     const val = rootStyle.getPropertyValue(varName).trim();
     return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
@@ -80,40 +81,20 @@ function renderStatsChart(statsData) {
       trigger: 'item',
       backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
       borderColor: cBorderline,
-      textStyle: {
-        color: cCharcoal,
-        fontFamily: fontUi
-      }
+      textStyle: { color: cCharcoal, fontFamily: fontUi }
     },
     legend: {
-      bottom: '0%',
-      left: 'center',
-      textStyle: {
-        color: cCharcoal,
-        fontFamily: fontUi
-      }
+      bottom: '0%', left: 'center',
+      textStyle: { color: cCharcoal, fontFamily: fontUi }
     },
     series: [
       {
-        name: '学习状态',
-        type: 'pie',
-        radius: ['45%', '75%'],
-        center: ['50%', '42%'],
+        name: '学习状态', type: 'pie', radius: ['45%', '75%'], center: ['50%', '42%'],
         avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 8,
-          borderColor: cSurface,
-          borderWidth: 2
-        },
+        itemStyle: { borderRadius: 8, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
         emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: 'bold',
-            color: cCharcoal,
-            formatter: '{b}\n{c} 词'
-          }
+          label: { show: true, fontSize: 16, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
         },
         labelLine: { show: false },
         data: dataArray.length > 0 ? dataArray : [{ value: 1, name: '无数据', itemStyle: { color: cBorderline } }]
@@ -136,7 +117,8 @@ async function renderCalendarChart() {
 
   if (!myCalendarChart) {
     myCalendarChart = echarts.init(chartDom);
-    window.addEventListener('resize', () => myCalendarChart.resize());
+    // 💡 彻底修复日历图 UI 挤压 Bug
+    new ResizeObserver(() => myCalendarChart.resize()).observe(chartDom);
 
     myCalendarChart.on('click', async (params) => {
       const dateStr = params.data[0];
@@ -144,33 +126,24 @@ async function renderCalendarChart() {
     });
   }
 
-  // 确保布局计算完成后再操作 chart
-  await new Promise(r => setTimeout(r, 0));
-  myCalendarChart.resize();
-
-  // 初始化月份视图状态（默认当月）
   if (!window.calendarViewMonth) {
     const now = new Date();
     window.calendarViewMonth = { year: now.getFullYear(), month: now.getMonth() + 1 };
   }
 
   const vm = window.calendarViewMonth;
-
-  // 更新月份标签
   const monthLabel = document.getElementById('calendarMonthLabel');
-  if (monthLabel) {
-    monthLabel.textContent = `${vm.year}年${vm.month}月`;
-  }
+  if (monthLabel) monthLabel.textContent = `${vm.year}年${vm.month}月`;
 
   try {
-    // 首次加载时获取全年数据，后续切换月份用缓存
     if (!window.currentCalendarData) {
       const calendarData = await api(`/study/calendar?language=${state.currentLang}`);
       window.currentCalendarData = calendarData || [];
     }
     const allData = window.currentCalendarData;
 
-    const rootStyle = getComputedStyle(document.documentElement);
+    // 💡 修复深色模式无法取值的问题：改用 body
+    const rootStyle = getComputedStyle(document.body);
     const getColor = (varName, fallback) => {
       const val = rootStyle.getPropertyValue(varName).trim();
       return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
@@ -178,12 +151,11 @@ async function renderCalendarChart() {
 
     const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
     const cBorderline = getColor('--color-borderline', '#e5e1d8');
+    const cSurface = getColor('--color-surface', '#ffffff');
+    const cParchment = getColor('--color-parchment', '#f9f7f1'); // 引入背景纸张色
     const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
 
-    // 计算当前月范围
     const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
-
-    // 过滤当月数据
     const monthData = allData.filter(item => item[0].startsWith(monthStr));
 
     const option = {
@@ -214,18 +186,19 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: 40,
-        left: 'center',
-        cellSize: [30, 30],
+        top: 55, // 增加顶部边距，防止与 visualMap 挤压
+        left: 20, 
+        right: 20, // 左右留白，开启自适应
+        cellSize: ['auto', 28], // 💡 响应式宽度！完美适配卡片大小
         range: monthStr,
         itemStyle: {
-          borderWidth: 2,
-          borderColor: getColor('--color-surface', '#ffffff'),
-          color: 'rgba(0,0,0,0.03)'
+          borderWidth: 3,
+          borderColor: cSurface, // 使用 Surface 作为缝隙，无缝融入卡片
+          color: cParchment // 💡 彻底消灭黑色方块：使用优雅的背景变量
         },
         yearLabel: { show: false },
         monthLabel: { show: false },
-        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn', fontSize: 11 },
+        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn', fontSize: 11, margin: 10 },
         splitLine: { show: false }
       },
       series: {
