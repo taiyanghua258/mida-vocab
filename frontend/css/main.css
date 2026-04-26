@@ -981,3 +981,96 @@ html[data-theme="editorial"],
   border-radius: 0 !important;
   border: 1.5px solid rgb(var(--color-charcoal)) !important;
 }
+
+/* ===================================================================== */
+/* 极简质感原生日历系统 (Premium Native Calendar) */
+/* ===================================================================== */
+
+.cal-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  grid-auto-flow: column;
+}
+
+@media (min-width: 640px) {
+  .cal-grid { gap: 6px; }
+}
+
+.cal-cell {
+  width: 14px; 
+  height: 14px;
+  border-radius: 3px;
+  background-color: rgb(var(--color-borderline) / 0.25);
+  border: 1px solid rgb(var(--color-borderline) / 0.5);
+  transition: transform var(--duration-fast) var(--ease-spring), 
+              background-color var(--duration-normal) ease, 
+              border-color var(--duration-normal) ease,
+              box-shadow var(--duration-fast) ease;
+  cursor: crosshair;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .cal-cell { 
+    width: 20px; 
+    height: 20px; 
+    border-radius: 4px; 
+  }
+}
+
+/* 交互物理反馈 */
+.cal-cell:hover {
+  transform: scale(1.3);
+  z-index: 20;
+  box-shadow: 0 8px 20px rgb(var(--color-charcoal) / 0.15);
+  border-color: rgb(var(--color-charcoal));
+}
+
+/* ========== 默认主题 (Light) 色阶 ========== */
+.cal-cell[data-level="1"] { background-color: rgb(var(--color-ochre) / 0.3); border-color: rgb(var(--color-ochre) / 0.4); }
+.cal-cell[data-level="2"] { background-color: rgb(var(--color-ochre) / 0.7); border-color: rgb(var(--color-ochre) / 0.8); }
+.cal-cell[data-level="3"] { background-color: rgb(var(--color-terracotta)); border-color: rgb(var(--color-terracotta)); }
+.cal-cell[data-level="4"] { background-color: rgb(var(--color-charcoal)); border-color: rgb(var(--color-charcoal)); }
+
+/* ========== 学术/印刷主题 (Editorial) 强制覆写 ========== */
+/* 追求严谨的方形墨迹质感 */
+[data-theme="editorial"] .cal-cell {
+  border-radius: 0 !important; /* 绝对直角 */
+  border: 1px solid rgba(20, 20, 20, 0.12);
+  background-color: transparent;
+}
+[data-theme="editorial"] .cal-cell[data-level="1"] { background-color: rgba(20, 20, 20, 0.2); border-color: rgba(20, 20, 20, 0.25); }
+[data-theme="editorial"] .cal-cell[data-level="2"] { background-color: rgba(20, 20, 20, 0.5); border-color: rgba(20, 20, 20, 0.55); }
+[data-theme="editorial"] .cal-cell[data-level="3"] { background-color: rgba(20, 20, 20, 0.8); border-color: rgba(20, 20, 20, 0.85); }
+[data-theme="editorial"] .cal-cell[data-level="4"] { background-color: rgba(20, 20, 20, 1);   border-color: rgba(20, 20, 20, 1); }
+[data-theme="editorial"] .cal-cell:hover {
+  border-color: #bf362e; /* 悬浮时呈现朱砂红墨迹 */
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ========== 深色主题 (Obsidian) 强制覆写 ========== */
+/* 追求夜间发光的荧光质感 */
+[data-theme="obsidian"] .cal-cell {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="obsidian"] .cal-cell[data-level="1"] { background-color: rgba(194, 155, 87, 0.3); }
+[data-theme="obsidian"] .cal-cell[data-level="2"] { background-color: rgba(194, 155, 87, 0.7); }
+[data-theme="obsidian"] .cal-cell[data-level="3"] { background-color: rgb(166, 82, 63); }
+[data-theme="obsidian"] .cal-cell[data-level="4"] { background-color: rgb(234, 230, 219); border-color: #fff; box-shadow: 0 0 10px rgba(234,230,219,0.5); }
+
+
+/* 日历轴线标签 */
+.cal-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: rgb(var(--color-muted));
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 隐藏原生滚动条使体验更干净 */
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--color-borderline)); border-radius: 4px; }

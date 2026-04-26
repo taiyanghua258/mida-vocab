@@ -307,20 +307,27 @@
           <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mb-1 font-ui">学习状态分布</div>
           <div id="statsChart" class="w-full flex-1"></div>
         </div>
-        <div id="calendarChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-4 md:col-span-3 h-[220px] sm:h-[260px] flex flex-col animate-soft-in stagger-5">
-          <div class="flex items-center justify-between mb-1">
-            <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase font-ui">每日复习热力图</div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="navigateCalendarMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-colors" title="上个月">
+        <div id="calendarChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-5 md:col-span-3 min-h-[220px] sm:min-h-[260px] flex flex-col animate-soft-in stagger-5 relative overflow-hidden group">
+          
+          <div class="flex items-start justify-between mb-6 z-10">
+            <div class="flex flex-col">
+              <div class="text-[0.55rem] text-muted font-bold tracking-[0.3em] uppercase font-ui">Review Trajectory</div>
+              <div class="text-lg font-display font-bold text-charcoal mt-1 tracking-tight">记忆刻痕热力图</div>
+            </div>
+            
+            <div class="flex items-center gap-1.5 bg-surface/50 backdrop-blur-md border border-borderline rounded-full p-1 shadow-[var(--shadow-sm)]">
+              <button onclick="navigateCalendarMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90" title="上个月">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
               </button>
-              <span id="calendarMonthLabel" class="text-[0.65rem] text-charcoal font-bold font-ui min-w-[80px] text-center"></span>
-              <button onclick="navigateCalendarMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-charcoal transition-colors" title="下个月">
+              <span id="calendarMonthLabel" class="text-[0.7rem] text-charcoal font-bold font-ui min-w-[75px] text-center tracking-widest-plus"></span>
+              <button onclick="navigateCalendarMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90" title="下个月">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
               </button>
             </div>
           </div>
-          <div id="calendarChart" class="w-full flex-1"></div>
+
+          <div id="nativeCalendarContainer" class="flex-1 w-full flex items-center justify-center sm:justify-start overflow-x-auto overflow-y-hidden z-10 custom-scrollbar pb-2 px-2">
+            </div>
         </div>
       </div>
 

@@ -115,27 +115,11 @@ function renderStatsChart(statsData) {
   setTimeout(() => myStatsChart.resize(), 350);
 }
 
+// 注意：原先的 myCalendarChart 变量可以保留或删掉，不再需要依赖 ECharts
 async function renderCalendarChart() {
-  if (typeof echarts === 'undefined') {
-    console.warn('ECharts is not defined. Skipping calendar chart render.');
-    return;
-  }
-
-  const chartDom = document.getElementById('calendarChart');
-  if (!chartDom) return;
-  document.getElementById('calendarChartWrapper').classList.remove('hidden');
-
-  if (!myCalendarChart) {
-    myCalendarChart = echarts.init(chartDom);
-    window.addEventListener('resize', () => {
-      if (myCalendarChart) myCalendarChart.resize();
-    });
-
-    myCalendarChart.on('click', async (params) => {
-      const dateStr = params.data[0];
-      await showDetailedReviewListForDate(dateStr);
-    });
-  }
+  const wrapper = document.getElementById('calendarChartWrapper');
+  if (!wrapper) return;
+  wrapper.classList.remove('hidden');
 
   if (!window.calendarViewMonth) {
     const now = new Date();
@@ -152,97 +136,61 @@ async function renderCalendarChart() {
       window.currentCalendarData = calendarData || [];
     }
     const allData = window.currentCalendarData;
-
-    const rootStyle = getComputedStyle(document.documentElement);
-    const getColor = (varName, fallback) => {
-      const val = rootStyle.getPropertyValue(varName).trim();
-      return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
-    };
-
-    const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
-    const cBorderline = getColor('--color-borderline', '#e5e1d8');
-    const cSurface = getColor('--color-surface', '#ffffff');
-    const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
+    
+    // 转换为 Map 提升查询效率 O(1)
+    const dataMap = new Map(allData.map(d => [d[0], d[1]]));
 
     const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
-    const monthData = allData.filter(item => item[0].startsWith(monthStr));
+    const daysInMonth = new Date(vm.year, vm.month, 0).getDate();
+    // 确定当月 1 号是星期几。为了匹配星期一作为每周的开始，需要做映射 (0:周日 -> 6, 1:周一 -> 0)
+    let firstDayIndex = new Date(vm.year, vm.month - 1, 1).getDay();
+    const padDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
-    // 👇 新增：动态判断屏幕尺寸，决定方块大小和排版
-    const isMobile = window.innerWidth < 640;
-    const cSize = isMobile ? 20 : 28; // 移动端 20px 完美防裁切，桌面端 28px 更大气
-
-    const option = {
-      tooltip: {
-        backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
-        borderColor: cBorderline,
-        textStyle: { color: cCharcoal, fontFamily: fontUi },
-        formatter: function (p) {
-          return `${p.data[0]}: 复习了 ${p.data[1]} 个词`;
-        }
-      },
-      visualMap: {
-        min: 0,
-        max: 50,
-        type: 'piecewise',
-        orient: isMobile ? 'horizontal' : 'vertical', // 💡 桌面端改为竖向排列
-        left: isMobile ? 'center' : 'auto',
-        right: isMobile ? 'auto' : 30,                 // 💡 桌面端靠右放置，填补大面积空白
-        top: isMobile ? 0 : 'center',                 // 💡 桌面端垂直居中
-        itemWidth: 12,
-        itemHeight: 12,
-        textGap: 5,
-        textStyle: { color: cCharcoal, fontFamily: fontUi, fontSize: 11 },
-        pieces: [
-          { min: 30, label: '30+' },
-          { min: 15, max: 29, label: '15-29' },
-          { min: 5, max: 14, label: '5-14' },
-          { min: 1, max: 4, label: '1-4' }
-        ],
-        inRange: {
-          color: [getColor('--color-borderline', '#e5e1d8'), getColor('--color-ochre', '#df9f28'), getColor('--color-terracotta', '#d16b4a')]
-        }
-      },
-      calendar: {
-        top: 50, // 略微下移，避开顶部标题
-        bottom: 15,
-        left: isMobile ? 35 : 45, // 缩小移动端左侧边距
-        right: isMobile ? 15 : 80,
-        // 💡 彻底写死方块的宽高：移动端 18px，保证 7 天绝对排得下，不会和文字挤压
-        cellSize: isMobile ? [18, 18] : [26, 26], 
-        range: monthStr,
-        itemStyle: {
-          borderWidth: 2,
-          borderColor: cSurface,
-          color: 'rgba(150, 150, 150, 0.08)' 
-        },
-        yearLabel: { show: false },
-        monthLabel: { show: false },
-        dayLabel: { 
-          color: getColor('--color-muted', '#8b8982'), 
-          fontFamily: fontUi, 
-          nameMap: ['日', '一', '二', '三', '四', '五', '六'], 
-          fontSize: 10, // 缩小星期文字
-          margin: 4     // 减小文字和格子之间的缝隙
-        },
-        splitLine: { show: false }
-      },
-      series: {
-        type: 'heatmap',
-        coordinateSystem: 'calendar',
-        data: monthData,
-        itemStyle: {
-          borderRadius: 4, 
-          borderColor: cSurface,
-          borderWidth: 2
-        }
-      }
-    };
-
-    myCalendarChart.setOption(option, true);
+    let html = `<div class="flex gap-2 sm:gap-4 items-end mx-auto sm:mx-0">`;
     
-    // 延迟 650ms 调整尺寸，确保完全跨过 600ms 的 entrance 缓动动画，
-    // 彻底解决图表鼠标交互坐标(Tooltip)在位移后发生的错位问题。
-    setTimeout(() => myCalendarChart.resize(), 650);
+    // 左侧星期轴 (渲染 一、三、五)
+    html += `
+      <div class="flex flex-col justify-between pb-[2px] pr-1 h-[126px] sm:h-[182px]">
+        <span class="cal-label mt-[14px] sm:mt-[20px]">一</span>
+        <span class="cal-label">三</span>
+        <span class="cal-label mb-[14px] sm:mb-[20px]">五</span>
+      </div>
+    `;
+
+    html += `<div class="cal-grid">`;
+
+    // 填充月初空白
+    for (let i = 0; i < padDays; i++) {
+      html += `<div class="cal-cell opacity-0 pointer-events-none"></div>`;
+    }
+
+    // 渲染每一天
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
+      const count = dataMap.get(dateStr) || 0;
+      
+      // 算法评级：基于复习量决定颜色深度
+      let level = 0;
+      if (count >= 40) level = 4;
+      else if (count >= 20) level = 3;
+      else if (count >= 5) level = 2;
+      else if (count >= 1) level = 1;
+
+      html += `
+        <div class="cal-cell group" data-level="${level}" onclick="showDetailedReviewListForDate('${dateStr}')">
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-2 bg-charcoal text-surface text-[10px] rounded-[4px] shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 font-ui text-center leading-tight">
+            <div class="font-bold tracking-widest text-[0.65rem] text-muted/80 mb-1 border-b border-surface/20 pb-1">${dateStr}</div>
+            复习了 <span class="font-bold text-ochre text-[12px] mx-0.5">${count}</span> 项
+            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-charcoal"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `</div></div>`;
+    
+    // 生成原生 DOM 替换
+    document.getElementById('nativeCalendarContainer').innerHTML = html;
 
   } catch (err) {
     console.error("Failed to load calendar data:", err);
