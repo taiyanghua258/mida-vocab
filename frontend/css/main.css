@@ -1,357 +1,323 @@
 /* ========================================================= */
-/* 🧩 SYSTEM DESIGN TOKENS (The Million Dollar Foundation) */
+/* 1. 全局物理引擎 (The Physics Engine) - 无需外部库 */
+/* ========================================================= */
+:root {
+  /* 阻尼弹簧 (Damped Spring) - 用于卡片飞入、弹窗出现，带有优雅的轻微回弹 */
+  --motion-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 平滑阻尼 (Smooth Spring) - 用于悬浮态、列表展开，没有回弹，只有极致的顺滑 */
+  --motion-spring-smooth: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* 流体加速 (Fluid Ease) - 用于颜色渐变、透明度变化 */
+  --motion-ease-fluid: cubic-bezier(0.33, 1, 0.68, 1);
+  /* 瞬态阻断 (Snappy) - 用于关闭弹窗、消失动画，干净利落不拖泥带水 */
+  --motion-ease-snappy: cubic-bezier(0.86, 0, 0.07, 1);
+
+  /* 统一时间节拍器 */
+  --t-micro: 150ms;
+  --t-fast: 250ms;
+  --t-base: 400ms;
+  --t-slow: 600ms;
+}
+
+/* ========================================================= */
+/* 2. 核心动画原语 (Animation Primitives) */
+/* ========================================================= */
+
+@keyframes softPopIn {
+  0% { opacity: 0; transform: scale(0.92) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes dropIn {
+  0% { opacity: 0; transform: translateY(-20px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ambientGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(var(--color-ochre), 0.1); }
+  50% { box-shadow: 0 0 25px rgba(var(--color-ochre), 0.3); }
+}
+
+/* ========================================================= */
+/* 3. 语义化主题系统 (Semantic Design Tokens) */
 /* ========================================================= */
 
 :root {
-  /* --- 1. Primitives (基础色盘) --- */
-  --p-parchment-50: 253 251 247;
-  --p-parchment-100: 249 247 241;
-  --p-charcoal-900: 20 20 20;
-  --p-charcoal-800: 26 47 43;
-  --p-ochre-500: 223 159 40;
-  --p-terracotta-500: 209 107 74;
-  --p-success-500: 75 115 101;
-  --p-muted-500: 139 137 130;
-  --p-border-light: 229 225 216;
+  /* 基础色值 (桥接 Tailwind Config) */
+  --color-parchment: 249 247 241;
+  --color-surface: 255 255 255;
+  --color-charcoal: 26 47 43;
+  --color-ochre: 223 159 40;
+  --color-terracotta: 209 107 74;
+  --color-lavender: 198 203 234;
+  --color-muted: 139 137 130;
+  --color-borderline: 229 225 216;
+  --bg-body: 253 251 247;
+  --color-success: 75 115 101;
 
-  /* --- 2. Semantic Tokens (语义化映射 - 默认亮色) --- */
-  --bg-base: var(--p-parchment-50);
-  --bg-surface: 255 255 255;
-  --bg-card-gradient: linear-gradient(135deg, rgb(255 255 255) 0%, rgb(var(--p-parchment-100)) 100%);
+  /* 阴影与圆角 Token */
+  --elevation-1: 0 4px 16px rgba(26, 47, 43, 0.03);
+  --elevation-2: 0 12px 32px rgba(26, 47, 43, 0.06);
+  --elevation-modal: 0 24px 64px rgba(26, 47, 43, 0.12);
   
-  --text-primary: var(--p-charcoal-800);
-  --text-muted: var(--p-muted-500);
-  --text-accent: var(--p-ochre-500);
-  --text-brand: var(--p-terracotta-500);
-  
-  --border-subtle: rgba(26, 47, 43, 0.08); /* 半透明边框，让背景自然透出 */
-  --border-accent: var(--p-ochre-500);
-  
-  --radius-standard: 1.5rem;
+  --radius-panel: 1.25rem;
   --radius-button: 0.85rem;
   --radius-pill: 100px;
-  
-  --shadow-elevation-1: 0 2px 4px rgba(26,47,43,0.02), 0 8px 24px rgba(26,47,43,0.04);
-  --shadow-elevation-2: 0 2px 4px rgba(26,47,43,0.02), 0 8px 24px rgba(26,47,43,0.04), 0 16px 48px rgba(26,47,43,0.06);
-  --shadow-modal: 0 24px 60px rgba(26,47,43,0.12), 0 12px 24px rgba(26,47,43,0.08);
-  
-  /* --- 3. Motion Engine (物理缓动系统) --- */
-  --motion-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --motion-spring-smooth: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --motion-ease-fluid: cubic-bezier(0.33, 1, 0.68, 1);
-  --motion-ease-snappy: cubic-bezier(0.86, 0, 0.07, 1);
-  
-  --duration-fast: 250ms;
-  --duration-normal: 400ms;
-  --duration-slow: 600ms;
 
-  /* --- 4. Typography --- */
+  /* 字体 */
   --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
   --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
-  --font-body: var(--font-ui);
-  
-  /* Backward Compatibility for JS (will be refactored later) */
-  --color-parchment: var(--p-parchment-100);
-  --color-surface: var(--bg-surface);
-  --color-charcoal: var(--text-primary);
-  --color-ochre: var(--text-accent);
-  --color-terracotta: var(--text-brand);
-  --color-muted: var(--text-muted);
-  --color-borderline: var(--border-subtle);
-  --color-success: var(--p-success-500);
 }
 
-/* --- Obsidian Theme (赛博暗室) --- */
 [data-theme="obsidian"] {
-  --bg-base: 17 16 15;
-  --bg-surface: 34 32 29;
-  --bg-card-gradient: linear-gradient(145deg, rgba(34,32,29,0.95), rgba(17,16,15,0.95));
+  --color-parchment: 24 23 21;
+  --color-surface: 34 32 29;
+  --color-charcoal: 234 230 219;
+  --color-ochre: 194 155 87;
+  --color-terracotta: 166 82 63;
+  --color-borderline: 54 52 48;
+  --bg-body: 17 16 15;
   
-  --text-primary: 234 230 219;
-  --text-muted: 115 112 105;
-  --text-accent: 194 155 87;
-  
-  --border-subtle: 54 52 48;
-  
-  --shadow-elevation-1: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.6);
-  --shadow-elevation-2: inset 0 1px 0 rgba(255,255,255,0.05), 0 20px 40px rgba(0,0,0,0.8);
-  --shadow-modal: 0 12px 40px rgba(0,0,0,0.8);
-  
-  --glass-bg: rgba(34, 32, 29, 0.8);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  --elevation-1: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.5);
+  --elevation-2: inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 40px rgba(0,0,0,0.7);
+  --elevation-modal: inset 0 1px 0 rgba(255,255,255,0.08), 0 32px 80px rgba(0,0,0,0.9);
 }
 
-/* --- Editorial Theme (瑞士极简) --- */
 [data-theme="editorial"] {
-  --bg-base: 253 251 247;
-  --bg-surface: 253 251 247;
-  --bg-card-gradient: none;
+  --color-parchment: 253 251 247;
+  --color-surface: 253 251 247;
+  --bg-body: 253 251 247;
+  --color-charcoal: 20 20 20;
+  --color-ochre: 191 54 46;
+  --color-borderline: 30 30 30;
   
-  --text-primary: 20 20 20;
-  --text-accent: 191 54 46;
-  
-  --border-subtle: 30 30 30;
-  
-  --radius-standard: 0;
+  --elevation-1: none;
+  --elevation-2: none;
+  --elevation-modal: none;
+  --radius-panel: 0;
   --radius-button: 0;
   --radius-pill: 0;
-  
-  --shadow-elevation-1: none;
-  --shadow-elevation-2: none;
-  --shadow-modal: none;
-  
-  --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", serif;
-  --font-body: var(--font-editorial);
-  --font-serif: var(--font-editorial);
 
+  --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", serif;
+  --font-ui: var(--font-editorial);
+  --font-serif: var(--font-editorial);
   --baseline: 24px;
 }
 
 /* ========================================================= */
-/* 🛠 BASE & UTILITIES */
+/* 4. 高阶组件合成 (Component Composition) */
 /* ========================================================= */
 
 body {
-  font-family: var(--font-body), sans-serif;
-  background-color: rgb(var(--bg-base));
-  color: rgb(var(--text-primary));
+  font-family: var(--font-ui), sans-serif;
+  background-color: rgb(var(--bg-body));
+  color: rgb(var(--color-charcoal));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color var(--duration-slow) var(--motion-ease-fluid), color var(--duration-normal) ease;
+  transition: background-color var(--t-slow) var(--motion-ease-fluid), color var(--t-base) ease;
 }
 
 [data-theme="editorial"] body {
   background-image: 
-    linear-gradient(to right, rgba(var(--text-primary), 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(var(--text-primary), 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(var(--color-charcoal), 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--color-charcoal), 0.05) 1px, transparent 1px);
   background-size: var(--baseline) var(--baseline);
   background-attachment: fixed;
 }
 
-/* Component: Glass Card */
 .glass-card {
-  background: var(--bg-card-gradient, rgb(var(--bg-surface)));
-  border: 1px solid rgb(var(--border-subtle) / 0.5);
-  box-shadow: var(--shadow-elevation-2);
-  border-radius: var(--radius-standard);
-  backdrop-filter: blur(20px) saturate(150%);
-  transition: transform var(--duration-normal) var(--motion-spring-smooth), box-shadow var(--duration-normal) var(--motion-ease-fluid);
+  background-color: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-borderline));
+  border-radius: var(--radius-panel);
+  box-shadow: var(--elevation-1);
+  backdrop-filter: blur(8px);
+  transition: transform var(--t-base) var(--motion-spring-smooth), 
+              box-shadow var(--t-base) var(--motion-ease-fluid),
+              background-color var(--t-slow) var(--motion-ease-fluid);
 }
 
-/* Component: Paper Card (Study) */
-.paper-card {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-standard);
-  background: var(--bg-card-gradient, rgb(var(--bg-surface)));
-  border: 1px solid rgb(var(--border-subtle) / 0.3);
-  box-shadow: var(--shadow-elevation-1);
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-2);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  opacity: 0; 
+  pointer-events: none; 
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(0px);
+  transition: opacity var(--t-base) var(--motion-ease-fluid),
+              backdrop-filter var(--t-base) var(--motion-ease-fluid);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  padding: 2rem;
-  transition: transform var(--duration-slow) var(--motion-spring-smooth), opacity var(--duration-normal) ease, box-shadow var(--duration-slow) ease;
+  justify-content: center;
+  padding: 1rem;
 }
 
-.paper-card.front {
-  z-index: 2;
-  box-shadow: var(--shadow-elevation-2);
+.modal-overlay.active { 
+  opacity: 1; 
+  pointer-events: auto; 
+  backdrop-filter: blur(8px); 
 }
 
-/* Component: Magnetic Button */
+.modal-content {
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-borderline));
+  border-radius: calc(var(--radius-panel) * 1.5);
+  box-shadow: var(--elevation-modal);
+  opacity: 0;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.modal-overlay.active .modal-content {
+  opacity: 1;
+  animation: dropIn var(--t-base) var(--motion-spring-bouncy) forwards;
+}
+
 .magnetic-btn {
-  background: rgb(var(--text-primary));
-  color: rgb(var(--bg-base));
-  border-radius: var(--radius-pill);
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  transition: transform 200ms var(--motion-spring-smooth), box-shadow 300ms var(--motion-ease-fluid);
+  background: rgb(var(--color-charcoal));
+  color: rgb(var(--bg-body));
+  border-radius: 100px;
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
   cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: transform var(--t-micro) var(--motion-ease-snappy),
+              box-shadow var(--t-fast) var(--motion-spring-smooth);
 }
 
 .magnetic-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(var(--text-primary), 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(var(--color-charcoal), 0.2);
 }
 
 .magnetic-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97) translateY(1px);
+  box-shadow: 0 2px 4px rgba(var(--color-charcoal), 0.1);
 }
 
-/* Component: Aesthetic Input */
 .aesthetic-input {
   background-color: transparent;
-  border: 1px solid rgb(var(--border-subtle));
+  border: 1px solid rgb(var(--color-borderline));
   border-radius: var(--radius-button);
   padding: 0.75rem 1rem;
-  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  outline: none;
+  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
 }
 
 .aesthetic-input:focus {
-  border-color: rgb(var(--text-accent));
-  box-shadow: 0 0 0 2px rgb(var(--bg-surface)), 0 0 0 4px rgb(var(--text-accent));
-  background-color: rgb(var(--bg-surface));
-}
-
-/* --- Animations --- */
-.enter-pop {
-  animation: popIn 400ms var(--motion-spring-bouncy) both;
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.hover-lift {
-  transition: transform 300ms var(--motion-spring-smooth), box-shadow 300ms var(--motion-ease-fluid);
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-elevation-2);
+  border-color: rgb(var(--color-ochre));
+  box-shadow: 0 0 0 2px rgb(var(--color-surface)), 0 0 0 4px rgb(var(--color-ochre));
+  background-color: rgb(var(--color-surface));
 }
 
 /* ========================================================= */
-/* 🎩 LOGO & BRANDING CHOREOGRAPHY */
+/* 5. 业务动效与特定布局 (Utility & Study) */
 /* ========================================================= */
 
 .logo-card-stack {
   position: relative;
   width: 48px;
   height: 48px;
+  transition: transform var(--t-base) var(--motion-spring-bouncy);
 }
-
 .logo-card-stack .card {
   position: absolute;
   inset: 0;
   border-radius: 6px;
-  border: 1.5px solid rgb(var(--text-primary));
-  background: rgb(var(--bg-base));
-  transition: transform 500ms var(--motion-spring-bouncy), opacity 300ms ease;
+  border: 1.5px solid rgb(var(--color-charcoal));
+  background: rgb(var(--color-surface));
+  transition: transform var(--t-base) var(--motion-spring-bouncy), 
+              opacity var(--t-fast) ease;
 }
-
 .logo-card-stack .card-1 { z-index: 3; }
 .logo-card-stack .card-2 { z-index: 2; transform: rotate(0); opacity: 0.5; }
 .logo-card-stack .card-3 { z-index: 1; transform: rotate(0); opacity: 0.3; }
 
+.logo-card-stack:hover { transform: scale(1.1); }
 .logo-card-stack:hover .card-2 { transform: rotate(-15deg) translate(-4px, -2px); opacity: 0.8; }
 .logo-card-stack:hover .card-3 { transform: rotate(-30deg) translate(-8px, -4px); opacity: 0.6; }
 
-/* ========================================================= */
-/* 🌑 OBSIDIAN REFINEMENTS (Material & Lighting) */
-/* ========================================================= */
-
-[data-theme="obsidian"] .text-glow {
-  text-shadow: 0 0 12px rgba(var(--text-accent), 0.2);
+/* Brand Typography Transitions */
+.brand-typo-wrap {
+  position: relative;
+  height: 36px;
+  width: 56px;
+  overflow: hidden;
 }
-
-[data-theme="obsidian"] .aesthetic-input {
-  background-color: rgba(var(--bg-surface), 0.5);
-}
-
-/* ========================================================= */
-/* 📚 EDITORIAL REFINEMENTS (Swiss Minimalism) */
-/* ========================================================= */
-
-[data-theme="editorial"] p,
-[data-theme="editorial"] .meaning {
-  line-height: var(--baseline);
-}
-
-[data-theme="editorial"] .magnetic-btn {
-  background: rgb(var(--text-primary));
-  color: rgb(var(--bg-base));
-  border: 1.5px solid rgb(var(--text-primary));
-}
-
-[data-theme="editorial"] .magnetic-btn:hover {
-  background: transparent;
-  color: rgb(var(--text-primary));
-  box-shadow: none;
-}
-
-/* ========================================================= */
-/* 📱 MOBILE RESPONSIVENESS */
-/* ========================================================= */
-
-@media (max-width: 640px) {
-  :root {
-    --radius-standard: 1rem;
-  }
-  
-  .paper-card {
-    padding: 1.25rem;
-  }
-}
-
-/* --- Modal System --- */
-.modal-overlay {
-  position: fixed;
+.brand-text {
+  position: absolute;
   inset: 0;
-  z-index: 100;
-  background: rgba(var(--bg-base), 0);
-  backdrop-filter: blur(0px);
-  pointer-events: none;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  padding: 1rem;
-  transition: backdrop-filter 400ms var(--motion-ease-fluid), background 400ms var(--motion-ease-fluid);
+  transition: transform var(--t-base) var(--motion-spring-smooth), 
+              opacity var(--t-fast) var(--motion-ease-fluid);
 }
+#brand-ja { transform: translateY(0); opacity: 1; }
+#brand-en { transform: translateY(2rem); opacity: 0; }
 
-.modal-overlay.active {
-  background: rgba(var(--bg-base), 0.6);
-  backdrop-filter: blur(12px);
-  pointer-events: auto;
-}
+.workspace-en #brand-ja { transform: translateY(-2rem); opacity: 0; }
+.workspace-en #brand-en { transform: translateY(0); opacity: 1; }
 
-.modal-content {
-  background: rgb(var(--bg-surface));
-  border-radius: var(--radius-standard);
-  border: 1px solid rgb(var(--border-subtle) / 0.5);
-  box-shadow: var(--shadow-modal);
-  transform: scale(0.9) translateY(20px);
-  opacity: 0;
-  transition: all 400ms var(--motion-spring-smooth);
-}
-
-.modal-overlay.active .modal-content {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
-
-/* Re-include missing classes from original */
 .view-section { display: none; }
 .view-section.active { display: flex; }
 
-/* Keep existing animations but refine them */
-.animate-soft-in {
-  animation: softIn var(--duration-slow) var(--motion-spring-smooth) backwards;
-}
-
-@keyframes softIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+.enter-pop {
+  animation: softPopIn var(--t-base) var(--motion-spring-bouncy) both;
 }
 
 .stagger-1 { animation-delay: 50ms; }
 .stagger-2 { animation-delay: 100ms; }
 .stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
 
-/* --- Table styling --- */
 .airy-row {
-  border-bottom: 1px solid rgb(var(--border-subtle) / 0.3);
+  border-bottom: 1px solid rgb(var(--color-borderline) / 0.3);
   transition: background-color 200ms ease;
 }
-
 .airy-row:hover {
-  background-color: rgb(var(--border-subtle) / 0.1);
+  background-color: rgb(var(--color-borderline) / 0.1);
 }
+
+/* Study Card System */
+.paper-card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-panel);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-borderline) / 0.3);
+  box-shadow: var(--elevation-1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  transition: transform var(--t-slow) var(--motion-spring-smooth), opacity var(--t-base) ease, box-shadow var(--t-slow) ease;
+}
+.paper-card.front { z-index: 2; box-shadow: var(--elevation-2); }
+.paper-card.front.peeled { transform-origin: top right; transform: translate(-20%, -60%) rotate(25deg) scale(0.9); opacity: 0; pointer-events: none; }
+.paper-card.back { z-index: 1; transform: scale(0.97) translateY(4px); opacity: 1; }
+.paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: var(--elevation-2); transition: all var(--t-base) var(--motion-spring-smooth) 0.05s; }
+
+/* Obsidian Fine-tuning */
+[data-theme="obsidian"] .text-glow {
+  text-shadow: 0 0 12px rgba(var(--color-ochre), 0.2);
+}
+[data-theme="obsidian"] .aesthetic-input {
+  background-color: rgba(var(--color-surface), 0.5);
+}
+
+/* Editorial Fine-tuning */
+[data-theme="editorial"] p, [data-theme="editorial"] .meaning { line-height: var(--baseline); }
+[data-theme="editorial"] .magnetic-btn { border: 1.5px solid rgb(var(--color-charcoal)); }
+[data-theme="editorial"] .magnetic-btn:hover { background: transparent; color: rgb(var(--color-charcoal)); box-shadow: none; }
