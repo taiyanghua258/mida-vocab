@@ -85,23 +85,25 @@ function renderStatsChart(statsData) {
       textStyle: { color: cCharcoal, fontFamily: fontUi }
     },
     legend: {
-      bottom: '0%', left: 'center',
+      type: 'scroll', // 💡 开启滚动模式：图例再多也不会换行把图表往上顶
+      bottom: '0%', 
+      left: 'center',
       textStyle: { color: cCharcoal, fontFamily: fontUi, fontSize: 11 },
-      itemWidth: 12, itemHeight: 12
+      itemWidth: 12, itemHeight: 12,
+      pageIconColor: cOchre
     },
     series: [
       {
         name: '学习状态', 
         type: 'pie', 
-        // 👇 修复 1：缩小内外半径，并将圆心整体上移，给底部图例留出充足的换行空间
-        radius: ['35%', '60%'], 
-        center: ['50%', '35%'],
-        // 👇 修复 2：增加 minAngle (最小扇区角度)，强制即使只有 1 个词也能渲染出可见的色块
-        minAngle: 15,
+        radius: ['35%', '55%'], // 💡 彻底缩小圆环半径
+        center: ['50%', '38%'], // 💡 将圆心大幅上移，彻底避开下方文字
+        minAngle: 15,           // 💡 强制最小扇形角度：就算只有 1 个词，也会强行画出 15 度的色块！
         avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 6, borderColor: cSurface, borderWidth: 2 },
+        itemStyle: { borderRadius: 4, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
         emphasis: {
+          // 限制高亮文字大小和行高，防止文字变大时溢出圆环
           label: { show: true, fontSize: 11, lineHeight: 16, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
         },
         labelLine: { show: false },
@@ -204,14 +206,15 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: isMobile ? 55 : 40,
+        top: 50, // 略微下移，避开顶部标题
         bottom: 15,
-        left: 45,
-        right: isMobile ? 25 : 80,     // 💡 为右侧竖向图例预留空间
-        cellSize: isMobile ? [20, 20] : [26, 26], 
+        left: isMobile ? 35 : 45, // 缩小移动端左侧边距
+        right: isMobile ? 15 : 80,
+        // 💡 彻底写死方块的宽高：移动端 18px，保证 7 天绝对排得下，不会和文字挤压
+        cellSize: isMobile ? [18, 18] : [26, 26], 
         range: monthStr,
         itemStyle: {
-          borderWidth: isMobile ? 2 : 3,
+          borderWidth: 2,
           borderColor: cSurface,
           color: 'rgba(150, 150, 150, 0.08)' 
         },
@@ -221,8 +224,8 @@ async function renderCalendarChart() {
           color: getColor('--color-muted', '#8b8982'), 
           fontFamily: fontUi, 
           nameMap: ['日', '一', '二', '三', '四', '五', '六'], 
-          fontSize: 10,
-          margin: 6 
+          fontSize: 10, // 缩小星期文字
+          margin: 4     // 减小文字和格子之间的缝隙
         },
         splitLine: { show: false }
       },
