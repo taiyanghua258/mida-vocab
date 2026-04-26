@@ -1074,3 +1074,37 @@ html[data-theme="editorial"],
 .custom-scrollbar::-webkit-scrollbar { height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--color-borderline)); border-radius: 4px; }
+
+/* ===================================================================== */
+/* 日历热力图：小众主题高级定制覆盖 (Theme Overrides for Calendar) */
+/* ===================================================================== */
+
+/* 1. 学术/印刷主题 (Editorial) - 严谨的直角墨迹质感 */
+[data-theme="editorial"] .cal-cell {
+  border-radius: 0 !important;
+  border: 1px solid rgba(20, 20, 20, 0.12) !important;
+  background-color: transparent !important;
+}
+[data-theme="editorial"] .cal-cell[data-level="1"] { background-color: rgba(20, 20, 20, 0.2) !important; border-color: rgba(20, 20, 20, 0.25) !important; }
+[data-theme="editorial"] .cal-cell[data-level="2"] { background-color: rgba(20, 20, 20, 0.5) !important; border-color: rgba(20, 20, 20, 0.55) !important; }
+[data-theme="editorial"] .cal-cell[data-level="3"] { background-color: rgba(20, 20, 20, 0.8) !important; border-color: rgba(20, 20, 20, 0.85) !important; }
+[data-theme="editorial"] .cal-cell[data-level="4"] { background-color: rgba(20, 20, 20, 1) !important;   border-color: rgba(20, 20, 20, 1) !important; }
+[data-theme="editorial"] .cal-cell:hover {
+  border-color: #bf362e !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 2. 深色主题 (Obsidian) - 暗夜荧光质感 */
+[data-theme="obsidian"] .cal-cell {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+[data-theme="obsidian"] .cal-cell[data-level="1"] { background-color: rgba(194, 155, 87, 0.3) !important; border-color: rgba(194, 155, 87, 0.4) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="2"] { background-color: rgba(194, 155, 87, 0.7) !important; border-color: rgba(194, 155, 87, 0.8) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="3"] { background-color: rgb(166, 82, 63) !important; border-color: rgb(166, 82, 63) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="4"] { background-color: rgb(234, 230, 219) !important; border-color: #fff !important; box-shadow: 0 0 10px rgba(234,230,219,0.5) !important; }
+
+/* 隐形美化原生横向滚动条 */
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--color-borderline)); border-radius: 4px; }
