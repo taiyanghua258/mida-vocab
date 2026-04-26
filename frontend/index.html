@@ -11,64 +11,74 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS: Ultimate Robust Injection -->
+  <!-- Tailwind CSS: CDN must load FIRST before config is set -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    window.tailwind = {
-      config: {
-        theme: {
-          extend: {
-            colors: {
-              parchment: 'rgb(var(--color-parchment) / <alpha-value>)',
-              surface: 'rgb(var(--color-surface) / <alpha-value>)',
-              charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
-              ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
-              terracotta: 'rgb(var(--color-terracotta) / <alpha-value>)',
-              lavender: 'rgb(var(--color-lavender) / <alpha-value>)',
-              muted: 'rgb(var(--color-muted) / <alpha-value>)',
-              borderline: 'rgb(var(--color-borderline) / <alpha-value>)',
-              success: 'rgb(var(--color-success) / <alpha-value>)'
-            },
-            fontFamily: {
-              sans: ['Inter', 'system-ui', 'sans-serif'],
-              jp: ['"Noto Sans JP"', 'sans-serif']
-            }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parchment: 'rgb(var(--color-parchment) / <alpha-value>)',
+            surface: 'rgb(var(--color-surface) / <alpha-value>)',
+            charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
+            ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
+            terracotta: 'rgb(var(--color-terracotta) / <alpha-value>)',
+            lavender: 'rgb(var(--color-lavender) / <alpha-value>)',
+            muted: 'rgb(var(--color-muted) / <alpha-value>)',
+            borderline: 'rgb(var(--color-borderline) / <alpha-value>)',
+            success: 'rgb(var(--color-success) / <alpha-value>)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            jp: ['"Noto Sans JP"', 'sans-serif']
           }
         }
       }
-    };
+    }
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="css/main.css?v=18">
+  <link rel="stylesheet" href="css/main.css?v=19">
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+  <!-- 本地加载 ECharts，彻底解决 CDN 被墙或白屏问题 -->
   <script src="js/echarts.min.js"></script>
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col relative z-10">
-  <div id="noiseOverlay" class="fixed inset-0 z-[-1] pointer-events-none transition-opacity duration-1000" style="opacity: 0; background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%221%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E'); background-repeat: repeat; mix-blend-mode: multiply;">
+  <div id="noiseOverlay" class="fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000" style="opacity: 0; background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%221%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E'); background-repeat: repeat; mix-blend-mode: multiply;">
   </div>
 
   <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 sm:top-6 sm:right-6 sm:left-auto sm:-translate-x-0 z-[9999] flex flex-col gap-3 pointer-events-none w-11/12 max-w-sm sm:w-auto"></div>
 
   <!-- ========== AUTH VIEW ========== -->
   <div id="view-auth" class="view-section h-screen flex-col items-center justify-center p-4">
-    <div class="max-w-md w-full glass-card p-6 sm:p-10">
-      <div class="text-center mb-10 brand-hover-container group cursor-default">
-        <div class="flex items-center justify-center gap-7 mb-6">
-          <!-- Stacked Flashcards Logo (Semantic Refactor) -->
-          <div class="logo-card-stack enter-pop">
-            <div class="card card-3"></div>
-            <div class="card card-2"></div>
-            <div class="card card-1 flex flex-col items-center justify-center gap-1.5">
-              <div class="w-4 h-0.5 bg-current rounded-full opacity-80"></div>
-              <div class="w-2.5 h-0.5 bg-current rounded-full opacity-40"></div>
+    <div class="max-w-md w-full bg-surface rounded-[var(--radius-modal)] shadow-lg p-6 sm:p-10 border border-borderline">
+      <div class="text-center mb-10 brand-hover-container">
+        <!-- 左右对齐结构 -->
+        <div class="flex items-center justify-center gap-7 mb-6 group cursor-default">
+          <!-- Stacked Flashcards Logo (Large Presentation) -->
+          <div class="relative w-16 h-16 flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110">
+            <div class="idle-float">
+            <!-- Back Card (Parchment) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-borderline rounded-[4px] -rotate-[8deg] translate-x-[-6px] translate-y-[4px] bg-parchment shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[22deg] group-hover:translate-x-[-14px] group-hover:translate-y-[8px]"></div>
+            
+            <!-- Middle Card (Surface) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-muted/20 rounded-[4px] rotate-1 translate-x-[0px] translate-y-[0px] bg-surface shadow-sm transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0 group-hover:translate-x-[0px] group-hover:translate-y-[-2px]"></div>
+            
+            <!-- Front Card (Charcoal Bold) -->
+            <div class="absolute w-[44px] h-[58px] border-[2px] border-charcoal rounded-[4px] rotate-[12deg] translate-x-[6px] translate-y-[-4px] bg-surface shadow-md transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[26deg] group-hover:translate-x-[18px] group-hover:translate-y-[-10px] flex flex-col items-center justify-center gap-[6px]">
+              <div class="w-[18px] h-[2.5px] bg-charcoal rounded-full transition-transform duration-700 group-hover:w-[22px]"></div>
+              <div class="w-[8px] h-[2.5px] bg-ochre rounded-full transition-transform duration-700 group-hover:w-[14px]"></div>
+            </div>
+            
+            <!-- Dynamic Floating Dot representing memory retention -->
+            <div class="absolute w-2.5 h-2.5 bg-terracotta rounded-full -top-1 -right-1 opacity-0 -translate-y-4 scale-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100"></div>
             </div>
           </div>
 
           <!-- 主品牌字 -->
-          <div class="font-display text-[3.6rem] font-bold text-charcoal leading-none tracking-tighter">見だ</div>
+          <div class="font-display text-[3.6rem] font-bold text-charcoal leading-none tracking-tighter transition-colors duration-500">見だ</div>
         </div>
         <!-- 下方排版：极简横线与副标题 -->
-        <div class="w-12 h-0.5 bg-borderline mt-7 mb-4 mx-auto transition-all duration-700 group-hover:w-24 group-hover:bg-ochre/30"></div>
+        <div class="w-12 h-[2px] bg-borderline mt-7 mb-4 mx-auto transition-all duration-700 group-hover:w-24 group-hover:bg-ochre/30"></div>
         <div class="font-ui text-[0.65rem] font-bold tracking-[0.55em] uppercase text-muted transition-colors duration-700 group-hover:text-charcoal/70">Spaced Repetition</div>
       </div>
       <form id="loginForm" class="space-y-5">
@@ -114,30 +124,30 @@
         <div class="flex items-center gap-6">
           
           <div class="flex items-center gap-3.5 group cursor-pointer select-none">
-            <div class="logo-card-stack scale-[0.65] -ml-2 -mr-1">
-              <div class="card card-3"></div>
-              <div class="card card-2"></div>
-              <div class="card card-1 flex flex-col items-center justify-center gap-1">
-                <div class="w-3 h-0.5 bg-current rounded-full opacity-80"></div>
-                <div class="w-1.5 h-0.5 bg-current rounded-full opacity-40"></div>
+            <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-borderline rounded-[3px] -rotate-6 translate-x-[-3px] translate-y-[2px] bg-parchment transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-[16deg] group-hover:translate-x-[-6px] group-hover:translate-y-[4px]"></div>
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-muted/30 rounded-[3px] rotate-2 translate-x-[0px] translate-y-[0px] bg-surface transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-0"></div>
+              <div class="absolute w-[20px] h-[26px] border-[1.5px] border-charcoal rounded-[3px] rotate-[10deg] translate-x-[3px] translate-y-[-2px] bg-surface shadow-sm transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[18deg] group-hover:translate-x-[6px] group-hover:translate-y-[-4px] flex flex-col items-center justify-center gap-1">
+                <div class="w-2.5 h-[1.5px] bg-charcoal rounded-full transition-transform duration-500 group-hover:w-3"></div>
+                <div class="w-[4px] h-[1.5px] bg-terracotta rounded-full transition-transform duration-500 group-hover:w-[6px]"></div>
               </div>
             </div>
             
-            <div class="brand-typo-wrap">
-              <div id="brand-ja" class="brand-text font-display">
+            <div class="flex flex-col justify-center leading-none mt-[3px] relative h-[36px] w-[56px] overflow-hidden">
+              <div id="brand-ja" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-0 opacity-100 font-display">
                 <div class="flex items-baseline">
                   <span class="text-[1.25rem] font-bold text-charcoal tracking-tighter">見だ</span>
                   <span class="w-1 h-1 bg-terracotta rounded-full ml-[3px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
                 </div>
-                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80">Vocab</span>
+                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[2px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
               </div>
     
-              <div id="brand-en" class="brand-text font-display">
+              <div id="brand-en" class="absolute inset-y-0 left-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-8 opacity-0 font-display">
                 <div class="flex items-baseline">
                   <span class="text-[1.25rem] font-bold text-charcoal tracking-tight">See</span>
                   <span class="w-1 h-1 bg-terracotta rounded-full ml-[2px] mb-1.5 transition-transform duration-500 group-hover:scale-[2]"></span>
                 </div>
-                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[1px] opacity-80">Vocab</span>
+                <span class="font-ui text-[0.5rem] font-bold tracking-[0.3em] uppercase text-muted mt-[3px] ml-[1px] opacity-80 group-hover:opacity-100 transition-opacity">Vocab</span>
               </div>
             </div>
           </div>
@@ -229,19 +239,19 @@
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div id="tour-stats-area" class="grid grid-cols-2 sm:flex gap-3 sm:gap-4 w-full lg:w-auto">
-          <div class="glass-card p-4 sm:p-6 enter-pop stagger-1 flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden">
+          <div class="glass-card p-4 sm:p-6 rounded-[var(--radius-card)] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-1">
             <span class="text-[2.2rem] font-bold text-charcoal mb-1 tracking-tight font-display" id="totalWords">-</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 font-ui">总词汇量</span>
           </div>
-          <div class="glass-card p-4 sm:p-6 enter-pop stagger-2 flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden">
-            <div class="absolute inset-y-6 left-0 w-1 bg-ochre rounded-r-full opacity-60"></div>
-            <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight font-display text-glow" id="dueWords">-</span>
+          <div class="glass-card p-4 sm:p-6 rounded-[var(--radius-card)] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-2">
+            <div class="absolute inset-y-6 left-0 w-[3px] bg-ochre rounded-r-full opacity-80 transition-all duration-500 group-hover:h-[calc(100%-2rem)] group-hover:inset-y-4 group-hover:opacity-100"></div>
+            <span class="text-[2.2rem] font-bold text-ochre mb-1 pl-2 tracking-tight font-display" id="dueWords">-</span>
             <span class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mt-1 pl-2 font-ui">待复习</span>
           </div>
         </div>
 
         <div class="flex flex-wrap lg:flex-nowrap items-center gap-4 w-full lg:w-auto font-ui">
-          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-2xl p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto enter-pop stagger-3">
+          <div id="tour-action-bar" class="flex bg-surface/60 backdrop-blur-md rounded-[var(--radius-panel)] p-1.5 shadow-sm border border-borderline w-full lg:w-auto overflow-x-auto animate-soft-in stagger-3">
             <button onclick="openModal('wordModal')" class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl hover:bg-surface hover:shadow-sm text-[0.85rem] font-medium text-charcoal transition-all group active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted group-hover:text-charcoal transition-colors">
                 <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
@@ -280,7 +290,7 @@
               <span>导出库</span>
             </button>
           </div>
-          <button id="tour-study-btn" onclick="navigate('study')" class="btn-study w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[var(--radius-panel)] font-ui">
+          <button id="tour-study-btn" onclick="navigate('study')" class="magnetic-btn w-full lg:w-auto px-8 py-4 tracking-widest text-[0.95rem] flex items-center justify-center gap-2.5 rounded-[var(--radius-panel)] font-ui">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ochre">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -290,11 +300,11 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
-        <div id="statsChartWrapper" class="hidden glass-card p-4 md:col-span-1 h-56 sm:h-64 flex flex-col enter-pop stagger-4">
+        <div id="statsChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-4 md:col-span-1 h-56 sm:h-64 flex flex-col animate-soft-in stagger-4">
           <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase mb-1 font-ui">学习状态分布</div>
           <div id="statsChart" class="w-full flex-1"></div>
         </div>
-        <div id="calendarChartWrapper" class="hidden glass-card p-4 md:col-span-3 h-[220px] sm:h-[260px] flex flex-col enter-pop stagger-5">
+        <div id="calendarChartWrapper" class="hidden glass-card rounded-[var(--radius-panel)] border border-borderline p-4 md:col-span-3 h-[220px] sm:h-[260px] flex flex-col animate-soft-in stagger-5">
           <div class="flex items-center justify-between mb-1">
             <div class="text-[0.65rem] text-muted font-bold tracking-widest-plus uppercase font-ui">每日复习热力图</div>
             <div class="flex items-center gap-1.5">
@@ -527,8 +537,8 @@
   </div>
 
   <!-- ========== MODALS ========== -->
-  <div id="reviewListModal" class="modal-overlay">
-    <div class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+  <div id="reviewListModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal" id="reviewListModalTitle">复习详情</h3>
         <button onclick="closeModal('reviewListModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
@@ -543,8 +553,8 @@
     </div>
   </div>
 
-  <div id="wordModal" class="modal-overlay">
-    <div class="modal-content w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col">
+  <div id="wordModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal" id="modalTitle">添加单词</h3>
         <button onclick="closeModal('wordModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
@@ -670,8 +680,8 @@
     </div>
   </div>
 
-  <div id="dictImportModal" class="modal-overlay">
-    <div class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+  <div id="dictImportModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">上传词书</h3>
         <button onclick="closeModal('dictImportModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
@@ -780,8 +790,8 @@
   </div>
 
   <!-- ========== SETTINGS MODAL ========== -->
-  <div id="settingsModal" class="modal-overlay">
-    <div class="modal-content w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col">
+  <div id="settingsModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-6 sm:px-8 py-5 sm:py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">记忆算法设置</h3>
         <button onclick="closeModal('settingsModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
@@ -893,8 +903,8 @@
     </div>
   </div>
 
-  <div id="profileModal" class="modal-overlay">
-    <div class="modal-content w-full max-w-sm max-h-[90vh] overflow-y-auto flex flex-col">
+  <div id="profileModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    <div class="modal-content bg-surface rounded-[var(--radius-card)] w-full max-w-sm max-h-[90vh] overflow-y-auto flex flex-col shadow-[var(--shadow-modal)] border border-borderline">
       <div class="px-8 py-6 flex justify-between items-center pb-2 border-b border-borderline/40 bg-parchment/30">
         <h3 class="text-xl font-bold tracking-widest-plus text-charcoal">个人资料</h3>
         <button onclick="closeModal('profileModal')" class="text-muted hover:text-charcoal w-8 h-8 flex items-center justify-center rounded-full transition-transform duration-300 hover:rotate-90">
@@ -928,12 +938,12 @@
     </div>
   </div>
 
-<script src="js/state.js?v=16"></script>
-<script src="js/utils/common.js?v=16"></script>
-<script src="js/api.js?v=16"></script>
-<script src="js/ui/dashboard.js?v=16"></script>
-<script src="js/ui/studyMode.js?v=16"></script>
-<script src="js/ui/theme.js?v=16"></script>
+<script src="js/state.js?v=19"></script>
+<script src="js/utils/common.js?v=19"></script>
+<script src="js/api.js?v=19"></script>
+<script src="js/ui/dashboard.js?v=19"></script>
+<script src="js/ui/studyMode.js?v=19"></script>
+<script src="js/ui/theme.js?v=19"></script>
 
 
 
