@@ -120,7 +120,7 @@ async function renderCalendarChart() {
   if (!wrapper) return;
   wrapper.classList.remove('hidden');
 
-  // 【DOM 自愈机制】：如果你遗漏了 HTML 替换，这里会自动抹除旧的 ECharts 容器，强行注入新版原生 DOM
+  // 【DOM 自愈机制】
   let container = document.getElementById('nativeCalendarContainer');
   if (!container) {
     wrapper.innerHTML = `
@@ -153,7 +153,7 @@ async function renderCalendarChart() {
   const monthLabel = document.getElementById('calendarMonthLabel');
   if (monthLabel) monthLabel.textContent = `${vm.year}年${vm.month}月`;
 
-  // 【加载状态】：防止网络延迟时变成“一片空白”
+  // 【加载状态】
   container.innerHTML = `
     <div class="w-full h-full flex flex-col items-center justify-center text-muted/60 text-xs animate-pulse min-h-[120px]">
       <svg class="animate-spin mb-2 h-5 w-5 text-ochre/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -185,13 +185,15 @@ async function renderCalendarChart() {
       </div>
     `;
 
-    // 采用 Tailwind 原生 Grid 铺设，完全不再依赖外部 CSS 骨架
-    html += `<div class="grid grid-rows-7 grid-flow-col gap-1 sm:gap-1.5">`;
+    // 【核心修复区域】：强制使用内联样式定义 7 行网格，绕开 Tailwind CDN 的限制
+    html += `<div class="grid grid-flow-col gap-1 sm:gap-1.5" style="grid-template-rows: repeat(7, 1fr);">`;
 
+    // 填充月初空白
     for (let i = 0; i < padDays; i++) {
       html += `<div class="w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] opacity-0 pointer-events-none"></div>`;
     }
 
+    // 渲染每一天
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
       const count = dataMap.get(dateStr) || 0;
@@ -219,7 +221,6 @@ async function renderCalendarChart() {
 
   } catch (err) {
     console.error("Failed to load calendar data:", err);
-    // 【错误状态】：确保即便报错也不会留下一片白板
     container.innerHTML = `
       <div class="w-full h-full flex items-center justify-center text-terracotta text-xs opacity-70 min-h-[120px]">
         获取记忆轨迹失败，请刷新重试
