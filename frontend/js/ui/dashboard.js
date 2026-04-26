@@ -198,9 +198,11 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: isMobile ? 55 : 'middle', // 💡 移动端避开顶部图例，桌面端让日历完美居中
-        left: 'center',
-        cellSize: [cSize, cSize],      // 💡 恢复强制正方形！拒绝拉伸变形
+        top: isMobile ? 55 : 40,
+        bottom: 15,
+        left: 45,
+        right: isMobile ? 25 : 80,     // 💡 为右侧竖向图例预留空间
+        cellSize: ['auto', 'auto'],    // 💡 恢复自适应拉伸，确保铺满容器
         range: monthStr,
         itemStyle: {
           borderWidth: isMobile ? 2 : 3,
