@@ -71,7 +71,7 @@ function renderStatsChart(statsData) {
   const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
 
   const dataArray = [
-    { value: statsData.newWords || 0, name: '新词 (New)', itemStyle: { color: cTerracotta } },
+    { value: statsData.totalNewWords || 0, name: '新词 (New)', itemStyle: { color: cTerracotta } },
     { value: statsData.learningWords || 0, name: '学习中 (Learning)', itemStyle: { color: cOchre } },
     { value: statsData.reviewWords || 0, name: '待复习 (Review)', itemStyle: { color: cMuted } },
     { value: statsData.masteredWords || 0, name: '已掌握 (Mastered)', itemStyle: { color: cSuccess } }
@@ -96,7 +96,7 @@ function renderStatsChart(statsData) {
         itemStyle: { borderRadius: 6, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
         emphasis: {
-          label: { show: true, fontSize: 14, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
+          label: { show: true, fontSize: 11, lineHeight: 16, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
         },
         labelLine: { show: false },
         data: dataArray.length > 0 ? dataArray : [{ value: 1, name: '无数据', itemStyle: { color: cBorderline } }]
@@ -202,7 +202,7 @@ async function renderCalendarChart() {
         bottom: 15,
         left: 45,
         right: isMobile ? 25 : 80,     // 💡 为右侧竖向图例预留空间
-        cellSize: ['auto', 'auto'],    // 💡 恢复自适应拉伸，确保铺满容器
+        cellSize: isMobile ? [20, 20] : [26, 26], 
         range: monthStr,
         itemStyle: {
           borderWidth: isMobile ? 2 : 3,
@@ -215,8 +215,8 @@ async function renderCalendarChart() {
           color: getColor('--color-muted', '#8b8982'), 
           fontFamily: fontUi, 
           nameMap: ['日', '一', '二', '三', '四', '五', '六'], 
-          fontSize: 11,
-          margin: 8 
+          fontSize: 10,
+          margin: 6 
         },
         splitLine: { show: false }
       },
