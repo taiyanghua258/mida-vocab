@@ -595,9 +595,19 @@ exports.getCalendarStats = async (req, res) => {
           reviewDate: { $gte: oneYearAgo }
         } 
       },
+      // 第一层分组：按 "日期 + 单词ID" 去重，确保同一天同一个词复习多次只算一次
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$reviewDate", timezone: TIMEZONE } },
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$reviewDate", timezone: TIMEZONE } },
+            wordId: "$wordId"
+          }
+        }
+      },
+      // 第二层分组：按 "日期" 统计去重后的真实单词数量
+      {
+        $group: {
+          _id: "$_id.date",
           count: { $sum: 1 }
         }
       }
