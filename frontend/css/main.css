@@ -662,6 +662,35 @@
       }
     }
 
+
+    /* ===================================================================== */
+    /* 修复：让 Dashboard 单词列表（表格第二列）完美响应各主题的专属字体 */
+    /* ===================================================================== */
+
+    /* 强制让列表中的单词列应用动态的 --word-font */
+    #wordTableBody td:nth-child(2) {
+      font-family: var(--word-font) !important;
+    }
+
+    /* 穿透 JS 可能生成的内部 span 标签，防止 Tailwind 默认字体覆盖 */
+    #wordTableBody td:nth-child(2) * {
+      font-family: inherit !important;
+    }
+
+    /* 为了搭配学术模式(Editorial)的复古印刷体，我们顺便调优一下桌面端单词列的字号和字重 */
+    #wordTableBody td:nth-child(2) span.text-lg {
+      font-size: 1.35rem; /* 让桌面端单词更大一点 */
+      font-weight: 600;
+      letter-spacing: var(--word-tracking, normal);
+      transition: color var(--duration-normal) ease;
+    }
+
+    /* 针对学术模式 (Editorial) 下列表单词的专属微调 */
+    [data-theme="editorial"] #wordTableBody td:nth-child(2) span.text-lg {
+      font-size: 1.5rem; /* 衬线体通常视觉显小，需要略微放大 */
+      font-weight: 700;
+    }
+
     /* ========== 移动端 UI & 性能优化 ========== */
     @media (max-width: 640px) {
       /* Table to Card Transformation */
