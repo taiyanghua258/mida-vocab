@@ -277,17 +277,17 @@
     }
 
     /* 精准排版工具类 */
-    .font-display { font-family: var(--font-serif) !important; }
-    .font-ui { font-family: var(--font-ui) !important; }
-    .leading-tight-display { line-height: 1.15 !important; }
+    .font-display { font-family: var(--font-serif); }
+    .font-ui { font-family: var(--font-ui); }
+    .leading-tight-display { line-height: 1.15; }
     
     /* 核心单词显示逻辑 (变量驱动, 已迁移至 class 选择器避免重复 ID) */
     .card-front-word {
-      font-family: var(--word-font) !important;
-      font-size: var(--word-size) !important;
-      font-weight: var(--word-weight) !important;
-      letter-spacing: var(--word-tracking) !important;
-      line-height: 1.1 !important;
+      font-family: var(--word-font);
+      font-size: var(--word-size);
+      font-weight: var(--word-weight);
+      letter-spacing: var(--word-tracking);
+      line-height: 1.1;
       transition: all var(--duration-normal) var(--ease-spring);
     }
 
@@ -851,7 +851,7 @@ html[data-theme="editorial"],
 }
 
 .editorial-dict-header .reading {
-  font-family: var(--font-editorial) !important;
+  font-family: var(--font-editorial);
   font-size: 2.25rem;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -860,7 +860,7 @@ html[data-theme="editorial"],
 
 .editorial-dict-header .pos,
 .editorial-dict-top .pos {
-  font-family: var(--font-editorial) !important;
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: 0.95rem;
   color: rgb(var(--color-muted));
@@ -876,7 +876,7 @@ html[data-theme="editorial"],
 }
 
 .editorial-dict-back .meaning {
-  font-family: var(--font-editorial) !important;
+  font-family: var(--font-editorial);
   font-size: 1.65rem;
   line-height: 1.65;
   color: rgb(var(--color-charcoal));
@@ -894,7 +894,7 @@ html[data-theme="editorial"],
 }
 
 [data-theme="editorial"] .card-front-word {
-  font-family: var(--font-editorial) !important;
+  font-family: var(--font-editorial);
 }
 
 /* 3. 保留极简必要的重置，利用 CSS 层叠覆盖而非全局 !important */

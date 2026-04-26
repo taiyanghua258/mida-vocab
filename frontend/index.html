@@ -9,7 +9,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS: CDN must load FIRST before config is set -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -29,7 +29,10 @@
             success: 'rgb(var(--color-success) / <alpha-value>)'
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
+            // 直接读取定义的 CSS 变量
+            sans: ['var(--font-ui)', 'sans-serif'],
+            serif: ['var(--font-serif)', 'serif'],
+            display: ['var(--font-display)', 'sans-serif'],
             jp: ['"Noto Sans JP"', 'sans-serif']
           }
         }
@@ -569,7 +572,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="col-span-2">
             <label id="addWordLabel" class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">日语 <span class="text-terracotta">*</span></label>
-            <input type="text" id="japanese" required class="aesthetic-input w-full px-2 py-2 text-charcoal" placeholder="单词">
+            <input type="text" id="japanese" lang="ja" required class="aesthetic-input w-full px-2 py-2 text-charcoal" placeholder="单词">
           </div>
           <div class="flex items-end">
             <button type="button" onclick="handleAiGenerate()" id="aiGenerateBtn" class="w-full py-2 bg-charcoal/5 hover:bg-charcoal/10 text-charcoal rounded-lg transition-all font-bold tracking-wider text-xs flex items-center justify-center gap-1.5">

@@ -280,7 +280,7 @@ async function showDetailedReviewListForDate(dateStr) {
       return `
       <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40 hover:border-ochre/30 transition-colors">
         <div class="flex-1 min-w-0 pr-4">
-          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]">${escapeHtml(w.japanese)}</span>
+          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]" ${w.language === 'ja' ? 'lang="ja"' : ''}>${escapeHtml(w.japanese)}</span>
           <span class="text-xs text-muted block mt-1 truncate">${escapeHtml(w.reading || '')} ${w.reading ? '·' : ''} ${escapeHtml(w.meaning)}</span>
         </div>
         <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
@@ -334,7 +334,7 @@ async function showDetailedReviewList(categoryName) {
       return `
       <div class="flex justify-between items-center p-3.5 bg-parchment rounded-xl mb-2 border border-borderline/40 hover:border-ochre/30 transition-colors">
         <div class="flex-1 min-w-0 pr-4">
-          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]">${escapeHtml(w.japanese)}</span>
+          <span class="font-bold text-charcoal truncate block ${fontClass} text-[1.1rem]" ${w.language === 'ja' ? 'lang="ja"' : ''}>${escapeHtml(w.japanese)}</span>
           <span class="text-xs text-muted block mt-1 truncate">${escapeHtml(w.reading || '')} ${w.reading ? '·' : ''} ${escapeHtml(w.meaning)}</span>
         </div>
         <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
@@ -385,7 +385,7 @@ function renderWordList(words) {
         <input type="checkbox" value="${w._id}" ${checked} onchange="toggleWordSelect('${w._id}')" class="w-4 h-4 rounded-sm border-borderline text-ochre focus:ring-1 focus:ring-ochre/30 cursor-pointer transition-all">
       </td>
       <td class="px-6 py-4">
-        <span class="text-xl font-bold font-jp leading-tight block">${ej}</span>
+        <span class="text-xl font-bold font-jp leading-tight block" ${w.language === 'ja' ? 'lang="ja"' : ''}>${ej}</span>
         <span class="text-xs text-muted font-jp opacity-60">${er || ''}</span>
       </td>
       <td class="px-6 py-4 text-sm font-medium font-ui opacity-90">${em}</td>
