@@ -56,7 +56,7 @@ function renderStatsChart(statsData) {
   
   const getColor = (varName, fallback) => {
     const val = rootStyle.getPropertyValue(varName).trim();
-    return val ? `rgb(${val})` : fallback;
+    return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
   };
 
   const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
@@ -78,7 +78,7 @@ function renderStatsChart(statsData) {
   const option = {
     tooltip: {
       trigger: 'item',
-      backgroundColor: `rgba(${rootStyle.getPropertyValue('--color-surface').trim() || '255,255,255'}, 0.9)`,
+      backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
       borderColor: cBorderline,
       textStyle: {
         color: cCharcoal,
@@ -173,7 +173,7 @@ async function renderCalendarChart() {
     const rootStyle = getComputedStyle(document.documentElement);
     const getColor = (varName, fallback) => {
       const val = rootStyle.getPropertyValue(varName).trim();
-      return val ? `rgb(${val})` : fallback;
+      return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
     };
 
     const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
@@ -188,7 +188,7 @@ async function renderCalendarChart() {
 
     const option = {
       tooltip: {
-        backgroundColor: `rgba(${rootStyle.getPropertyValue('--color-surface').trim() || '255,255,255'}, 0.9)`,
+        backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
         borderColor: cBorderline,
         textStyle: { color: cCharcoal, fontFamily: fontUi },
         formatter: function (p) {
@@ -215,9 +215,8 @@ async function renderCalendarChart() {
       },
       calendar: {
         top: 40,
-        left: 40,
-        right: 30,
-        cellSize: ['auto', 20],
+        left: 'center',
+        cellSize: [30, 30],
         range: monthStr,
         itemStyle: {
           borderWidth: 2,
