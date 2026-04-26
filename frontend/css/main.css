@@ -145,11 +145,13 @@ body {
   inset: 0;
   z-index: 100;
   opacity: 0; 
+  visibility: hidden; /* 核心：关闭时从交互树拔除 */
   pointer-events: none; 
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(0px);
   transition: opacity var(--t-base) var(--motion-ease-fluid),
-              backdrop-filter var(--t-base) var(--motion-ease-fluid);
+              backdrop-filter var(--t-base) var(--motion-ease-fluid),
+              visibility var(--t-base) var(--motion-ease-fluid);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,6 +160,7 @@ body {
 
 .modal-overlay.active { 
   opacity: 1; 
+  visibility: visible; /* 激活时恢复可见性与交互 */
   pointer-events: auto; 
   backdrop-filter: blur(8px); 
 }
@@ -179,6 +182,8 @@ body {
 }
 
 .magnetic-btn {
+  position: relative; /* 开启层级计算 */
+  z-index: 10;        /* 确保高于噪点层与容器背景 */
   background: rgb(var(--color-charcoal));
   color: rgb(var(--bg-body));
   border-radius: 100px;
@@ -190,7 +195,8 @@ body {
   padding: 0.75rem 1.5rem;
   font-weight: 600;
   transition: transform var(--t-micro) var(--motion-ease-snappy),
-              box-shadow var(--t-fast) var(--motion-spring-smooth);
+              box-shadow var(--t-fast) var(--motion-spring-smooth),
+              background-color var(--t-base) ease;
 }
 
 .magnetic-btn:hover {
@@ -321,3 +327,49 @@ body {
 [data-theme="editorial"] p, [data-theme="editorial"] .meaning { line-height: var(--baseline); }
 [data-theme="editorial"] .magnetic-btn { border: 1.5px solid rgb(var(--color-charcoal)); }
 [data-theme="editorial"] .magnetic-btn:hover { background: transparent; color: rgb(var(--color-charcoal)); box-shadow: none; }
+
+/* 惊艳的学习按钮 (Metal Cut & Glow) */
+.btn-study {
+  position: relative;
+  z-index: 10;
+  background: rgb(var(--color-charcoal));
+  color: white;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.05);
+  transition: all var(--t-base) var(--motion-spring-smooth);
+}
+
+.btn-study::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(var(--color-ochre), 0.2), transparent);
+  transition: left var(--t-slow) var(--motion-ease-fluid);
+}
+
+.btn-study:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(var(--color-ochre), 0.15), inset 0 0 10px rgba(var(--color-ochre), 0.1);
+  border-color: rgba(var(--color-ochre), 0.3);
+}
+
+.btn-study:hover::before {
+  left: 100%;
+}
+
+[data-theme="obsidian"] .btn-study {
+  background: linear-gradient(145deg, #2a2826, #11100f);
+  border: 1px solid rgba(var(--color-ochre), 0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+}
+
+[data-theme="editorial"] .btn-study {
+  background: transparent;
+  color: rgb(var(--color-charcoal));
+  border: 2px solid rgb(var(--color-charcoal));
+  box-shadow: none;
+  border-radius: 0;
+}
+
