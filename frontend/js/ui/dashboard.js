@@ -45,16 +45,17 @@ function renderStatsChart(statsData) {
 
   if (!myStatsChart) {
     myStatsChart = echarts.init(chartDom);
-    // 💡 修复动效冲突：使用 ResizeObserver 替代 window resize，完美跟随 CSS 动画自适应
-    new ResizeObserver(() => myStatsChart.resize()).observe(chartDom);
+    window.addEventListener('resize', () => {
+      if (myStatsChart) myStatsChart.resize();
+    });
     
     myStatsChart.on('click', async (params) => {
       await showDetailedReviewList(params.name);
     });
   }
 
-  // 💡 修复深色模式取值：改为监听 body，确保完全继承动态主题变量
-  const rootStyle = getComputedStyle(document.body);
+  // 使用 document.documentElement 确保在所有主题下都能准确取到 :root 变量
+  const rootStyle = getComputedStyle(document.documentElement);
   const getColor = (varName, fallback) => {
     const val = rootStyle.getPropertyValue(varName).trim();
     return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
@@ -85,16 +86,17 @@ function renderStatsChart(statsData) {
     },
     legend: {
       bottom: '0%', left: 'center',
-      textStyle: { color: cCharcoal, fontFamily: fontUi }
+      textStyle: { color: cCharcoal, fontFamily: fontUi, fontSize: 11 },
+      itemWidth: 12, itemHeight: 12
     },
     series: [
       {
-        name: '学习状态', type: 'pie', radius: ['45%', '75%'], center: ['50%', '42%'],
+        name: '学习状态', type: 'pie', radius: ['45%', '75%'], center: ['50%', '40%'],
         avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 8, borderColor: cSurface, borderWidth: 2 },
+        itemStyle: { borderRadius: 6, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
         emphasis: {
-          label: { show: true, fontSize: 16, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
+          label: { show: true, fontSize: 14, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
         },
         labelLine: { show: false },
         data: dataArray.length > 0 ? dataArray : [{ value: 1, name: '无数据', itemStyle: { color: cBorderline } }]
@@ -103,6 +105,9 @@ function renderStatsChart(statsData) {
   };
 
   myStatsChart.setOption(option);
+  
+  // 延迟调整尺寸，完美避开 CSS entrance 动画导致的计算错误
+  setTimeout(() => myStatsChart.resize(), 350);
 }
 
 async function renderCalendarChart() {
@@ -117,8 +122,9 @@ async function renderCalendarChart() {
 
   if (!myCalendarChart) {
     myCalendarChart = echarts.init(chartDom);
-    // 💡 彻底修复日历图 UI 挤压 Bug
-    new ResizeObserver(() => myCalendarChart.resize()).observe(chartDom);
+    window.addEventListener('resize', () => {
+      if (myCalendarChart) myCalendarChart.resize();
+    });
 
     myCalendarChart.on('click', async (params) => {
       const dateStr = params.data[0];
@@ -142,8 +148,7 @@ async function renderCalendarChart() {
     }
     const allData = window.currentCalendarData;
 
-    // 💡 修复深色模式无法取值的问题：改用 body
-    const rootStyle = getComputedStyle(document.body);
+    const rootStyle = getComputedStyle(document.documentElement);
     const getColor = (varName, fallback) => {
       const val = rootStyle.getPropertyValue(varName).trim();
       return val ? `rgb(${val.split(/\s+/).join(', ')})` : fallback;
@@ -152,7 +157,6 @@ async function renderCalendarChart() {
     const cCharcoal = getColor('--color-charcoal', '#1a2f2b');
     const cBorderline = getColor('--color-borderline', '#e5e1d8');
     const cSurface = getColor('--color-surface', '#ffffff');
-    const cParchment = getColor('--color-parchment', '#f9f7f1'); // 引入背景纸张色
     const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
 
     const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
@@ -174,7 +178,10 @@ async function renderCalendarChart() {
         orient: 'horizontal',
         left: 'center',
         top: 0,
-        textStyle: { color: cCharcoal, fontFamily: fontUi },
+        itemWidth: 12,
+        itemHeight: 12,
+        textGap: 5,
+        textStyle: { color: cCharcoal, fontFamily: fontUi, fontSize: 11 },
         pieces: [
           { min: 30, label: '30+' },
           { min: 15, max: 29, label: '15-29' },
@@ -186,29 +193,44 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: 55, // 增加顶部边距，防止与 visualMap 挤压
-        left: 20, 
-        right: 20, // 左右留白，开启自适应
-        cellSize: ['auto', 28], // 💡 响应式宽度！完美适配卡片大小
+        top: 65, // 增加距离，防止与顶部的 VisualMap 挤压
+        left: 'center', // 居中显示
+        cellSize: [26, 26], // 恢复正方形网格，确保星期标签对齐
         range: monthStr,
         itemStyle: {
           borderWidth: 3,
-          borderColor: cSurface, // 使用 Surface 作为缝隙，无缝融入卡片
-          color: cParchment // 💡 彻底消灭黑色方块：使用优雅的背景变量
+          borderColor: cSurface, // 缝隙颜色与卡片背景一致
+          // 使用半透明安全色，彻底解决 CSS 变量解析失败导致的纯黑方块问题
+          color: 'rgba(150, 150, 150, 0.08)' 
         },
         yearLabel: { show: false },
         monthLabel: { show: false },
-        dayLabel: { color: cCharcoal, fontFamily: fontUi, nameMap: 'cn', fontSize: 11, margin: 10 },
+        dayLabel: { 
+          color: getColor('--color-muted', '#8b8982'), 
+          fontFamily: fontUi, 
+          nameMap: ['日', '一', '二', '三', '四', '五', '六'], 
+          fontSize: 11,
+          margin: 8 // 给星期标签一点呼吸空间
+        },
         splitLine: { show: false }
       },
       series: {
         type: 'heatmap',
         coordinateSystem: 'calendar',
-        data: monthData
+        data: monthData,
+        itemStyle: {
+          borderRadius: 4, // 增加圆角，让方块看起来更现代、有质感
+          borderColor: cSurface,
+          borderWidth: 2
+        }
       }
     };
 
     myCalendarChart.setOption(option, true);
+    
+    // 延迟调整尺寸，避开 CSS entrance 动画期间的容器宽度异常
+    setTimeout(() => myCalendarChart.resize(), 350);
+
   } catch (err) {
     console.error("Failed to load calendar data:", err);
   }
