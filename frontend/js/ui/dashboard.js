@@ -162,6 +162,10 @@ async function renderCalendarChart() {
     const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
     const monthData = allData.filter(item => item[0].startsWith(monthStr));
 
+    // 👇 新增：动态判断屏幕尺寸，决定方块大小和排版
+    const isMobile = window.innerWidth < 640;
+    const cSize = isMobile ? 20 : 28; // 移动端 20px 完美防裁切，桌面端 28px 更大气
+
     const option = {
       tooltip: {
         backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
@@ -175,9 +179,10 @@ async function renderCalendarChart() {
         min: 0,
         max: 50,
         type: 'piecewise',
-        orient: 'horizontal',
-        left: 'center',
-        top: 0,
+        orient: isMobile ? 'horizontal' : 'vertical', // 💡 桌面端改为竖向排列
+        left: isMobile ? 'center' : 'auto',
+        right: isMobile ? 'auto' : 30,                 // 💡 桌面端靠右放置，填补大面积空白
+        top: isMobile ? 0 : 'center',                 // 💡 桌面端垂直居中
         itemWidth: 12,
         itemHeight: 12,
         textGap: 5,
@@ -193,16 +198,13 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: 55,           // 略微缩小顶部间距
-        bottom: 15,        // 增加底部呼吸空间，防止边界被吞
-        left: 40,          // 为左侧星期标签留出足够空间
-        right: 20,         // 右侧留白
-        cellSize: ['auto', 'auto'], // 修复核心：宽和高均设为自适应，完美填满父容器，再也不会被裁切
+        top: isMobile ? 55 : 'middle', // 💡 移动端避开顶部图例，桌面端让日历完美居中
+        left: 'center',
+        cellSize: [cSize, cSize],      // 💡 恢复强制正方形！拒绝拉伸变形
         range: monthStr,
         itemStyle: {
-          borderWidth: 3,
-          borderColor: cSurface, // 缝隙颜色与卡片背景一致
-          // 使用半透明安全色，彻底解决 CSS 变量解析失败导致的纯黑方块问题
+          borderWidth: isMobile ? 2 : 3,
+          borderColor: cSurface,
           color: 'rgba(150, 150, 150, 0.08)' 
         },
         yearLabel: { show: false },
@@ -212,7 +214,7 @@ async function renderCalendarChart() {
           fontFamily: fontUi, 
           nameMap: ['日', '一', '二', '三', '四', '五', '六'], 
           fontSize: 11,
-          margin: 8 // 给星期标签一点呼吸空间
+          margin: 8 
         },
         splitLine: { show: false }
       },
@@ -221,7 +223,7 @@ async function renderCalendarChart() {
         coordinateSystem: 'calendar',
         data: monthData,
         itemStyle: {
-          borderRadius: 4, // 增加圆角，让方块看起来更现代、有质感
+          borderRadius: 4, 
           borderColor: cSurface,
           borderWidth: 2
         }
