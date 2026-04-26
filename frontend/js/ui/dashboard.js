@@ -1,4 +1,5 @@
 /* ================= DASHBOARD ================= */
+let calendarRenderCounter = 0; // 声明在函数外部
 let _onboardingChecked = false;
 async function initDashboard() {
   await loadStats();
@@ -29,7 +30,7 @@ async function loadStats() {
     renderStatsChart(data);
   }
   if (typeof renderCalendarChart === 'function') {
-    window.currentCalendarData = null; // 切换语种后重新获取日历数据
+    // 移除 window.currentCalendarData = null; 
     renderCalendarChart();
   }
 }
@@ -120,6 +121,7 @@ function renderStatsChart(statsData) {
 }
 
 async function renderCalendarChart() {
+  const currentRenderId = ++calendarRenderCounter; // 捕获当前调用的 ID
   const wrapper = document.getElementById('calendarChartWrapper');
   if (!wrapper) return;
   wrapper.classList.remove('hidden');
@@ -167,9 +169,15 @@ async function renderCalendarChart() {
 
   try {
     if (!window.currentCalendarData) {
-      const calendarData = await api(`/study/calendar?language=${state.currentLang}`);
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // 获取用户当前时区
+      const calendarData = await api(`/study/calendar?language=${state.currentLang}&tz=${encodeURIComponent(tz)}`);
+      // ⚠️ 关键拦截：如果请求期间用户又切了月份/语种，直接丢弃这份过期数据
+      if (currentRenderId !== calendarRenderCounter) return; 
       window.currentCalendarData = calendarData || [];
     }
+    
+    if (currentRenderId !== calendarRenderCounter) return; // 拦截同步穿透
+
     const allData = window.currentCalendarData;
     const dataMap = new Map(allData.map(d => [d[0], d[1]]));
 
@@ -210,7 +218,9 @@ async function renderCalendarChart() {
       else if (count >= 1) { level = 1; colorClass = "bg-ochre/30 border-ochre/40"; }
 
       html += `
-        <div class="cal-cell w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] rounded-[3px] sm:rounded relative cursor-crosshair group transition-all duration-200 border ${colorClass} hover:scale-[1.3] hover:z-20 hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] hover:border-charcoal" data-level="${level}" onclick="showDetailedReviewListForDate('${dateStr}')">
+        <div class="cal-cell w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] relative cursor-crosshair group z-10 hover:z-50" data-level="${level}" onclick="showDetailedReviewListForDate('${dateStr}')">
+          <div class="absolute inset-0 rounded-[3px] sm:rounded transition-all duration-200 border ${colorClass} group-hover:scale-[1.3] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal"></div>
+          
           <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-2 bg-charcoal text-surface text-[10px] rounded-[4px] shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 font-ui text-center leading-tight">
             <div class="font-bold tracking-widest text-[0.65rem] text-muted/80 mb-1 border-b border-surface/20 pb-1">${dateStr}</div>
             复习了 <span class="font-bold text-ochre text-[12px] mx-0.5">${count}</span> 项

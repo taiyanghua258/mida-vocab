@@ -192,6 +192,7 @@ function switchWorkspace(lang, isInitial = false) {
 
   state.currentLang = lang;
   localStorage.setItem('appLang', lang);
+  window.currentCalendarData = null; // ⚠️ 只在这里（切换语种时）销毁热力图缓存！
 
   // ========== Logo 丝滑滚动切换动效 (保持原有逻辑) ==========
   const brandJa = document.getElementById('brand-ja');

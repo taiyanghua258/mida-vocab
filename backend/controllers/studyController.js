@@ -584,8 +584,10 @@ exports.getTodayReviewedWords = async (req, res) => {
 exports.getCalendarStats = async (req, res) => {
   try {
     const language = req.query.language || 'ja';
+    // 动态获取前端传来的时区，如果没传则 fallback 到基准时区
+    const userTz = req.query.tz || TIMEZONE; 
     
-    const oneYearAgo = dayjs().tz(TIMEZONE).subtract(1, 'year').startOf('day').toDate();
+    const oneYearAgo = dayjs().tz(userTz).subtract(1, 'year').startOf('day').toDate();
     
     const stats = await ReviewLog.aggregate([
       { 
@@ -599,7 +601,8 @@ exports.getCalendarStats = async (req, res) => {
       {
         $group: {
           _id: {
-            date: { $dateToString: { format: "%Y-%m-%d", date: "$reviewDate", timezone: TIMEZONE } },
+            // ⚠️ 使用用户真实所在的区时进行天级别的截断和聚合
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$reviewDate", timezone: userTz } },
             wordId: "$wordId"
           }
         }
