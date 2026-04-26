@@ -68,6 +68,7 @@ exports.getWords = async (req, res) => {
       query.reps = { $gte: 5 };
     } else if (req.query.status === 'review') {
       query.state = 2;
+      query.reps = { $lt: 5 }; // 👇 新增这行：严格排除已掌握的词
     } else if (req.query.status === 'learning') {
       query.state = { $in: [1, 3] };
     } else if (req.query.status === 'new') {

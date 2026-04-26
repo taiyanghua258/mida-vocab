@@ -265,7 +265,7 @@ exports.getStats = async (req, res) => {
           totalNewWords: { $sum: { $cond: [ { $eq: ["$state", 0] }, 1, 0 ] } },
           dueNewWordsBase: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 0] }, { $lte: ["$due", now] } ] }, 1, 0 ] } },
           learningWords: { $sum: { $cond: [ { $in: ["$state", [1, 3]] }, 1, 0 ] } },
-          reviewWords: { $sum: { $cond: [ { $eq: ["$state", 2] }, 1, 0 ] } },
+          reviewWords: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 2] }, { $lt: ["$reps", 5] } ] }, 1, 0 ] } },
           masteredWords: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 2] }, { $gte: ["$reps", 5] } ] }, 1, 0 ] } }
       }}
     ]);
