@@ -84,27 +84,24 @@ function renderStatsChart(statsData) {
       borderColor: cBorderline,
       textStyle: { color: cCharcoal, fontFamily: fontUi }
     },
-    legend: {
-      type: 'scroll', // 💡 开启滚动模式：图例再多也不会换行把图表往上顶
-      bottom: '0%', 
-      left: 'center',
-      textStyle: { color: cCharcoal, fontFamily: fontUi, fontSize: 11 },
-      itemWidth: 12, itemHeight: 12,
-      pageIconColor: cOchre
+    // 👇 1. 直接隐藏图例，彻底告别遮挡
+    legend: { 
+      show: false 
     },
     series: [
       {
         name: '学习状态', 
         type: 'pie', 
-        radius: ['35%', '55%'], // 💡 彻底缩小圆环半径
-        center: ['50%', '38%'], // 💡 将圆心大幅上移，彻底避开下方文字
-        minAngle: 15,           // 💡 强制最小扇形角度：就算只有 1 个词，也会强行画出 15 度的色块！
+        // 👇 2. 既然底部没有文字了，恢复完美的居中对齐，并放大圆环
+        radius: ['40%', '75%'], 
+        center: ['50%', '50%'], 
+        // 👇 3. 依然保留 minAngle，防止只有几个词时扇形太小点不到
+        minAngle: 15,
         avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 4, borderColor: cSurface, borderWidth: 2 },
+        itemStyle: { borderRadius: 6, borderColor: cSurface, borderWidth: 2 },
         label: { show: false, position: 'center' },
         emphasis: {
-          // 限制高亮文字大小和行高，防止文字变大时溢出圆环
-          label: { show: true, fontSize: 11, lineHeight: 16, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
+          label: { show: true, fontSize: 13, lineHeight: 18, fontWeight: 'bold', color: cCharcoal, formatter: '{b}\n{c} 词' }
         },
         labelLine: { show: false },
         data: dataArray.length > 0 ? dataArray : [{ value: 1, name: '无数据', itemStyle: { color: cBorderline } }]
