@@ -193,9 +193,11 @@ async function renderCalendarChart() {
         }
       },
       calendar: {
-        top: 65, // 增加距离，防止与顶部的 VisualMap 挤压
-        left: 'center', // 居中显示
-        cellSize: [26, 26], // 恢复正方形网格，确保星期标签对齐
+        top: 55,           // 略微缩小顶部间距
+        bottom: 15,        // 增加底部呼吸空间，防止边界被吞
+        left: 40,          // 为左侧星期标签留出足够空间
+        right: 20,         // 右侧留白
+        cellSize: ['auto', 'auto'], // 修复核心：宽和高均设为自适应，完美填满父容器，再也不会被裁切
         range: monthStr,
         itemStyle: {
           borderWidth: 3,
@@ -228,8 +230,9 @@ async function renderCalendarChart() {
 
     myCalendarChart.setOption(option, true);
     
-    // 延迟调整尺寸，避开 CSS entrance 动画期间的容器宽度异常
-    setTimeout(() => myCalendarChart.resize(), 350);
+    // 延迟 650ms 调整尺寸，确保完全跨过 600ms 的 entrance 缓动动画，
+    // 彻底解决图表鼠标交互坐标(Tooltip)在位移后发生的错位问题。
+    setTimeout(() => myCalendarChart.resize(), 650);
 
   } catch (err) {
     console.error("Failed to load calendar data:", err);
