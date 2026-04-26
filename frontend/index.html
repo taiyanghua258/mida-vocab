@@ -11,35 +11,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS: Load CDN script first, then apply config -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS: Ultimate Robust Injection -->
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            parchment: 'rgb(var(--color-parchment) / <alpha-value>)',
-            surface: 'rgb(var(--color-surface) / <alpha-value>)',
-            charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
-            ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
-            terracotta: 'rgb(var(--color-terracotta) / <alpha-value>)',
-            lavender: 'rgb(var(--color-lavender) / <alpha-value>)',
-            muted: 'rgb(var(--color-muted) / <alpha-value>)',
-            borderline: 'rgb(var(--color-borderline) / <alpha-value>)',
-            success: 'rgb(var(--color-success) / <alpha-value>)'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            jp: ['"Noto Sans JP"', 'sans-serif']
+    window.tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              parchment: 'rgb(var(--color-parchment) / <alpha-value>)',
+              surface: 'rgb(var(--color-surface) / <alpha-value>)',
+              charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
+              ochre: 'rgb(var(--color-ochre) / <alpha-value>)',
+              terracotta: 'rgb(var(--color-terracotta) / <alpha-value>)',
+              lavender: 'rgb(var(--color-lavender) / <alpha-value>)',
+              muted: 'rgb(var(--color-muted) / <alpha-value>)',
+              borderline: 'rgb(var(--color-borderline) / <alpha-value>)',
+              success: 'rgb(var(--color-success) / <alpha-value>)'
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              jp: ['"Noto Sans JP"', 'sans-serif']
+            }
           }
         }
       }
-    }
+    };
   </script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="css/main.css?v=17">
+  <link rel="stylesheet" href="css/main.css?v=18">
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
-  <!-- 本地加载 ECharts，彻底解决 CDN 被墙或白屏问题 -->
   <script src="js/echarts.min.js"></script>
 </head>
 <body class="text-charcoal font-sans antialiased min-h-screen flex flex-col relative z-10">

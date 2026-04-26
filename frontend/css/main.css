@@ -2,20 +2,23 @@
 /* 1. 全局物理引擎 (The Physics Engine) - 无需外部库 */
 /* ========================================================= */
 :root {
-  /* 阻尼弹簧 (Damped Spring) - 用于卡片飞入、弹窗出现，带有优雅的轻微回弹 */
-  --motion-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* 平滑阻尼 (Smooth Spring) - 用于悬浮态、列表展开，没有回弹，只有极致的顺滑 */
-  --motion-spring-smooth: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  /* 流体加速 (Fluid Ease) - 用于颜色渐变、透明度变化 */
-  --motion-ease-fluid: cubic-bezier(0.33, 1, 0.68, 1);
-  /* 瞬态阻断 (Snappy) - 用于关闭弹窗、消失动画，干净利落不拖泥带水 */
-  --motion-ease-snappy: cubic-bezier(0.86, 0, 0.07, 1);
+  /* 曲线 (Easing Curves) */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-fluid: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-snappy: cubic-bezier(0.86, 0, 0.07, 1);
 
-  /* 统一时间节拍器 */
-  --t-micro: 150ms;
-  --t-fast: 250ms;
-  --t-base: 400ms;
-  --t-slow: 600ms;
+  /* 时间节拍 (Duration Tokens) */
+  --duration-micro: 150ms;
+  --duration-fast: 250ms;
+  --duration-normal: 400ms;
+  --duration-slow: 600ms;
+  
+  /* 别名兼容 (Backward compatibility) */
+  --t-micro: var(--duration-micro);
+  --t-fast: var(--duration-fast);
+  --t-base: var(--duration-normal);
+  --t-slow: var(--duration-slow);
 }
 
 /* ========================================================= */
@@ -32,17 +35,11 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes ambientGlow {
-  0%, 100% { box-shadow: 0 0 10px rgba(var(--color-ochre), 0.1); }
-  50% { box-shadow: 0 0 25px rgba(var(--color-ochre), 0.3); }
-}
-
 /* ========================================================= */
 /* 3. 语义化主题系统 (Semantic Design Tokens) */
 /* ========================================================= */
 
 :root {
-  /* 基础色值 (桥接 Tailwind Config) */
   --color-parchment: 249 247 241;
   --color-surface: 255 255 255;
   --color-charcoal: 26 47 43;
@@ -54,7 +51,6 @@
   --bg-body: 253 251 247;
   --color-success: 75 115 101;
 
-  /* 阴影与圆角 Token */
   --elevation-1: 0 4px 16px rgba(26, 47, 43, 0.03);
   --elevation-2: 0 12px 32px rgba(26, 47, 43, 0.06);
   --elevation-modal: 0 24px 64px rgba(26, 47, 43, 0.12);
@@ -63,17 +59,18 @@
   --radius-button: 0.85rem;
   --radius-pill: 100px;
 
-  /* 字体 */
-  --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
-  --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
+  /* 基础组件变量 */
+  --glass-bg: rgb(var(--color-surface));
+  --glass-border: 1px solid rgb(var(--color-borderline));
+  --shadow-card: var(--elevation-1);
+  --shadow-modal: var(--elevation-modal);
+  --modal-overlay-bg: rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="obsidian"] {
   --color-parchment: 24 23 21;
   --color-surface: 34 32 29;
   --color-charcoal: 234 230 219;
-  --color-ochre: 194 155 87;
-  --color-terracotta: 166 82 63;
   --color-borderline: 54 52 48;
   --bg-body: 17 16 15;
   
@@ -87,7 +84,6 @@
   --color-surface: 253 251 247;
   --bg-body: 253 251 247;
   --color-charcoal: 20 20 20;
-  --color-ochre: 191 54 46;
   --color-borderline: 30 30 30;
   
   --elevation-1: none;
@@ -96,10 +92,6 @@
   --radius-panel: 0;
   --radius-button: 0;
   --radius-pill: 0;
-
-  --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", serif;
-  --font-ui: var(--font-editorial);
-  --font-serif: var(--font-editorial);
   --baseline: 24px;
 }
 
@@ -108,36 +100,26 @@
 /* ========================================================= */
 
 body {
-  font-family: var(--font-ui), sans-serif;
   background-color: rgb(var(--bg-body));
   color: rgb(var(--color-charcoal));
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: background-color var(--t-slow) var(--motion-ease-fluid), color var(--t-base) ease;
-}
-
-[data-theme="editorial"] body {
-  background-image: 
-    linear-gradient(to right, rgba(var(--color-charcoal), 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(var(--color-charcoal), 0.05) 1px, transparent 1px);
-  background-size: var(--baseline) var(--baseline);
-  background-attachment: fixed;
+  transition: background-color var(--duration-slow) var(--ease-fluid);
 }
 
 .glass-card {
-  background-color: rgb(var(--color-surface));
-  border: 1px solid rgb(var(--color-borderline));
+  background-color: var(--glass-bg);
+  border: var(--glass-border);
   border-radius: var(--radius-panel);
-  box-shadow: var(--elevation-1);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(8px);
-  transition: transform var(--t-base) var(--motion-spring-smooth), 
-              box-shadow var(--t-base) var(--motion-ease-fluid),
-              background-color var(--t-slow) var(--motion-ease-fluid);
+  transition: transform var(--duration-normal) var(--ease-spring), 
+              box-shadow var(--duration-normal) var(--ease-fluid),
+              background-color var(--duration-slow) var(--ease-fluid);
 }
 
 .glass-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--shadow-modal);
 }
 
 .modal-overlay {
@@ -145,13 +127,13 @@ body {
   inset: 0;
   z-index: 100;
   opacity: 0; 
-  visibility: hidden; /* 核心：关闭时从交互树拔除 */
+  visibility: hidden; /* 核心：关闭时连根拔起 */
   pointer-events: none; 
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: transparent;
   backdrop-filter: blur(0px);
-  transition: opacity var(--t-base) var(--motion-ease-fluid),
-              backdrop-filter var(--t-base) var(--motion-ease-fluid),
-              visibility var(--t-base) var(--motion-ease-fluid);
+  transition: opacity var(--duration-normal) ease, 
+              backdrop-filter var(--duration-normal) ease, 
+              visibility var(--duration-normal) ease; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,16 +142,17 @@ body {
 
 .modal-overlay.active { 
   opacity: 1; 
-  visibility: visible; /* 激活时恢复可见性与交互 */
+  visibility: visible; 
   pointer-events: auto; 
-  backdrop-filter: blur(8px); 
+  backdrop-filter: blur(8px);
+  background-color: var(--modal-overlay-bg);
 }
 
 .modal-content {
   background: rgb(var(--color-surface));
   border: 1px solid rgb(var(--color-borderline));
   border-radius: calc(var(--radius-panel) * 1.5);
-  box-shadow: var(--elevation-modal);
+  box-shadow: var(--shadow-modal);
   opacity: 0;
   max-height: 90vh;
   overflow-y: auto;
@@ -178,15 +161,15 @@ body {
 
 .modal-overlay.active .modal-content {
   opacity: 1;
-  animation: dropIn var(--t-base) var(--motion-spring-bouncy) forwards;
+  animation: dropIn var(--duration-normal) var(--ease-spring-bouncy) forwards;
 }
 
 .magnetic-btn {
-  position: relative; /* 开启层级计算 */
-  z-index: 10;        /* 确保高于噪点层与容器背景 */
+  position: relative; 
+  z-index: 10; 
   background: rgb(var(--color-charcoal));
   color: rgb(var(--bg-body));
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   border: none;
   display: inline-flex;
   align-items: center;
@@ -194,19 +177,16 @@ body {
   cursor: pointer;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  transition: transform var(--t-micro) var(--motion-ease-snappy),
-              box-shadow var(--t-fast) var(--motion-spring-smooth),
-              background-color var(--t-base) ease;
+  transition: all var(--duration-fast) var(--ease-fluid);
 }
 
 .magnetic-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(var(--color-charcoal), 0.2);
+  box-shadow: 0 4px 12px rgba(var(--color-charcoal), 0.2);
 }
 
 .magnetic-btn:active {
   transform: scale(0.97) translateY(1px);
-  box-shadow: 0 2px 4px rgba(var(--color-charcoal), 0.1);
 }
 
 .aesthetic-input {
@@ -215,7 +195,7 @@ body {
   border-radius: var(--radius-button);
   padding: 0.75rem 1rem;
   outline: none;
-  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
 
 .aesthetic-input:focus {
@@ -225,14 +205,14 @@ body {
 }
 
 /* ========================================================= */
-/* 5. 业务动效与特定布局 (Utility & Study) */
+/* 5. 业务特定的 UI 逻辑 */
 /* ========================================================= */
 
 .logo-card-stack {
   position: relative;
   width: 48px;
   height: 48px;
-  transition: transform var(--t-base) var(--motion-spring-bouncy);
+  transition: transform var(--duration-normal) var(--ease-spring-bouncy);
 }
 .logo-card-stack .card {
   position: absolute;
@@ -240,8 +220,8 @@ body {
   border-radius: 6px;
   border: 1.5px solid rgb(var(--color-charcoal));
   background: rgb(var(--color-surface));
-  transition: transform var(--t-base) var(--motion-spring-bouncy), 
-              opacity var(--t-fast) ease;
+  transition: transform var(--duration-normal) var(--ease-spring-bouncy), 
+              opacity var(--duration-fast) ease;
 }
 .logo-card-stack .card-1 { z-index: 3; }
 .logo-card-stack .card-2 { z-index: 2; transform: rotate(0); opacity: 0.5; }
@@ -251,21 +231,15 @@ body {
 .logo-card-stack:hover .card-2 { transform: rotate(-15deg) translate(-4px, -2px); opacity: 0.8; }
 .logo-card-stack:hover .card-3 { transform: rotate(-30deg) translate(-8px, -4px); opacity: 0.6; }
 
-/* Brand Typography Transitions */
-.brand-typo-wrap {
-  position: relative;
-  height: 36px;
-  width: 56px;
-  overflow: hidden;
-}
+.brand-typo-wrap { position: relative; height: 36px; width: 56px; overflow: hidden; }
 .brand-text {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  transition: transform var(--t-base) var(--motion-spring-smooth), 
-              opacity var(--t-fast) var(--motion-ease-fluid);
+  transition: transform var(--duration-normal) var(--ease-spring), 
+              opacity var(--duration-fast) var(--ease-fluid);
 }
 #brand-ja { transform: translateY(0); opacity: 1; }
 #brand-en { transform: translateY(2rem); opacity: 0; }
@@ -276,25 +250,13 @@ body {
 .view-section { display: none; }
 .view-section.active { display: flex; }
 
-.enter-pop {
-  animation: softPopIn var(--t-base) var(--motion-spring-bouncy) both;
-}
-
+.enter-pop { animation: softPopIn var(--duration-normal) var(--ease-spring-bouncy) both; }
 .stagger-1 { animation-delay: 50ms; }
 .stagger-2 { animation-delay: 100ms; }
 .stagger-3 { animation-delay: 150ms; }
 .stagger-4 { animation-delay: 200ms; }
 .stagger-5 { animation-delay: 250ms; }
 
-.airy-row {
-  border-bottom: 1px solid rgb(var(--color-borderline) / 0.3);
-  transition: background-color 200ms ease;
-}
-.airy-row:hover {
-  background-color: rgb(var(--color-borderline) / 0.1);
-}
-
-/* Study Card System */
 .paper-card {
   position: absolute;
   width: 100%;
@@ -308,25 +270,14 @@ body {
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  transition: transform var(--t-slow) var(--motion-spring-smooth), opacity var(--t-base) ease, box-shadow var(--t-slow) ease;
+  transition: transform var(--duration-slow) var(--ease-spring), 
+              opacity var(--duration-normal) ease, 
+              box-shadow var(--duration-slow) ease;
 }
 .paper-card.front { z-index: 2; box-shadow: var(--elevation-2); }
 .paper-card.front.peeled { transform-origin: top right; transform: translate(-20%, -60%) rotate(25deg) scale(0.9); opacity: 0; pointer-events: none; }
 .paper-card.back { z-index: 1; transform: scale(0.97) translateY(4px); opacity: 1; }
-.paper-card.back.revealed { transform: scale(1) translateY(0); box-shadow: var(--elevation-2); transition: all var(--t-base) var(--motion-spring-smooth) 0.05s; }
-
-/* Obsidian Fine-tuning */
-[data-theme="obsidian"] .text-glow {
-  text-shadow: 0 0 12px rgba(var(--color-ochre), 0.2);
-}
-[data-theme="obsidian"] .aesthetic-input {
-  background-color: rgba(var(--color-surface), 0.5);
-}
-
-/* Editorial Fine-tuning */
-[data-theme="editorial"] p, [data-theme="editorial"] .meaning { line-height: var(--baseline); }
-[data-theme="editorial"] .magnetic-btn { border: 1.5px solid rgb(var(--color-charcoal)); }
-[data-theme="editorial"] .magnetic-btn:hover { background: transparent; color: rgb(var(--color-charcoal)); box-shadow: none; }
+.paper-card.back.revealed { transform: scale(1) translateY(0); transition: all var(--duration-normal) var(--ease-spring) 0.05s; }
 
 /* 惊艳的学习按钮 (Metal Cut & Glow) */
 .btn-study {
@@ -337,34 +288,27 @@ body {
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.05);
-  transition: all var(--t-base) var(--motion-spring-smooth);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
-
 .btn-study::before {
   content: '';
   position: absolute;
   top: 0; left: -100%;
   width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(var(--color-ochre), 0.2), transparent);
-  transition: left var(--t-slow) var(--motion-ease-fluid);
+  transition: left var(--duration-slow) var(--ease-fluid);
 }
-
 .btn-study:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 25px rgba(var(--color-ochre), 0.15), inset 0 0 10px rgba(var(--color-ochre), 0.1);
   border-color: rgba(var(--color-ochre), 0.3);
 }
-
-.btn-study:hover::before {
-  left: 100%;
-}
+.btn-study:hover::before { left: 100%; }
 
 [data-theme="obsidian"] .btn-study {
   background: linear-gradient(145deg, #2a2826, #11100f);
   border: 1px solid rgba(var(--color-ochre), 0.2);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
 }
-
 [data-theme="editorial"] .btn-study {
   background: transparent;
   color: rgb(var(--color-charcoal));
@@ -372,4 +316,3 @@ body {
   box-shadow: none;
   border-radius: 0;
 }
-
