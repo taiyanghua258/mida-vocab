@@ -11,9 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS: Config must be set BEFORE CDN script for proper initialization -->
+  <!-- Tailwind CSS: Load CDN script first, then apply config -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    window.tailwind = {
+    tailwind.config = {
       theme: {
         extend: {
           colors: {
@@ -35,9 +36,8 @@
       }
     }
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="css/main.css?v=16">
+  <link rel="stylesheet" href="css/main.css?v=17">
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- 本地加载 ECharts，彻底解决 CDN 被墙或白屏问题 -->
   <script src="js/echarts.min.js"></script>
