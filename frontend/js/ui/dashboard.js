@@ -205,27 +205,27 @@ async function renderCalendarChart() {
       html += `<div class="w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] opacity-0 pointer-events-none"></div>`;
     }
 
-    // 渲染每一天
+    // 渲染每一天 (替换 dashboard.js 中对应位置的代码)
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
       const count = dataMap.get(dateStr) || 0;
       
       let level = 0;
-      let colorClass = "bg-borderline/30 border-borderline/50"; // Base Fallback
+      let colorClass = "bg-borderline/30 border-borderline/50"; 
       if (count >= 40) { level = 4; colorClass = "bg-charcoal border-charcoal"; }
       else if (count >= 20) { level = 3; colorClass = "bg-terracotta border-terracotta"; }
       else if (count >= 5) { level = 2; colorClass = "bg-ochre/80 border-ochre/90"; }
       else if (count >= 1) { level = 1; colorClass = "bg-ochre/30 border-ochre/40"; }
 
+      // 修复核心 1: 移除嵌套的 Tooltip DOM，加入 onmouseenter/onmouseleave 交由全局单例处理
       html += `
-        <div class="cal-cell w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] relative cursor-crosshair group z-10 hover:z-50" data-level="${level}" onclick="showDetailedReviewListForDate('${dateStr}')">
-          <div class="absolute inset-0 rounded-[3px] sm:rounded transition-all duration-200 border ${colorClass} group-hover:scale-[1.3] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal"></div>
-          
-          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-2 bg-charcoal text-surface text-[10px] rounded-[4px] shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 font-ui text-center leading-tight">
-            <div class="font-bold tracking-widest text-[0.65rem] text-muted/80 mb-1 border-b border-surface/20 pb-1">${dateStr}</div>
-            复习了 <span class="font-bold text-ochre text-[12px] mx-0.5">${count}</span> 项
-            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-charcoal"></div>
-          </div>
+        <div class="cal-cell w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] relative cursor-crosshair group z-10" 
+             data-level="${level}" 
+             onclick="showDetailedReviewListForDate('${dateStr}')"
+             onmouseenter="showGlobalCalTooltip(this, '${dateStr}', ${count})"
+             onmouseleave="hideGlobalCalTooltip()">
+             
+          <div class="absolute inset-0 rounded-[3px] sm:rounded transition-all duration-200 border ${colorClass} group-hover:scale-[1.3] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal group-hover:z-50"></div>
         </div>
       `;
     }
@@ -1232,4 +1232,65 @@ async function batchExportSelected() {
     btn.disabled = false;
   }
 }
+
+/* ================= CALENDAR TOOLTIP (单例管理器) ================= */
+let calTooltipTimer = null;
+
+window.showGlobalCalTooltip = function(el, dateStr, count) {
+  let tooltip = document.getElementById('globalCalTooltip');
+  
+  // 懒加载创建全局唯一的提示框 DOM
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'globalCalTooltip';
+    // 使用 fixed 彻底脱离正常的文档流束缚，z-index 设为极高
+    tooltip.className = 'fixed z-[9999] pointer-events-none px-3 py-2 bg-charcoal text-surface text-[10px] rounded-[4px] shadow-lg font-ui text-center leading-tight transition-opacity duration-150 opacity-0 hidden';
+    document.body.appendChild(tooltip);
+  }
+
+  // 注入数据
+  tooltip.innerHTML = `
+    <div class="font-bold tracking-widest text-[0.65rem] text-muted/80 mb-1 border-b border-surface/20 pb-1">${dateStr}</div>
+    复习了 <span class="font-bold text-ochre text-[12px] mx-0.5">${count}</span> 项
+    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-charcoal"></div>
+  `;
+
+  // 获取当前 Hover 方块在屏幕上的精确绝对坐标
+  const rect = el.getBoundingClientRect();
+  
+  // 显示一下以获取真实宽高（计算位置需要）
+  tooltip.classList.remove('hidden');
+  
+  const top = rect.top - tooltip.offsetHeight - 8; // 向上偏移 8px
+  const left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2); // 水平居中对齐方块
+
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+
+  // 清除可能存在的淡出定时器
+  if (calTooltipTimer) clearTimeout(calTooltipTimer);
+
+  // 强制浏览器重排，触发淡入动画
+  void tooltip.offsetWidth; 
+  tooltip.classList.remove('opacity-0');
+  tooltip.classList.add('opacity-100');
+};
+
+window.hideGlobalCalTooltip = function() {
+  const tooltip = document.getElementById('globalCalTooltip');
+  if (!tooltip) return;
+
+  tooltip.classList.remove('opacity-100');
+  tooltip.classList.add('opacity-0');
+
+  // 等待动画结束后彻底隐藏，防止遮挡鼠标交互
+  calTooltipTimer = setTimeout(() => {
+    if (tooltip.classList.contains('opacity-0')) {
+        tooltip.classList.add('hidden');
+    }
+  }, 150);
+};
+
+// （可选）移动端兼容：当用户滑动页面时，主动清除提示框防止其残留在屏幕上
+window.addEventListener('scroll', window.hideGlobalCalTooltip, { passive: true });
 
