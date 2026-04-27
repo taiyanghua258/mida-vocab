@@ -102,10 +102,7 @@ function renderStatsChart(statsData) {
 
   const option = {
     tooltip: {
-      trigger: 'item',
-      backgroundColor: `rgba(${(rootStyle.getPropertyValue('--color-surface').trim() || '255 255 255').split(/\s+/).join(', ')}, 0.9)`,
-      borderColor: cBorderline,
-      textStyle: { color: cCharcoal, fontFamily: fontUi }
+      show: false
     },
     // 👇 1. 直接隐藏图例，彻底告别遮挡
     legend: { 
