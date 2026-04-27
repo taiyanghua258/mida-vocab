@@ -224,17 +224,8 @@ function switchWorkspace(lang, isInitial = false) {
     }
   }
 
-  // ========== 按钮及界面文案切换 (保持原有逻辑) ==========
-  const btnJa = document.getElementById('ws-btn-ja');
-  const btnEn = document.getElementById('ws-btn-en');
-  if (btnJa && btnEn) {
-    btnJa.className = lang === 'ja' 
-      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm font-ui' 
-      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal font-ui';
-    btnEn.className = lang === 'en' 
-      ? 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm font-ui' 
-      : 'px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal font-ui';
-  }
+  // ========== 按钮状态切换 ==========
+  updateWorkspaceButtons();
 
   const tableHeader = document.getElementById('tableHeaderWord');
   if (tableHeader) tableHeader.textContent = lang === 'ja' ? '日语单词' : '英语单词';
@@ -268,7 +259,7 @@ function switchWorkspace(lang, isInitial = false) {
       loadStats();
       loadWords(1);
     } else {
-      // 切换语言时：等待 200ms 让旧数据带着动画沉下去并变透明
+      // 切换语言时：等待 220ms 让旧数据带着动画沉下去并变透明
       setTimeout(async () => {
         // 并发拉取新数据
         await Promise.all([
@@ -280,8 +271,20 @@ function switchWorkspace(lang, isInitial = false) {
         requestAnimationFrame(() => {
           document.body.classList.remove('workspace-switching');
         });
-      }, 200);
+      }, 220);
     }
   }
+}
+
+function updateWorkspaceButtons() {
+  const jaBtn = document.getElementById('ws-btn-ja');
+  const enBtn = document.getElementById('ws-btn-en');
+  if (!jaBtn || !enBtn) return;
+
+  const isJa = state.currentLang === 'ja';
+  jaBtn.classList.toggle('ws-btn-active', isJa);
+  jaBtn.classList.toggle('ws-btn-inactive', !isJa);
+  enBtn.classList.toggle('ws-btn-active', !isJa);
+  enBtn.classList.toggle('ws-btn-inactive', isJa);
 }
 

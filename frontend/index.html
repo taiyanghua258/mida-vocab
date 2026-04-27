@@ -132,9 +132,9 @@
   <!-- ========== DASHBOARD VIEW ========== -->
   <div id="view-dashboard" class="view-section flex-1 flex-col">
     <nav class="bg-surface/80 backdrop-blur-md border-b border-borderline sticky top-0 z-40">
-      <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex justify-between items-center gap-2">
         
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2 sm:gap-6 min-w-0">
           
           <div class="flex items-center gap-3.5 group cursor-pointer select-none">
             <div class="relative w-8 h-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-0.5">
@@ -166,12 +166,12 @@
           </div>
 
           <div class="flex items-center bg-parchment border border-borderline rounded-full p-1 shadow-sm font-ui">
-            <button onclick="switchWorkspace('ja')" id="ws-btn-ja" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all bg-charcoal text-surface shadow-sm">日</button>
-            <button onclick="switchWorkspace('en')" id="ws-btn-en" class="px-3 py-1.5 rounded-full text-[0.75rem] font-bold transition-all text-muted hover:text-charcoal">英</button>
+            <button onclick="switchWorkspace('ja')" id="ws-btn-ja" class="ws-btn ws-btn-active">日</button>
+            <button onclick="switchWorkspace('en')" id="ws-btn-en" class="ws-btn ws-btn-inactive">英</button>
           </div>
         </div>
         
-        <div class="flex items-center gap-2 sm:gap-4">
+        <div class="flex items-center gap-1 sm:gap-4 shrink-0">
           <button onclick="toggleNotifications()" id="notifyBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-parchment text-muted hover:text-ochre transition-colors active:scale-95 group" title="开启复习提醒">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:rotate-[15deg] group-active:-rotate-[10deg] duration-300">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -198,7 +198,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256" class="text-muted transition-transform duration-300" id="userMenuArrow"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
             </button>
 
-            <div id="userDropdown" class="absolute right-0 mt-3 w-64 bg-surface/85 backdrop-blur-xl border border-borderline rounded-[var(--radius-card)] shadow-[0_12px_40px_rgba(26,47,43,0.08)] opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-300 z-50 overflow-hidden">
+            <div id="userDropdown" class="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] sm:w-64 bg-surface/85 backdrop-blur-xl border border-borderline rounded-[var(--radius-card)] shadow-[0_12px_40px_rgba(26,47,43,0.08)] opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-300 z-50 overflow-hidden">
               <div class="p-5 border-b border-borderline/40 bg-parchment/30">
                 <div class="flex items-center gap-3.5 mb-1">
                   <div class="relative w-12 h-12 rounded-full bg-charcoal text-surface flex items-center justify-center text-xl font-bold uppercase shadow-inner overflow-hidden">
@@ -250,6 +250,7 @@
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
+      <div id="workspaceTransitionRoot">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div id="tour-stats-area" class="grid grid-cols-2 sm:flex gap-3 sm:gap-4 w-full lg:w-auto">
           <div class="glass-card p-4 sm:p-6 rounded-[var(--radius-card)] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-1">
@@ -439,6 +440,7 @@
           <p class="text-[0.7rem] font-medium tracking-wide text-muted">共展现 <span class="font-bold text-charcoal" id="pageTotalItems">0</span> 项条目</p>
           <nav id="pagination" class="flex flex-wrap justify-center gap-1.5"></nav>
         </div>
+      </div>
       </div>
     </main>
   </div>

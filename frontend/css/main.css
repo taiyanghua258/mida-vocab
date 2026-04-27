@@ -142,6 +142,56 @@
       transition: background-color var(--duration-slow) var(--ease-fluid), color var(--duration-normal) ease;
     }
 
+    .workspace-switching #workspaceTransitionRoot {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+body:not(.workspace-switching) #workspaceTransitionRoot {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 350ms ease 50ms, transform 350ms var(--ease-spring) 50ms;
+}
+
+.auth-fade-out {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.auth-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.ws-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-fluid);
+}
+
+.ws-btn-active {
+  background: rgb(var(--color-charcoal));
+  color: rgb(var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.ws-btn-inactive {
+  color: rgb(var(--color-muted));
+  background: transparent;
+}
+
+.ws-btn-inactive:hover {
+  color: rgb(var(--color-charcoal));
+}
+
     /* ========== 视图路由核心：隐藏/显示视图面板 ========== */
     .view-section {
       display: none;
@@ -151,21 +201,7 @@
     }
 
     /* ========== 语言工作区切换过渡动效 ========== */
-    .workspace-switching #tour-stats-area,
-    .workspace-switching #wordTableBody,
-    .workspace-switching #upcomingWidget {
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 200ms ease, transform 200ms ease;
-    }
-    body:not(.workspace-switching) #tour-stats-area,
-    body:not(.workspace-switching) #wordTableBody,
-    body:not(.workspace-switching) #upcomingWidget {
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 350ms ease 50ms, transform 350ms var(--ease-spring) 50ms;
-    }
-
+    
     /* ========== 登录页 Logo 悬浮微动效 ========== */
     .idle-float {
       animation: idleFloat 4s ease-in-out infinite;
@@ -296,8 +332,19 @@
       font-size: 9px !important;
       letter-spacing: 0.1em;
       opacity: 0.4;
-      transform: scale(0.9);
-    }
+      transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}    
 
     /* #studyWord 已废弃，统一使用 .card-front-word */
 
