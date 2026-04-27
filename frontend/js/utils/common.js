@@ -256,9 +256,22 @@ function showQuickGuide() {
 })();
 
 
+function showView(viewId) {
+  document.querySelectorAll('.view-section').forEach(view => {
+    view.classList.remove('active');
+  });
+
+  const target = document.getElementById(viewId);
+
+  if (target) {
+    target.classList.add('active');
+  }
+}
+
+window.showView = showView;
+
 function navigate(viewId) {
-  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-  document.getElementById(`view-${viewId}`).classList.add('active');
+  showView(`view-${viewId}`);
   if (viewId === 'dashboard') initDashboard();
   if (viewId === 'study') initStudy();
   if (viewId === 'auth') {
@@ -274,6 +287,53 @@ function navigate(viewId) {
     if (regBtn) { regBtn.disabled = false; regBtn.innerHTML = '注册账号'; }
   }
 }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    showView('view-auth');
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      showView('view-auth');
+      return;
+    }
+
+    if (typeof checkAuth === 'function') {
+      await checkAuth();
+    } else {
+      // 如果没有 checkAuth，假设 token 有效
+      state.token = token;
+      state.user = JSON.parse(localStorage.getItem('user'));
+      if (typeof renderUserInfo === 'function') renderUserInfo();
+      startBackgroundPolling();
+      loadNotifySettings();
+    }
+
+    showView('view-dashboard');
+
+    if (typeof loadStats === 'function') {
+      loadStats();
+    }
+
+    if (typeof loadWords === 'function') {
+      loadWords();
+    }
+
+    if (typeof loadFsrsSettings === 'function') {
+      loadFsrsSettings();
+    }
+  } catch (err) {
+    console.error('App init failed:', err);
+
+    localStorage.removeItem('token');
+    showView('view-auth');
+
+    if (typeof showToast === 'function') {
+      showToast('登录状态已失效，请重新登录', 'error');
+    }
+  }
+});
 
 function resetCardNode(group) {
   if (!group) return;
