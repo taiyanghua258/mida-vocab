@@ -25,15 +25,14 @@
   --word-weight: 600;
   --word-tracking: 0.02em;
   
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  --shadow-sm: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 10px rgba(0,0,0,0.5);
-  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.05), 0 25px 50px -12px rgba(0,0,0,0.7);
-  --shadow-dropdown: 0 12px 40px rgba(0,0,0,0.8);
-  --shadow-modal: 0 12px 40px rgba(0,0,0,0.8);
-  --glass-bg: #121214;
-  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-  --modal-overlay-bg: rgba(0, 0, 0, 0.6);
+  --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 4px 10px rgb(0 0 0 / 0.5);
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 25px 50px -12px rgb(0 0 0 / 0.7);
+  --shadow-dropdown: 0 12px 40px rgb(0 0 0 / 0.8);
+  --shadow-modal: 0 12px 40px rgb(0 0 0 / 0.8);
+  
+  --glass-bg: rgb(var(--c-surface) / 0.75);
+  --glass-border: 1px solid rgb(234 230 219 / 0.08);
+  --modal-overlay-bg: rgb(24 23 21 / 0.85);
 }
 
 /* ========== Theme 3: Pure Editorial (Academic Minimalist) ========== */
@@ -67,6 +66,6 @@
   --shadow-modal: none;
   
   --glass-bg: transparent;
-  --glass-border: 1px solid rgba(20, 20, 20, 0.15);
-  --modal-overlay-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: 1px solid rgb(var(--c-border) / 0.5);
+  --modal-overlay-bg: rgb(var(--c-text) / 0.8);
 }
