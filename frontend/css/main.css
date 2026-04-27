@@ -1341,13 +1341,9 @@ body.modal-open {
   opacity: 0.55;
 }
 
-.calendar-day.is-today::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border: 1px solid rgb(var(--color-ochre) / 0.75);
-  border-radius: 8px;
-  pointer-events: none;
+.calendar-day.is-today {
+  background-color: rgb(var(--color-ochre) / 0.1) !important;
+  border-color: rgb(var(--color-ochre) / 0.2) !important;
 }
 
 /* Heat levels */
