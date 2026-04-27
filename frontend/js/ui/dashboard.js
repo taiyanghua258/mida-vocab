@@ -45,10 +45,19 @@ async function initDashboard() {
 }
 
 async function loadStats() {
-  const data = await api(`/study/stats?language=${state.currentLang}`);
-  window.currentStatsData = data; // store for theme switching
-  document.getElementById('totalWords').textContent = data.totalWords;
-  document.getElementById('dueWords').textContent = data.dueWords;
+  const langSnapshot = state.currentLang;
+  const data = await api(`/study/stats?language=${langSnapshot}`);
+  
+  // 核心：如果请求返回时，语言已经切换了，则放弃当前 DOM 更新
+  if (langSnapshot !== state.currentLang) return;
+
+  window.currentStatsData = data; 
+  
+  const totalWordsEl = document.getElementById('totalWords');
+  const dueWordsEl = document.getElementById('dueWords');
+  if (totalWordsEl) totalWordsEl.textContent = data.totalWords;
+  if (dueWordsEl) dueWordsEl.textContent = data.dueWords;
+
   state.lastDueCount = data.dueWords;
 
   // 👇 新增以下两行：在切换语种或回到主页时，立刻同步并渲染冷却池
@@ -469,22 +478,41 @@ async function showDetailedReviewList(categoryName) {
 
 
 async function loadWords(page = 1) {
+  const tbody = document.getElementById('wordTableBody');
+  if (!tbody) return; // DOM 安全拦截
+
+  const langSnapshot = state.currentLang;
+  const searchInput = document.getElementById('searchInput');
+  const posFilter = document.getElementById('partOfSpeechFilter');
+  
+  const search = searchInput?.value || '';
+  const pos = posFilter?.value || '';
+
   hideAnswerSection();
   resetAllCardAnimations();
   state.pagination.page = page;
-  const search = document.getElementById('searchInput').value, pos = document.getElementById('partOfSpeechFilter').value;
-  const tbody = document.getElementById('wordTableBody');
-  // Removed destructive tbody clear to prevent layout flicker
+
   try {
-    let endpoint = `/words?page=${page}&limit=${state.pagination.limit}&language=${state.currentLang}`;
+    let endpoint = `/words?page=${page}&limit=${state.pagination.limit}&language=${langSnapshot}`;
     if (search) endpoint += `&search=${encodeURIComponent(search)}`;
     if (pos) endpoint += `&partOfSpeech=${encodeURIComponent(pos)}`;
+    
     const data = await api(endpoint);
+    
+    // 竞态拦截：语言已切换，丢弃结果
+    if (langSnapshot !== state.currentLang) return;
+
     state.pagination.totalPages = data.pages;
-    document.getElementById('pageTotalItems').textContent = data.total || data.words.length;
+    const totalItemsEl = document.getElementById('pageTotalItems');
+    if (totalItemsEl) totalItemsEl.textContent = data.total || data.words.length;
+    
     renderWordList(data.words);
     renderPagination();
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-terracotta">加载失败</td></tr>'; }
+  } catch (e) { 
+    if (langSnapshot === state.currentLang) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-danger">加载失败</td></tr>'; 
+    }
+  }
 }
 
 function renderWordList(words) {
@@ -531,11 +559,18 @@ function renderWordList(words) {
 }
 
 function renderPagination() {
-  const nav = document.getElementById('pagination'), { page, totalPages } = state.pagination;
-  if (totalPages <= 1) return nav.innerHTML = '';
+  const nav = document.getElementById('pagination');
+  if (!nav) return; // DOM 安全拦截
+
+  const { page, totalPages } = state.pagination;
+  if (totalPages <= 1) {
+    nav.innerHTML = '';
+    return;
+  }
 
   let html = '';
-
+  // ... (省略中间保持不变的 html 生成逻辑，但下面 innerHTML 写入会受 nav 保护)
+  // 此处我将重新写入完整的逻辑以防 html 变量未定义
   if (page > 1) {
     html += `<button onclick="loadWords(${page - 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="上一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></button>`;
   }

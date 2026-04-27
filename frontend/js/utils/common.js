@@ -14,6 +14,10 @@ function escapeHtml(str) {
 /* ================= TOAST ================= */
 function showToast(msg, type = 'info') {
   const c = document.getElementById('toast-container');
+  if (!c) {
+    console.warn('Toast container not found:', msg);
+    return;
+  }
   const t = document.createElement('div');
   // 加入 pointer-events-auto 保证弹窗自身可以点击
   t.className = `toast toast-${type} flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 bg-surface shadow-lg text-sm font-medium pointer-events-auto`;
@@ -605,10 +609,8 @@ async function startBackgroundPolling() {
   if (state.pollingInterval) clearInterval(state.pollingInterval);
   if (state.localTimer) clearInterval(state.localTimer);
 
-  // 首次立即拉一次，建立基准线
-  await checkDueUpdates();
-
-  // 每 15 秒后端轮询（缩短间隔，减少漏检）
+  // 移除了首次立即拉取，改为由 Dashboard 触发初次加载
+  // 建立 15 秒后端轮询
   state.pollingInterval = setInterval(checkDueUpdates, 15000);
   // 每秒本地精准时钟
   state.localTimer = setInterval(tickLocalTimer, 1000);

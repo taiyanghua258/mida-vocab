@@ -43,8 +43,8 @@ const api = async (endpoint, options = {}) => {
 /* ================= AUTH ================= */
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
+  const username = document.getElementById('username')?.value || '';
+  const password = document.getElementById('password')?.value || '';
   const btn = e.target.querySelector('button[type="submit"]');
 
   if (!username || !password) {
@@ -75,9 +75,9 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 
     renderUserInfo();
     showToast('登录成功', 'success');
-    startBackgroundPolling();
     loadNotifySettings();
     navigate('dashboard');
+    startBackgroundPolling(); // 最后启动轮询，且轮询现在不再立即触发第一次请求
 
     if (typeof maybeStartOnboarding === 'function') {
       setTimeout(() => {
@@ -94,9 +94,9 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 
 document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const username = document.getElementById('regUsername').value;
-  const password = document.getElementById('regPassword').value;
-  const confirmPassword = document.getElementById('regConfirmPassword').value;
+  const username = document.getElementById('regUsername')?.value || '';
+  const password = document.getElementById('regPassword')?.value || '';
+  const confirmPassword = document.getElementById('regConfirmPassword')?.value || '';
   const btn = e.target.querySelector('button[type="submit"]');
 
   if (!username || !password || !confirmPassword) {
