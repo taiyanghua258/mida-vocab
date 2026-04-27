@@ -1,0 +1,72 @@
+/* ========== Theme 1: Default Light (Parchment) ========== */
+/* The default theme is already handled by :root in tokens.css */
+[data-theme="parchment"] {
+  --surface-treatment: soft-paper;
+  --motion-density: normal;
+  --radius-card: 1.5rem;
+  --shadow-card: 0 10px 40px rgb(var(--c-text) / 0.04);
+}
+
+/* ========== Theme 2: Dark Mode (Obsidian & Kintsugi) ========== */
+[data-theme="obsidian"] {
+  --c-bg: 24 23 21;
+  --c-surface: 34 32 29;
+  --c-text: 234 230 219;
+  --c-text-muted: 115 112 105;
+  --c-border: 54 52 48;
+  --c-accent: 194 155 87;
+  --c-danger: 166 82 63;
+  --c-success: 95 145 125;
+
+  /* Legacy properties that need to be migrated */
+  --color-lavender: 74 77 102;
+  --word-font: var(--font-ui);
+  --word-size: 3.5rem;
+  --word-weight: 600;
+  --word-tracking: 0.02em;
+  
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --shadow-sm: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 10px rgba(0,0,0,0.5);
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.05), 0 25px 50px -12px rgba(0,0,0,0.7);
+  --shadow-dropdown: 0 12px 40px rgba(0,0,0,0.8);
+  --shadow-modal: 0 12px 40px rgba(0,0,0,0.8);
+  --glass-bg: #121214;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  --modal-overlay-bg: rgba(0, 0, 0, 0.6);
+}
+
+/* ========== Theme 3: Pure Editorial (Academic Minimalist) ========== */
+[data-theme="editorial"] {
+  --c-bg: 253 251 247;
+  --c-surface: 253 251 247;
+  --c-text: 20 20 20;
+  --c-text-muted: 120 120 120;
+  --c-border: 30 30 30;
+  --c-accent: 191 54 46;
+  --c-danger: 170 60 50;
+  --c-success: 60 90 80;
+
+  /* Legacy properties that need to be migrated */
+  --color-lavender: 200 200 200;
+  
+  --word-font: var(--font-editorial);
+  --word-size: clamp(3.2rem, 9vw, 5rem);
+  --word-weight: 700;
+  --word-tracking: -0.04em;
+  
+  --radius-sm: 0;
+  --radius-btn: 0;
+  --radius-panel: 0;
+  --radius-card: 0;
+  --radius-modal: 0;
+  
+  --shadow-sm: none;
+  --shadow-card: none;
+  --shadow-dropdown: none;
+  --shadow-modal: none;
+  
+  --glass-bg: transparent;
+  --glass-border: 1px solid rgba(20, 20, 20, 0.15);
+  --modal-overlay-bg: rgba(20, 20, 20, 0.8);
+}

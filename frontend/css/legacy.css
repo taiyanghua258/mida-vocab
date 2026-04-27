@@ -1,0 +1,1470 @@
+    /* ========== 主题 1：默认亮色 (Parchment) ========== */
+    :root {
+      --c-bg: 249 247 241;
+      --c-surface: 255 255 255;
+      --c-text: 26 47 43;
+      --c-accent: 223 159 40;
+      --c-danger: 209 107 74;
+      --color-lavender: 198 203 234;
+      --c-text-muted: 139 137 130;
+      --c-border: 229 225 216;
+      --c-bg: 253 251 247;
+      --c-success: 75 115 101;
+
+      /* 动画持续时间变量 */
+      --motion-micro: 150ms;
+      --motion-fast: 250ms;
+      --motion-normal: 400ms;
+      --motion-slow: 600ms;
+      --duration-xslow: 700ms;
+
+      /* 核心修复：必须将 Noto Sans JP 提升到最高优先级，防止日语汉字被错误渲染为中文版 */
+      --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
+      
+      /* Default Scaling Logic */
+      --word-size: 3rem;
+      --word-font: var(--font-ui);
+      --word-weight: 700;
+      --word-tracking: -0.02em;
+      
+      --font-display: var(--font-serif);
+      /* Design System Tokens - The Million Dollar Foundation */
+      --radius-sm: 0.5rem;
+      --radius-btn: 0.85rem;
+      --radius-panel: 1.25rem;
+      --radius-card: 1.5rem;
+      --radius-modal: 2rem;
+      --radius-pill: 100px;
+      
+      --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.03);
+      --shadow-card: 0 10px 40px rgba(26, 47, 43, 0.04);
+      --shadow-dropdown: 0 10px 40px rgba(26, 47, 43, 0.08);
+      --shadow-modal: 0 12px 40px rgba(26, 47, 43, 0.12);
+      
+      --ease-spring-soft: var(--ease-out-soft);
+      --ease-out-soft: var(--ease-out-soft);
+      --ease-in-out: var(--ease-out-soft);
+      
+      --glass-bg: rgb(var(--c-surface));
+      --glass-border: 1px solid rgb(var(--c-border));
+      --modal-overlay-bg: rgb(var(--c-text) / 0.3);
+
+    }
+
+    /* ========== 主题 2：深色模式 (Obsidian & Kintsugi) ========== */
+    [data-theme="obsidian"] {
+      --c-bg: 24 23 21;
+      --c-surface: 34 32 29;
+      --c-text: 234 230 219;
+      --c-accent: 194 155 87;
+      --c-danger: 166 82 63;
+      --color-lavender: 74 77 102;
+      --c-text-muted: 115 112 105;
+      --c-border: 54 52 48;
+      --c-bg: 17 16 15;
+      --c-success: 95 145 125;
+      
+      /* Phase 2: Structural Upgrade */
+      --word-font: var(--font-ui);
+      --word-size: 3.5rem;
+      --word-weight: 600;
+      --word-tracking: 0.02em;
+      
+      /* 材质固化：优化深色模式下的文字渲染边缘，使其更锐利 */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      --shadow-sm: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 10px rgba(0,0,0,0.5);
+      --shadow-card: inset 0 1px 0 rgba(255,255,255,0.05), 0 25px 50px -12px rgba(0,0,0,0.7);
+      --shadow-dropdown: 0 12px 40px rgba(0,0,0,0.8);
+      --shadow-modal: 0 12px 40px rgba(0,0,0,0.8);
+      --glass-bg: #121214;
+      --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+      --modal-overlay-bg: rgba(0, 0, 0, 0.6);
+
+    }
+
+    
+
+    /* ========================================================= */
+    /* 主题 3：纯粹学术极简与微缩暗室 (Pure Editorial) - 终极修复版 */
+    /* ========================================================= */
+    [data-theme="editorial"] {
+      /* 将纸张与表面色统一为高定质感的 #fdfaf5 (253 251 247) */
+      --c-bg: 253 251 247;
+      --c-surface: 253 251 247;
+      --c-bg: 253 251 247;
+      
+      --c-text: 20 20 20;
+      --c-accent: 191 54 46;
+      --c-border: 30 30 30;
+      --c-success: 60 90 80;
+      --color-lavender: 200 200 200;
+      --c-text-muted: 120 120 120;
+      --c-danger: 170 60 50;
+      
+      /* 深度重构：先锋极简大字与专属印刷字体 */
+      --font-editorial: "Baskerville", "Georgia", "Times New Roman", "Shippori Mincho", "Noto Serif JP", "Source Han Serif SC", "STSong", serif;
+      --font-serif: var(--font-editorial);
+      --font-display: var(--font-editorial);
+      --word-font: var(--font-editorial);
+      --word-size: clamp(3.2rem, 9vw, 5rem);
+      --word-weight: 700;
+      --word-tracking: -0.04em;
+      --radius-sm: 0;
+      --radius-btn: 0;
+      --radius-panel: 0;
+      --radius-card: 0;
+      --radius-modal: 0;
+      
+      --shadow-sm: none;
+      --shadow-card: none;
+      --shadow-dropdown: none;
+      --shadow-modal: none;
+      
+      --glass-bg: transparent;
+      --glass-border: 1px solid rgba(20, 20, 20, 0.15);
+      --modal-overlay-bg: rgba(20, 20, 20, 0.8);
+
+      
+      /* 删除了此处的 background-color: #fdfaf5 !important; 让全局 body 变量自然接管 */
+    }
+
+    /* 网格底纹声明已合并至文件底部的终极修复块 */
+
+    body { 
+      font-family: var(--font-ui), sans-serif;
+      background-color: rgb(var(--c-bg));
+      color: rgb(var(--c-text));
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      transition: background-color var(--motion-slow) var(--ease-out-soft), color var(--motion-normal) ease;
+    }
+
+    .workspace-switching #workspaceTransitionRoot {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+body:not(.workspace-switching) #workspaceTransitionRoot {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 350ms ease 50ms, transform 350ms var(--ease-spring-soft) 50ms;
+}
+
+.auth-fade-out {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.auth-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.ws-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all var(--motion-fast) var(--ease-out-soft);
+}
+
+.ws-btn-active {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.ws-btn-inactive {
+  color: rgb(var(--c-text-muted));
+  background: transparent;
+}
+
+.ws-btn-inactive:hover {
+  color: rgb(var(--c-text));
+}
+
+    /* ========== 视图路由核心：隐藏/显示视图面板 ========== */
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: flex;
+    }
+
+    /* ========== 语言工作区切换过渡动效 ========== */
+    
+    /* ========== 登录页 Logo 悬浮微动效 ========== */
+    .idle-float {
+      animation: idleFloat 4s ease-in-out infinite;
+    }
+    @keyframes idleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    
+    /* 深色模式下的弹窗质感与占位符增强 */
+    
+    [data-theme="obsidian"] .aesthetic-input::placeholder {
+      color: rgba(234, 230, 219, 0.4) !important;
+    }
+
+    /* Obsidian 模式输入框需要深色背景，防止透明底色导致文字不可见 */
+    [data-theme="obsidian"] .aesthetic-input {
+      background-color: rgba(34, 32, 29, 0.8);
+    }
+    [data-theme="obsidian"] .aesthetic-input:focus {
+      background-color: rgb(34, 32, 29);
+    }
+
+    /* Obsidian 自定义下拉框触发器 */
+    [data-theme="obsidian"] .select-trigger {
+      background-color: rgba(34, 32, 29, 0.8) !important;
+    }
+    [data-theme="obsidian"] .select-options {
+      background-color: rgb(34, 32, 29) !important;
+    }
+
+    /* ========================================================= */
+    /* 补全的幽灵类定义 (Phantom Classes Resolved) */
+    /* ========================================================= */
+    .magnetic-btn {
+      background: rgb(var(--c-text));
+      color: rgb(var(--c-bg));
+      border-radius: var(--radius-pill);
+      border: none;
+      transition: all var(--motion-fast) var(--ease-out-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .aesthetic-input {
+      background-color: transparent;
+      border: 1px solid rgb(var(--c-border));
+      border-radius: var(--radius-btn);
+      outline: none;
+      transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease;
+    }
+    .aesthetic-input:focus {
+      border-color: rgb(var(--c-accent));
+      box-shadow: 0 0 0 3px rgba(var(--c-accent), 0.1);
+      background-color: rgb(var(--c-surface));
+    }
+    
+    .glass-card {
+      background-color: var(--glass-bg);
+      border: var(--glass-border);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(8px);
+    }
+
+    .tracking-widest-plus {
+      letter-spacing: 0.15em;
+    }
+
+    /* 动画系统补全 */
+    .animate-soft-in {
+      animation: softIn var(--motion-slow) var(--ease-spring-soft) backwards;
+    }
+    @keyframes softIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stagger-1 { animation-delay: 50ms; }
+    .stagger-2 { animation-delay: 100ms; }
+    .stagger-3 { animation-delay: 150ms; }
+
+    .animate-fade-in-up {
+      animation: fadeInUp var(--motion-slow) var(--ease-spring-soft) backwards;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 冷却池折叠过渡 */
+    .is-collapsed {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      overflow: hidden !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      border-width: 0 !important;
+      pointer-events: none;
+    }
+    #upcomingWidget {
+      max-height: 500px;
+      opacity: 1;
+      overflow: hidden;
+      transition: all var(--motion-slow) var(--ease-in-out);
+    }
+
+    /* 精准排版工具类 */
+    .font-display { font-family: var(--font-serif); }
+    .font-ui { font-family: var(--font-ui); }
+    .leading-tight-display { line-height: 1.15; }
+    
+    /* 核心单词显示逻辑 (变量驱动, 已迁移至 class 选择器避免重复 ID) */
+    .card-front-word {
+      font-family: var(--word-font);
+      font-size: var(--word-size);
+      font-weight: var(--word-weight);
+      letter-spacing: var(--word-tracking);
+      line-height: 1.1;
+      transition: all var(--motion-normal) var(--ease-spring-soft);
+    }
+
+    /* 强化“一大一小”设计：让学术模式下的脚注标签变得更小、更淡 */
+    [data-theme="editorial"] .footnote-tag {
+      font-size: 9px !important;
+      letter-spacing: 0.1em;
+      opacity: 0.4;
+      transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}    
+
+    /* #studyWord 已废弃，统一使用 .card-front-word */
+
+
+
+    /* Refined Footnote Tags */
+    .footnote-tag {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      letter-spacing: -0.02em;
+      opacity: 0.6;
+      display: inline-flex;
+      align-items: center; /* 确保垂直居中 */
+      transition: opacity var(--motion-normal) ease;
+    }
+    .footnote-tag::before { content: '['; margin-right: 1px; }
+    .footnote-tag::after { content: ']'; margin-left: 1px; }
+    .footnote-tag:hover { opacity: 1; }
+
+    
+
+    /* 修复窗口纯白重叠无边界的问题：学术模式下必须用实体细线勒出窗口轮廓 */
+    
+    .magnetic-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgb(var(--c-text) / 0.2);
+    }
+    .magnetic-btn:hover::before { opacity: 1; }
+    .magnetic-btn:active { transform: translateY(1px) scale(0.97); }
+
+    /* 隐藏手工下拉列表的系统原生丑陋滚动条，改为极简悬浮条 */
+    .select-options::-webkit-scrollbar {
+      width: 4px;
+    }
+    .select-options::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .select-options::-webkit-scrollbar-thumb {
+      background-color: rgba(229, 225, 216, 0.8); /* border-borderline 的颜色 */
+      border-radius: 4px;
+    }
+    /* 配合 JS 实现的开启状态类 */
+    .select-options.is-open {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+    }
+
+    /* 3. 悬浮下划线幽灵按钮 (Ghost Underline) */
+    .ghost-underline-btn {
+      position: relative;
+      display: inline-flex;
+      background: transparent;
+      transition: color var(--motion-normal) ease;
+    }
+    .ghost-underline-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: currentColor;
+      transform: scaleX(0);
+      transform-origin: right center;
+      transition: transform var(--motion-normal) var(--ease-out-soft);
+    }
+    .ghost-underline-btn:hover::after {
+      transform: scaleX(1);
+      transform-origin: left center;
+    }
+
+    /* 4. 无边界空气表格 (Airy Table/ListRow) */
+    .airy-row {
+      transition: transform var(--motion-normal) var(--ease-out-soft), background-color var(--motion-normal) ease, box-shadow var(--motion-normal) ease;
+      border-bottom: 1px solid rgb(var(--c-border) / 0.3);
+    }
+
+    /* 5. 玻璃态模态框 (Glassmorphism Modal Backing) */
+    .modal-overlay {
+  opacity: 0; pointer-events: none; backdrop-filter: blur(4px);
+  background-color: var(--modal-overlay-bg);
+  transition: opacity var(--motion-normal) ease; 
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content {
+  transform: scale(0.96) translateY(10px);
+  opacity: 0;
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-modal);
+  border-radius: var(--radius-modal);
+      transition: all var(--motion-normal) var(--ease-spring-soft); 
+    }
+    .modal-overlay.active .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+    }
+
+    .word-group {
+      position: absolute; width: 100%; height: 100%;
+      transition: transform var(--motion-slow) var(--ease-spring-soft), opacity var(--motion-slow) ease;
+      transform-style: preserve-3d;
+      /* 修复 GPU 爆炸：已移除 will-change */
+    }
+    .word-group[data-depth="0"] { transform: translateY(0) scale(1); opacity: 1; }
+    .word-group[data-depth="1"] { transform: translateY(10px) scale(0.97); opacity: 1; }
+    .word-group[data-depth="2"] { transform: translateY(20px) scale(0.94); opacity: 1; }
+    .word-group[data-depth="hidden"] { transform: translateY(20px) scale(0.94); opacity: 0; pointer-events: none; }
+    
+    /* 1. 重学 (Again) - 沉入底部冷却池 */
+    .word-group.discarded-again { transform: translateY(100px) scale(0.8) !important; opacity: 0 !important; pointer-events: none; }
+    /* 2. 困难 (Hard) - 左侧滑出（阻力感，带一点旋转） */
+    .word-group.discarded-hard { transform: translate(-80%, 20%) rotate(-15deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; }
+    /* 3. 良好 (Good) - 右侧轻快滑出 */
+    .word-group.discarded-good { transform: translate(80%, -10%) rotate(10deg) scale(0.9) !important; opacity: 0 !important; pointer-events: none; }
+    /* 4. 简单 (Easy) - 向上飞入长期 memory 空间 */
+    .word-group.discarded-easy { transform: translateY(-100px) scale(1.1) !important; opacity: 0 !important; pointer-events: none; }
+
+    /* Bug 3 fix: 隐藏非当前卡片的背面，防止相同读音单词的含义视觉穿透 */
+    .word-group:not([data-depth="0"]) .paper-card.back { visibility: hidden; }
+    .word-group[data-depth="0"] .paper-card.back { visibility: visible; }
+
+    /* ========== 纸张卡片 (全面拥抱 CSS 变量，解决暗黑模式发白问题) ========== */
+    .paper-card {
+  position: absolute; width: 100%; height: 100%;
+  border-radius: var(--radius-card); 
+      background: rgb(var(--c-surface)); 
+      border: var(--glass-border);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;
+      transform-origin: bottom left;
+      transition: transform var(--motion-slow) var(--ease-spring-soft), opacity var(--motion-normal) ease, box-shadow var(--motion-slow) ease;
+      /* will-change 已移除：8个合成层在低端设备造成GPU内存溢出 */
+    }
+    .paper-card.front { 
+      z-index: 2; cursor: pointer; 
+      background: linear-gradient(135deg, rgb(var(--c-surface)) 0%, rgb(var(--c-bg)) 100%); 
+      box-shadow: 0 4px 20px rgb(var(--c-text) / 0.05); 
+    }
+    .word-group[data-depth="1"] .paper-card.front { 
+      box-shadow: 0 2px 10px rgb(var(--c-text) / 0.03); 
+      background: linear-gradient(135deg, rgb(var(--c-surface)) 0%, rgb(var(--c-bg)) 100%); 
+    }
+    .word-group[data-depth="2"] .paper-card.front { 
+      box-shadow: 0 1px 4px rgb(var(--c-text) / 0.02); 
+      background: rgb(var(--c-bg)); filter: brightness(0.97); 
+    }
+    .paper-card.back { 
+      z-index: 1; 
+      background: linear-gradient(145deg, rgb(var(--c-surface)), rgb(var(--c-bg))); 
+      transform: scale(0.97) translateY(4px); opacity: 1; 
+      box-shadow: 0 4px 16px rgb(var(--c-text) / 0.06); 
+    }
+    .paper-card.front.peeled { 
+      transform-origin: top right; 
+      transform: translate(-20%, -60%) rotate(25deg) scale(0.9);
+      opacity: 0; box-shadow: 20px 30px 40px rgba(0,0,0,0.2); pointer-events: none; 
+    }
+    .paper-card.back.revealed { 
+      transform: scale(1) translateY(0); 
+      box-shadow: 0 12px 40px rgb(var(--c-text) / 0.1); 
+      transition: all var(--motion-slow) var(--ease-spring-soft) 0.05s; 
+    }
+
+    /* ========== 卡堆入场动画 (incoming) ========== */
+    .card-stack-container.incoming {
+      animation: stackIncoming var(--motion-slow) var(--ease-spring-soft) backwards;
+    }
+    @keyframes stackIncoming {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ========== 学术模式卡片操作提示 ========== */
+    .action-hint {
+      opacity: 0.4;
+      transition: opacity var(--motion-normal) ease;
+    }
+    .action-hint kbd {
+      display: inline-block;
+      padding: 0 4px;
+      border: 1px solid rgb(var(--c-border));
+      border-bottom-width: 2px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 10px;
+      line-height: 1.6;
+      background: rgb(var(--c-surface));
+    }
+
+    /* ========== 答案按钮 ========== */
+    #answerSection { opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+    #answerSection.show { opacity: 1; pointer-events: auto; }
+/* ========== 答案按钮 (移除硬阴影，使用高斯模糊软阴影) ========== */
+.answer-btn { 
+  transition: all var(--motion-fast) var(--ease-spring-soft);
+  border: 1px solid rgb(var(--c-border)); 
+  box-shadow: 0 4px 12px rgb(var(--c-text) / 0.03); 
+  transform: translateY(0);
+  background-color: rgb(var(--c-surface));
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.answer-btn:hover { 
+  border-color: currentColor;
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 24px rgb(var(--c-text) / 0.08); 
+}
+.answer-btn:active { 
+  transform: translateY(1px) scale(0.97); 
+  box-shadow: 0 2px 8px rgb(var(--c-text) / 0.05);
+}
+
+    /* ========== Toast & Modal ========== */
+    .toast { 
+      opacity: 0; transform: translateY(-12px) scale(0.95); transition: all var(--motion-normal) var(--ease-spring-soft); 
+      background: rgb(var(--c-surface)); 
+      color: rgb(var(--c-text)); 
+      border: 1px solid rgb(var(--c-border)); 
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.toast-success { border-left: 4px solid rgb(var(--c-success)); }
+    .toast.toast-success::before { 
+      content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; 
+      background: rgb(var(--c-success)); color: rgb(var(--c-bg)); border-radius: 50%; font-size: 12px; font-weight: bold; animation: successPop 0.4s var(--ease-spring-soft) forwards; 
+    }
+    .toast.toast-error { border-left: 4px solid rgb(var(--c-danger)); animation: shakeIn 0.5s ease forwards; }
+    .toast.toast-error::before { 
+      content: '!'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; 
+      background: rgb(var(--c-danger)); color: rgb(var(--c-bg)); border-radius: 50%; font-size: 14px; font-weight: bold; 
+    }
+    .toast.toast-info { border-left: 4px solid rgb(var(--c-accent)); }
+    .toast.toast-info::before { 
+      content: 'i'; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; 
+      background: rgb(var(--c-accent)); color: rgb(var(--c-bg)); border-radius: 50%; font-size: 12px; font-style: italic; 
+    }
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shakeIn {
+      0% { opacity: 0; transform: translateY(-12px) scale(0.95); }
+      25% { opacity: 1; transform: translateX(-6px) translateY(0) scale(1); }
+      45% { transform: translateX(6px) translateY(0) scale(1); }
+      65% { transform: translateX(-3px) translateY(0) scale(1); }
+      85% { transform: translateX(3px) translateY(0) scale(1); }
+      100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    }
+
+    /* ========== 完成庆祝 ========== */
+    .pop-in { animation: popIn 0.5s ease forwards; }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ========== 登录页徽章动效 ========== */
+    .elegant-drip {
+      transform-origin: bottom center;
+      animation: dripDrop 3.2s var(--ease-in-out) infinite;
+    }
+    @keyframes dripDrop {
+      0%, 10% { transform: translateY(0) scaleY(1); opacity: 1; }
+      18% { transform: translateY(2px) scaleY(1.2); opacity: 1; }
+      28% { transform: translateY(19px) scaleY(1.5); opacity: 1; }
+      34% { transform: translateY(38px) scaleY(0.4); opacity: 1; }
+      38% { transform: translateY(38px) scaleY(1); opacity: 0; }
+      100% { transform: translateY(38px) scaleY(1); opacity: 0; }
+    }
+    .elegant-pulse {
+      transform-origin: center bottom;
+      animation: targetPulse 3.2s var(--ease-in-out) infinite;
+    }
+    @keyframes targetPulse {
+      0%, 32% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(209, 107, 74, 0); }
+      34% { transform: translateX(-50%) scale(1.15, 0.85); }
+      38% { transform: translateX(-50%) scale(1.25); box-shadow: 0 0 0 5px rgba(209, 107, 74, 0.25); }
+      50%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(209, 107, 74, 0); }
+    }
+
+    /* ========== Loading Spinner ========== */
+    .animate-spin { animation: spin 0.8s linear infinite; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+/* ========== 开始学习按钮 ========== */
+.btn-study {
+  position: relative;
+  background: rgb(var(--c-text)); 
+  color: rgb(var(--c-bg));
+  padding: 0.65rem 1.75rem;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color var(--motion-normal) ease, transform var(--motion-fast) var(--ease-spring-soft), box-shadow var(--motion-normal) ease;
+}
+
+.btn-study::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  padding: 1.5px;
+  background: linear-gradient(90deg, rgb(var(--c-accent)), rgb(var(--c-danger)), rgb(var(--c-accent)));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--motion-normal) ease;
+}
+
+.btn-study::after {
+  content: '';
+  position: absolute;
+  bottom: 0.45rem;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 40%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgb(var(--c-accent)), transparent);
+  transition: transform var(--motion-normal) var(--ease-in-out);
+}
+
+.btn-study:hover {
+  color: rgb(var(--c-surface));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(var(--c-text) / 0.15);
+}
+.btn-study:hover::before { opacity: 1; }
+.btn-study:hover::after { transform: translateX(-50%) scaleX(1); }
+.btn-study:active { transform: translateY(0) scale(0.98); }
+.btn-study svg { transition: transform var(--motion-normal) var(--ease-spring-soft); }
+.btn-study:hover svg { transform: rotate(-8deg) scale(1.1); }
+
+    /* ========== Checkbox 自定义样式 ========== */
+    input[type="checkbox"] {
+      accent-color: rgb(var(--c-accent));
+    }
+
+    /* ========== 待复习呼吸灯特效 ========== */
+    .pulse-ochre { animation: pulseOchre 2.5s infinite var(--ease-in-out); }
+    @keyframes pulseOchre {
+      0% { box-shadow: 0 0 0 0 rgba(223, 159, 40, 0.3); }
+      70% { box-shadow: 0 0 0 6px rgba(223, 159, 40, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(223, 159, 40, 0); }
+    }
+
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+
+    /* ===================================================================== */
+    /* 修复：让 Dashboard 单词列表（表格第二列）完美响应各主题的专属字体 */
+    /* ===================================================================== */
+
+    /* 强制让列表中的单词列应用动态的 --word-font */
+    #wordTableBody td:nth-child(2) {
+      font-family: var(--word-font) !important;
+    }
+
+    /* 穿透 JS 可能生成的内部 span 标签，防止 Tailwind 默认字体覆盖 */
+    #wordTableBody td:nth-child(2) * {
+      font-family: inherit !important;
+    }
+
+    /* 为了搭配学术模式(Editorial)的复古印刷体，我们顺便调优一下桌面端单词列的字号和字重 */
+    #wordTableBody td:nth-child(2) span.text-lg {
+      font-size: 1.35rem; /* 让桌面端单词更大一点 */
+      font-weight: 600;
+      letter-spacing: var(--word-tracking, normal);
+      transition: color var(--motion-normal) ease;
+    }
+
+    /* 针对学术模式 (Editorial) 下列表单词的专属微调 */
+    [data-theme="editorial"] #wordTableBody td:nth-child(2) span.text-lg {
+      font-size: 1.5rem; /* 衬线体通常视觉显小，需要略微放大 */
+      font-weight: 700;
+    }
+
+    /* ========== 移动端 UI & 性能优化 ========== */
+    @media (max-width: 640px) {
+      /* Table to Card Transformation */
+      table { min-width: 0 !important; display: block !important; border: none !important; }
+      table thead { display: none !important; }
+      #wordTableBody, #wordTableBody tr.airy-row { width: 100% !important; }
+      #wordTableBody tr.airy-row {
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        padding: 1.5rem 1rem !important;
+        border-bottom: 1px solid rgb(var(--c-border) / 0.4) !important;
+        background: rgb(var(--c-surface)) !important;
+        margin-bottom: 0.75rem;
+        border-radius: 1rem;
+        height: auto !important;
+        transform: none !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      }
+      #wordTableBody td {
+        display: block !important;
+        padding: 0.25rem 0 !important;
+        border: none !important;
+      }
+      #wordTableBody td:nth-child(1) { margin-bottom: 0.5rem; } /* Checkbox row */
+      #wordTableBody td:nth-child(2) { 
+        padding-bottom: 0.5rem !important;
+      }
+      #wordTableBody td:nth-child(2) span.text-lg {
+        font-size: 1.5rem !important;
+        font-family: var(--font-serif) !important;
+        display: block;
+      }
+      #wordTableBody td:nth-child(3) {
+        font-size: 1rem !important;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+      }
+      #wordTableBody td:nth-child(6) {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      /* 缩小卡片内边距，留出更多呼吸空间，去除移动端性能杀手厚重心点 */
+      .paper-card {
+        padding: 1.25rem !important; 
+        border-radius: 1.25rem !important;
+        box-shadow: none !important; /* Move shadow to border on mobile for performance */
+      }
+      
+      /* 减轻移动端撕开卡片时的阴影渲染压力，彻底消除横向溢出 */
+      .paper-card.front.peeled {
+        transform: translate(0, -20%) scale(0.95) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+      }
+      
+      /* 缩小复习操作时的垂直飞出幅度，取消横向位移防止页面被撑撑出横滑条 */
+      .word-group.discarded-hard { transform: translateY(40px) scale(0.85) !important; opacity: 0 !important; }
+      .word-group.discarded-good { transform: translateY(-40px) scale(1.05) !important; opacity: 0 !important; }
+      .word-group.discarded-again { transform: translateY(50px) scale(0.85) !important; opacity: 0 !important; }
+      .word-group.discarded-easy { transform: translateY(-50px) scale(1.05) !important; opacity: 0 !important; }
+
+      /* 学术模式 (Editorial) 移动端专属微缩比例 */
+      [data-theme="editorial"] #view-study .editorial-dict-front,
+      [data-theme="editorial"] #view-study .editorial-dict-back {
+        padding: 1.5rem 1.25rem !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-front .word {
+        font-size: clamp(2.6rem, 12vw, 3.8rem) !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-header .reading {
+        font-size: 1.6rem !important;
+        font-family: var(--font-editorial) !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-back .meaning {
+        font-size: 1.15rem !important;
+        line-height: 1.65 !important;
+        font-family: var(--font-editorial) !important;
+      }
+      [data-theme="editorial"] #view-study .editorial-dict-divider {
+        margin-bottom: 1.25rem !important;
+      }
+
+      /* 新增：彻底粉碎移动端单词栏的卡片化外观，回归报纸质感 */
+      [data-theme="editorial"] #wordTableBody tr.airy-row {
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border-bottom: 1px solid rgba(20, 20, 20, 0.08) !important;
+        margin-bottom: 0 !important; /* 取消卡片间距，让其像列表一样紧凑 */
+      }
+    }
+    /* =========================================
+       第三方组件适配：Driver.js (新手引导)
+       ========================================= */
+
+    /* 让 Driver.js 强制继承当前主题的 UI 字体，而不是破坏性的 Serif */
+    [data-theme="editorial"] .driver-popover,
+    [data-theme="editorial"] .driver-popover * {
+      font-family: var(--font-main, "Inter", "Noto Sans SC", sans-serif);
+    }
+
+    /* 顺便优化一下 Driver.js 在高级主题下的质感 */
+    [data-theme="editorial"] .driver-popover {
+      border-radius: 0 !important; /* 学术风不需要圆角 */
+      border: 1px solid rgb(var(--c-text) / 0.2) !important;
+      background-color: rgb(var(--c-surface)) !important;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1) !important; /* 加入一点纸张叠放的复古阴影 */
+      padding: 1.5rem !important;
+    }
+
+    /* 黑曜石主题下的 Driver.js 适配 */
+    [data-theme="obsidian"] .driver-popover {
+      background: rgba(30, 30, 30, 0.8) !important;
+      backdrop-filter: blur(10px) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+      border-radius: 1.5rem !important;
+      padding: 1.5rem !important;
+    }
+
+    /* 通用 Driver.js 内部精修 */
+    .driver-popover-title {
+      font-size: 1.1rem !important;
+      color: rgb(var(--c-text)) !important; 
+      font-weight: 700 !important;
+      margin-bottom: 0.5rem !important;
+      letter-spacing: 0.05em !important;
+    }
+    .driver-popover-description {
+      font-size: 0.85rem !important;
+      color: rgb(var(--c-text-muted)) !important; 
+      line-height: 1.6 !important;
+    }
+    .driver-popover-footer button {
+      background-color: rgb(var(--c-text)) !important; 
+      color: rgb(var(--c-bg)) !important; 
+      border-radius: 100px !important;
+      padding: 0.5rem 1rem !important;
+      font-size: 0.8rem !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.05em !important;
+      text-shadow: none !important;
+      border: none !important;
+    }
+
+/* ===================================================================== */
+/* 终极学术模式修复：桌面端原生定义与网格底纹 */
+/* ===================================================================== */
+
+/* 1. 将底纹网格直接刻在背景上，并固定视角（防止滚动时网格变形） */
+html[data-theme="editorial"],
+[data-theme="editorial"] body {
+  background-color: #fdfaf5 !important;
+  background-image: 
+    linear-gradient(to right, rgba(20, 20, 20, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 20, 20, 0.08) 1px, transparent 1px) !important;
+  background-size: 36px 36px !important;
+  background-attachment: fixed !important; 
+}
+
+/* 2. 补写 Editorial 桌面端原生样式，替代 !important 穿透 */
+.editorial-dict-front,
+.editorial-dict-back {
+  padding: 3rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.editorial-dict-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 2rem;
+  color: rgb(var(--c-text-muted));
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+}
+
+.editorial-dict-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.editorial-dict-header .reading {
+  font-family: var(--font-editorial);
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-accent));
+}
+
+.editorial-dict-header .pos,
+.editorial-dict-top .pos {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: rgb(var(--c-text-muted));
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.editorial-dict-divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(20, 20, 20, 0.25);
+  margin-bottom: 1.75rem;
+}
+
+.editorial-dict-back .meaning {
+  font-family: var(--font-editorial);
+  font-size: 1.65rem;
+  line-height: 1.65;
+  color: rgb(var(--c-text));
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.editorial-dict-footer {
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgb(var(--c-text-muted) / 0.6);
+  letter-spacing: 0.05em;
+  padding-top: 1.5rem;
+}
+
+[data-theme="editorial"] .card-front-word {
+  font-family: var(--font-editorial);
+}
+
+/* 3. 保留极简必要的重置，利用 CSS 层叠覆盖而非全局 !important */
+[data-theme="editorial"] #wordTableBody tr.airy-row {
+  border-bottom: 1px solid rgba(20, 20, 20, 0.1);
+}
+[data-theme="editorial"] #wordTableBody tr.airy-row:hover {
+  border-bottom-color: rgba(20, 20, 20, 0.8);
+}
+
+/* ===================================================================== */
+/* Bug 6 Fix: Editorial 模式下弹窗必须有实体背景和可见边界 */
+/* ===================================================================== */
+[data-theme="editorial"] .modal-content {
+  background: #fdfaf5 !important;
+  border: 1.5px solid rgba(20, 20, 20, 0.25) !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Bug 7 Fix: Editorial 模式下输入框需要实体背景，防止网格底纹穿透 */
+[data-theme="editorial"] .aesthetic-input {
+  background-color: #fdfaf5 !important;
+  border-color: rgba(20, 20, 20, 0.2);
+}
+[data-theme="editorial"] .aesthetic-input:focus {
+  background-color: #fff !important;
+  border-color: rgb(var(--c-accent));
+}
+
+/* Editorial toast 也需要实体背景 */
+[data-theme="editorial"] .toast {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(20, 20, 20, 0.15) !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Editorial 用户下拉菜单 */
+[data-theme="editorial"] #userDropdown {
+  background: #fdfaf5 !important;
+  border: 1.5px solid rgba(20, 20, 20, 0.2) !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.08) !important;
+  border-radius: 0 !important;
+}
+
+/* Editorial 下拉选项列表 */
+[data-theme="editorial"] .select-options {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(20, 20, 20, 0.2) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Bug 9 修复的安全网：Editorial 下不让主 CTA 按钮彻底失去圆角 */
+[data-theme="editorial"] .magnetic-btn {
+  border-radius: 0 !important;
+  border: 1.5px solid rgb(var(--c-text)) !important;
+}
+
+/* ===================================================================== */
+/* 极简质感原生日历系统 (Premium Native Calendar) */
+/* ===================================================================== */
+
+.cal-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  grid-auto-flow: column;
+}
+
+@media (min-width: 640px) {
+  .cal-grid { gap: 6px; }
+}
+
+.cal-cell {
+  width: 14px; 
+  height: 14px;
+  border-radius: 3px;
+  background-color: rgb(var(--c-border) / 0.25);
+  border: 1px solid rgb(var(--c-border) / 0.5);
+  transition: transform var(--motion-fast) var(--ease-spring-soft), 
+              background-color var(--motion-normal) ease, 
+              border-color var(--motion-normal) ease,
+              box-shadow var(--motion-fast) ease;
+  cursor: crosshair;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .cal-cell { 
+    width: 20px; 
+    height: 20px; 
+    border-radius: 4px; 
+  }
+}
+
+/* 交互物理反馈 */
+.cal-cell:hover {
+  transform: scale(1.3);
+  z-index: 20;
+  box-shadow: 0 8px 20px rgb(var(--c-text) / 0.15);
+  border-color: rgb(var(--c-text));
+}
+
+/* ========== 默认主题 (Light) 色阶 ========== */
+.cal-cell[data-level="1"] { background-color: rgb(var(--c-accent) / 0.3); border-color: rgb(var(--c-accent) / 0.4); }
+.cal-cell[data-level="2"] { background-color: rgb(var(--c-accent) / 0.7); border-color: rgb(var(--c-accent) / 0.8); }
+.cal-cell[data-level="3"] { background-color: rgb(var(--c-danger)); border-color: rgb(var(--c-danger)); }
+.cal-cell[data-level="4"] { background-color: rgb(var(--c-text)); border-color: rgb(var(--c-text)); }
+
+/* ========== 学术/印刷主题 (Editorial) 强制覆写 ========== */
+/* 追求严谨的方形墨迹质感 */
+[data-theme="editorial"] .cal-cell {
+  border-radius: 0 !important; /* 绝对直角 */
+  border: 1px solid rgba(20, 20, 20, 0.12);
+  background-color: transparent;
+}
+[data-theme="editorial"] .cal-cell[data-level="1"] { background-color: rgba(20, 20, 20, 0.2); border-color: rgba(20, 20, 20, 0.25); }
+[data-theme="editorial"] .cal-cell[data-level="2"] { background-color: rgba(20, 20, 20, 0.5); border-color: rgba(20, 20, 20, 0.55); }
+[data-theme="editorial"] .cal-cell[data-level="3"] { background-color: rgba(20, 20, 20, 0.8); border-color: rgba(20, 20, 20, 0.85); }
+[data-theme="editorial"] .cal-cell[data-level="4"] { background-color: rgba(20, 20, 20, 1);   border-color: rgba(20, 20, 20, 1); }
+[data-theme="editorial"] .cal-cell:hover {
+  border-color: #bf362e; /* 悬浮时呈现朱砂红墨迹 */
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ========== 深色主题 (Obsidian) 强制覆写 ========== */
+/* 追求夜间发光的荧光质感 */
+[data-theme="obsidian"] .cal-cell {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="obsidian"] .cal-cell[data-level="1"] { background-color: rgba(194, 155, 87, 0.3); }
+[data-theme="obsidian"] .cal-cell[data-level="2"] { background-color: rgba(194, 155, 87, 0.7); }
+[data-theme="obsidian"] .cal-cell[data-level="3"] { background-color: rgb(166, 82, 63); }
+[data-theme="obsidian"] .cal-cell[data-level="4"] { background-color: rgb(234, 230, 219); border-color: #fff; box-shadow: 0 0 10px rgba(234,230,219,0.5); }
+
+
+/* 日历轴线标签 */
+.cal-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: rgb(var(--c-text-muted));
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 隐藏原生滚动条使体验更干净 */
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--c-border)); border-radius: 4px; }
+
+/* ===================================================================== */
+/* 日历热力图：小众主题高级定制覆盖 (Theme Overrides for Calendar) */
+/* ===================================================================== */
+
+/* 1. 学术/印刷主题 (Editorial) - 严谨的直角墨迹质感 */
+[data-theme="editorial"] .cal-cell {
+  border-radius: 0 !important;
+  border: 1px solid rgba(20, 20, 20, 0.12) !important;
+  background-color: transparent !important;
+}
+[data-theme="editorial"] .cal-cell[data-level="1"] { background-color: rgba(20, 20, 20, 0.2) !important; border-color: rgba(20, 20, 20, 0.25) !important; }
+[data-theme="editorial"] .cal-cell[data-level="2"] { background-color: rgba(20, 20, 20, 0.5) !important; border-color: rgba(20, 20, 20, 0.55) !important; }
+[data-theme="editorial"] .cal-cell[data-level="3"] { background-color: rgba(20, 20, 20, 0.8) !important; border-color: rgba(20, 20, 20, 0.85) !important; }
+[data-theme="editorial"] .cal-cell[data-level="4"] { background-color: rgba(20, 20, 20, 1) !important;   border-color: rgba(20, 20, 20, 1) !important; }
+[data-theme="editorial"] .cal-cell:hover {
+  border-color: #bf362e !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 2. 深色主题 (Obsidian) - 暗夜荧光质感 */
+[data-theme="obsidian"] .cal-cell {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+[data-theme="obsidian"] .cal-cell[data-level="1"] { background-color: rgba(194, 155, 87, 0.3) !important; border-color: rgba(194, 155, 87, 0.4) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="2"] { background-color: rgba(194, 155, 87, 0.7) !important; border-color: rgba(194, 155, 87, 0.8) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="3"] { background-color: rgb(166, 82, 63) !important; border-color: rgb(166, 82, 63) !important; }
+[data-theme="obsidian"] .cal-cell[data-level="4"] { background-color: rgb(234, 230, 219) !important; border-color: #fff !important; box-shadow: 0 0 10px rgba(234,230,219,0.5) !important; }
+
+/* 隐形美化原生横向滚动条 */
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--c-border)); border-radius: 4px; }
+
+/* 防止 Modal 开启时背景滚动 */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ========== Native Calendar ========== */
+
+.calendar-shell {
+  width: 100%;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding-inline: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgb(var(--c-text-muted));
+}
+
+.calendar-title {
+  margin-top: 0.25rem;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+}
+
+.calendar-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-surface) / 0.65);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-nav-button {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--c-text-muted));
+  transition:
+    transform var(--motion-fast) var(--ease-out-soft),
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.calendar-nav-button:hover {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-surface));
+}
+
+.calendar-nav-button:active {
+  transform: scale(0.9);
+}
+
+.calendar-month-label {
+  min-width: 5rem;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: rgb(var(--c-text));
+}
+
+.calendar-container {
+  width: 100%;
+  padding-inline: 0.5rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  isolation: isolate;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  color: rgb(var(--c-text-muted));
+  opacity: 0.6;
+  user-select: none;
+}
+
+.calendar-day {
+  position: relative;
+  height: 36px;
+  border: 1px solid rgb(var(--c-border) / 0.4);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(var(--c-text) / 0.3);
+  background: rgb(var(--c-border) / 0.2);
+  transition:
+    transform var(--motion-fast) var(--ease-out-soft),
+    box-shadow var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+  transform: translateZ(0);
+  will-change: transform;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-day:focus {
+  outline: none;
+}
+
+.calendar-day:hover,
+.calendar-day:focus-visible {
+  z-index: 2;
+  transform: scale(1.08);
+  outline: none;
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-surface));
+  box-shadow: 0 8px 20px rgb(var(--c-text) / 0.12);
+}
+
+.calendar-day:focus-visible {
+  outline: 2px solid rgb(var(--c-accent) / 0.5) !important;
+  outline-offset: 2px;
+}
+
+.calendar-day:active {
+  transform: scale(0.98);
+}
+
+.calendar-day-empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.calendar-day-number {
+  position: relative;
+  z-index: 1;
+}
+
+.calendar-day-dot {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translateX(-50%);
+  opacity: 0.55;
+}
+
+.calendar-day.is-today {
+  background-color: rgb(var(--c-accent) / 0.1) !important;
+  border-color: rgb(var(--c-accent) / 0.2) !important;
+}
+
+/* Heat levels */
+
+.calendar-day.level-0 {
+  background: rgb(var(--c-border) / 0.2);
+  border-color: rgb(var(--c-border) / 0.4);
+  color: rgb(var(--c-text) / 0.3);
+}
+
+.calendar-day.level-1 {
+  background: rgb(var(--c-accent) / 0.2);
+  border-color: rgb(var(--c-accent) / 0.4);
+  color: rgb(var(--c-text) / 0.7);
+}
+
+.calendar-day.level-2 {
+  background: rgb(var(--c-accent) / 0.8);
+  border-color: rgb(var(--c-accent) / 0.9);
+  color: rgb(var(--c-surface));
+}
+
+.calendar-day.level-3 {
+  background: rgb(var(--c-danger));
+  border-color: rgb(var(--c-danger));
+  color: rgb(var(--c-surface));
+}
+
+.calendar-day.level-4 {
+  background: rgb(var(--c-text));
+  border-color: rgb(var(--c-text));
+  color: rgb(var(--c-surface));
+}
+
+/* Month transition */
+
+.calendar-grid-enter {
+  animation: calendarGridIn var(--motion-normal) var(--ease-out-soft) both;
+}
+
+.calendar-dir-next {
+  --calendar-enter-x: 10px;
+}
+
+.calendar-dir-prev {
+  --calendar-enter-x: -10px;
+}
+
+.calendar-dir-none {
+  --calendar-enter-x: 0;
+}
+
+@keyframes calendarGridIn {
+  from {
+    opacity: 0;
+    transform: translateX(var(--calendar-enter-x, 0)) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Tooltip */
+
+.calendar-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 0.75rem;
+  background: rgb(var(--c-surface) / 0.95);
+  color: rgb(var(--c-text));
+  box-shadow: var(--shadow-dropdown);
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(4px) scale(0.96);
+  transition:
+    opacity var(--motion-fast) ease,
+    transform var(--motion-fast) var(--ease-out-soft);
+}
+
+.calendar-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@media (max-width: 640px) {
+  .calendar-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calendar-nav {
+    align-self: flex-start;
+  }
+
+  .calendar-grid {
+    gap: 6px;
+  }
+
+  .calendar-day {
+    height: 32px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-grid-enter {
+    animation: none !important;
+  }
+
+  .calendar-day {
+    transition-duration: 1ms !important;
+  }
+
+  .calendar-day:hover,
+  .calendar-day:focus-visible {
+    transform: none;
+  }
+}

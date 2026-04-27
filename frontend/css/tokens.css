@@ -1,0 +1,51 @@
+:root {
+  /* color: semantic, not material name only */
+  --c-bg: 253 251 247;
+  --c-surface: 255 255 255;
+  --c-surface-muted: 249 247 241;
+  --c-text: 26 47 43;
+  --c-text-muted: 139 137 130;
+  --c-border: 229 225 216;
+  --c-accent: 223 159 40;
+  --c-danger: 209 107 74;
+  --c-success: 75 115 101;
+
+  /* legacy alias map */
+  --color-parchment: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-charcoal: var(--c-text);
+  --color-ochre: var(--c-accent);
+  --color-terracotta: var(--c-danger);
+  --color-muted: var(--c-text-muted);
+  --color-borderline: var(--c-border);
+  --color-success: var(--c-success);
+  --bg-body: var(--c-bg);
+
+  /* typography */
+  --font-ui: "Inter", "Noto Sans JP", "Noto Sans SC", -apple-system, sans-serif;
+  --font-brand: "Playfair Display", "Shippori Mincho", "Noto Serif JP", serif;
+  --font-study-ja: "Noto Sans JP", "Shippori Mincho", sans-serif;
+  --font-study-en: "Inter", "Playfair Display", sans-serif;
+  --font-editorial: "Baskerville", "Georgia", "Shippori Mincho", "Noto Serif JP", serif;
+
+  --font-display: var(--font-brand);
+  --font-reading: var(--font-ui);
+
+  /* motion */
+  --motion-micro: 120ms;
+  --motion-fast: 220ms;
+  --motion-normal: 360ms;
+  --motion-slow: 560ms;
+
+  --ease-out-soft: cubic-bezier(.33, 1, .68, 1);
+  --ease-spring-soft: cubic-bezier(.2, .8, .2, 1);
+  --ease-study-card: cubic-bezier(.18, .89, .32, 1.12);
+
+  /* legacy motion alias map */
+  --duration-micro: var(--motion-micro);
+  --duration-fast: var(--motion-fast);
+  --duration-normal: var(--motion-normal);
+  --duration-slow: var(--motion-slow);
+  --ease-spring: var(--ease-spring-soft);
+  --ease-fluid: var(--ease-out-soft);
+}

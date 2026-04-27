@@ -4,8 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint ../frontend/**/*.js ./**/*.js",
+    "format": "prettier --write \"../frontend/**/*.{html,css,js}\" \"./**/*.js\"",
+    "check:css": "stylelint \"../frontend/**/*.css\"",
+    "test": "node --test ../tools/test_ui.js",
+    "audit:ui": "node tools/ui-token-audit.js"
   },
   "keywords": [],
   "author": "",
