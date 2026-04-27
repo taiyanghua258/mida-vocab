@@ -259,7 +259,17 @@ function switchWorkspace(lang, isInitial = false) {
   if (readingLabel) readingLabel.textContent = lang === 'ja' ? '读音' : '音标 (IPA)';
 
   // 清空之前可能选中的多选框
-  clearWordSelection();
+  if (typeof clearWordSelection === 'function') {
+    clearWordSelection();
+  } else {
+    if (state?.selectedWordIds) state.selectedWordIds.clear();
+    document.querySelectorAll('#wordTableBody input[type="checkbox"]').forEach(input => {
+      input.checked = false;
+    });
+    if (typeof updateBatchBar === 'function') {
+      updateBatchBar();
+    }
+  }
 
   // ========== 数据拉取与进场动画编排 ==========
   if (dashActive) {
