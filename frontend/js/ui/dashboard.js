@@ -186,52 +186,57 @@ async function renderCalendarChart() {
     let firstDayIndex = new Date(vm.year, vm.month - 1, 1).getDay();
     const padDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
-    let html = `<div class="flex gap-1.5 sm:gap-3 items-end mx-auto sm:mx-0">`;
+    // ---------------- 👇 替换开始 👇 ----------------
+    // 放弃 GitHub 纵轴风格，改为横向 7 列传统日历布局，填满界面宽度
+    let html = `<div class="w-full flex flex-col gap-2 sm:gap-3 max-w-4xl mx-auto px-1 sm:px-4">`;
     
-    // 左侧星期轴
-    html += `
-      <div class="flex flex-col justify-between pb-[2px] pr-1 h-[122px] sm:h-[174px] text-[10px] text-muted font-bold font-ui">
-        <span class="mt-[14px] sm:mt-[20px]">一</span>
-        <span>三</span>
-        <span class="mb-[14px] sm:mb-[20px]">五</span>
-      </div>
-    `;
+    // 1. 顶部星期栏 (一到日全显)
+    const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
+    html += `<div class="grid grid-cols-7 gap-1 sm:gap-2 w-full text-center mb-1">`;
+    weekDays.forEach(day => {
+      html += `<div class="text-[10px] sm:text-xs text-muted font-bold font-ui opacity-70">${day}</div>`;
+    });
+    html += `</div>`;
 
-    // 【核心修复区域】：强制使用内联样式定义 7 行网格，绕开 Tailwind CDN 的限制
-    html += `<div class="grid grid-flow-col gap-1 sm:gap-1.5" style="grid-template-rows: repeat(7, 1fr);">`;
+    // 2. 日历核心网格
+    html += `<div class="grid grid-cols-7 gap-1 sm:gap-2 w-full">`;
 
     // 填充月初空白
     for (let i = 0; i < padDays; i++) {
-      html += `<div class="w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] opacity-0 pointer-events-none"></div>`;
+      html += `<div class="h-8 sm:h-10 opacity-0 pointer-events-none"></div>`;
     }
 
-    // 渲染每一天 (替换 dashboard.js 中对应位置的代码)
+    // 渲染每一天
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
       const count = dataMap.get(dateStr) || 0;
       
       let level = 0;
-      let colorClass = "bg-borderline/30 border-borderline/50"; 
-      if (count >= 40) { level = 4; colorClass = "bg-charcoal border-charcoal"; }
-      else if (count >= 20) { level = 3; colorClass = "bg-terracotta border-terracotta"; }
-      else if (count >= 5) { level = 2; colorClass = "bg-ochre/80 border-ochre/90"; }
-      else if (count >= 1) { level = 1; colorClass = "bg-ochre/30 border-ochre/40"; }
+      // 优化了文字颜色，使其在不同背景深浅下都能看清
+      let colorClass = "bg-borderline/20 border-borderline/40 text-charcoal/40"; 
+      if (count >= 40) { level = 4; colorClass = "bg-charcoal border-charcoal text-surface"; }
+      else if (count >= 20) { level = 3; colorClass = "bg-terracotta border-terracotta text-surface"; }
+      else if (count >= 5) { level = 2; colorClass = "bg-ochre/80 border-ochre/90 text-surface"; }
+      else if (count >= 1) { level = 1; colorClass = "bg-ochre/20 border-ochre/30 text-charcoal/80"; }
 
-      // 修复核心 1: 移除嵌套的 Tooltip DOM，加入 onmouseenter/onmouseleave 交由全局单例处理
+      // 宽自适应 (w-full)，高度固定 (h-8/h-10)，完美填充外层 7 列网格
+      // 修复核心：保持 Singleton Tooltip 机制，确保在滚动容器中不被裁剪且无重叠
       html += `
-        <div class="cal-cell w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] relative cursor-crosshair group z-10" 
-             data-level="${level}" 
+        <div class="cal-cell relative cursor-crosshair group z-10 w-full h-8 sm:h-10" 
              onclick="showDetailedReviewListForDate('${dateStr}')"
              onmouseenter="showGlobalCalTooltip(this, '${dateStr}', ${count})"
              onmouseleave="hideGlobalCalTooltip()">
-             
-          <div class="absolute inset-0 rounded-[3px] sm:rounded transition-all duration-200 border ${colorClass} group-hover:scale-[1.3] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal group-hover:z-50"></div>
+          
+          <div class="absolute inset-0 rounded-[4px] sm:rounded-[6px] transition-all duration-200 border ${colorClass} group-hover:scale-[1.15] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal group-hover:bg-charcoal group-hover:text-surface flex items-center justify-center z-20">
+            <span class="text-[10px] sm:text-[11px] font-bold font-mono transition-colors">${d}</span>
+          </div>
         </div>
       `;
     }
 
     html += `</div></div>`;
     container.innerHTML = html;
+    // ---------------- 👆 替换结束 👆 ----------------
 
   } catch (err) {
     console.error("Failed to load calendar data:", err);
