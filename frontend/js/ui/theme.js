@@ -1,7 +1,7 @@
-/* ================= AESTHETIC THEME ENGINE ================= */
+let customSelectDocumentListenerAdded = false;
+
 function initCustomSelects() {
   const selects = document.querySelectorAll('[data-custom-select]');
-
   if (!selects.length) return;
 
   selects.forEach(select => {
@@ -33,7 +33,14 @@ function initCustomSelects() {
         const label = option.textContent.trim();
 
         select.dataset.value = value;
-        // 更新触发器的文本
+
+        // 同步 hidden input (如果存在)
+        const hiddenInput = select.querySelector('input[type="hidden"], input:not([type])');
+        if (hiddenInput) {
+          hiddenInput.value = value;
+          hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
         const textEl = trigger.querySelector('.select-text') || trigger;
         textEl.textContent = label;
 
@@ -44,15 +51,27 @@ function initCustomSelects() {
             detail: { value, label }
           })
         );
+
+        // 针对词性筛选器的特殊驱动
+        if (select.id === 'partOfSpeechFilter' && typeof loadWords === 'function') {
+          loadWords(1);
+        }
       });
     });
   });
 
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.select-options.is-open').forEach(options => {
-      options.classList.remove('is-open');
+  if (!customSelectDocumentListenerAdded) {
+    customSelectDocumentListenerAdded = true;
+
+    document.addEventListener('click', event => {
+      // 如果点击的是自定义下拉框内部，不触发关闭（内部逻辑已处理）
+      if (event.target.closest('[data-custom-select]')) return;
+
+      document.querySelectorAll('.select-options.is-open').forEach(options => {
+        options.classList.remove('is-open');
+      });
     });
-  });
+  }
 }
 
 function initTheme() {

@@ -486,7 +486,8 @@ async function loadWords(page = 1) {
   const posFilter = document.getElementById('partOfSpeechFilter');
   
   const search = searchInput?.value || '';
-  const pos = posFilter?.value || '';
+  // 核心修复：支持自定义下拉框的 dataset.value
+  const pos = posFilter?.value || posFilter?.dataset?.value || '';
 
   hideAnswerSection();
   resetAllCardAnimations();

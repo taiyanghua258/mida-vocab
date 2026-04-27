@@ -377,7 +377,29 @@ function openModal(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
 
+  // 1. 清掉任何可能残留的主页切换锁，避免弹窗内控件被间接禁用 (pointer-events: none)
+  document.body.classList.remove('workspace-switching');
+
+  // 2. 关闭所有残留自定义下拉，避免透明浮层盖住输入框
+  document.querySelectorAll('.select-options.is-open').forEach(options => {
+    options.classList.remove('is-open');
+  });
+
   modal.classList.remove('hidden');
+
+  // 3. 防止点击弹窗内容冒泡到 overlay，导致输入框无法稳定聚焦
+  const content = modal.querySelector('.modal-content');
+  if (content && content.dataset.modalClickGuard !== 'true') {
+    content.dataset.modalClickGuard = 'true';
+    // 拦截 click 和 mousedown，确保输入框聚焦行为不被 overlay 的关闭逻辑干扰
+    content.addEventListener('click', event => {
+      event.stopPropagation();
+    });
+    content.addEventListener('mousedown', event => {
+      event.stopPropagation();
+    });
+  }
+
   requestAnimationFrame(() => {
     modal.classList.add('active');
   });
@@ -390,6 +412,11 @@ function openModal(id) {
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
+
+  // 关闭时清理任何残留的下拉浮层
+  document.querySelectorAll('.select-options.is-open').forEach(options => {
+    options.classList.remove('is-open');
+  });
 
   modal.classList.remove('active');
 
