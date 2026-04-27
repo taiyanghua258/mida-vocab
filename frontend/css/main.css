@@ -1291,6 +1291,12 @@ body.modal-open {
     color var(--duration-fast) ease;
   transform: translateZ(0);
   will-change: transform;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-day:focus {
+  outline: none;
 }
 
 .calendar-day:hover,
@@ -1302,6 +1308,11 @@ body.modal-open {
   background: rgb(var(--color-charcoal));
   color: rgb(var(--color-surface));
   box-shadow: 0 8px 20px rgb(var(--color-charcoal) / 0.12);
+}
+
+.calendar-day:focus-visible {
+  outline: 2px solid rgb(var(--color-ochre) / 0.5) !important;
+  outline-offset: 2px;
 }
 
 .calendar-day:active {
