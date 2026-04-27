@@ -499,6 +499,11 @@
   transform: translateY(0);
   background-color: rgb(var(--color-surface));
 }
+
+body.modal-open {
+  overflow: hidden;
+}
+
 .answer-btn:hover { 
   border-color: currentColor;
   transform: translateY(-3px); 

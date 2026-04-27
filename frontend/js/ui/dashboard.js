@@ -2,6 +2,8 @@
 let calendarRenderCounter = 0; // 声明在函数外部
 let _onboardingChecked = false;
 async function initDashboard() {
+  hideAnswerSection();
+  resetAllCardAnimations();
   await loadStats();
   loadWords(1);
   // 引导只在首次加载时检查一次，避免切换工作区/返回时重复弹出
@@ -327,6 +329,8 @@ async function showDetailedReviewList(categoryName) {
 
 
 async function loadWords(page = 1) {
+  hideAnswerSection();
+  resetAllCardAnimations();
   state.pagination.page = page;
   const search = document.getElementById('searchInput').value, pos = document.getElementById('partOfSpeechFilter').value;
   const tbody = document.getElementById('wordTableBody');

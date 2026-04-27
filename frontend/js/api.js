@@ -179,6 +179,9 @@ function showLogin() {
 let currentSwitchId = 0; // 👇 新增全局变量在函数外面
 
 function switchWorkspace(lang, isInitial = false) {
+  hideAnswerSection();
+  resetAllCardAnimations();
+
   // 增加防抖：如果点击的是当前已激活的语言，直接忽略，避免重复刷新动画
   if (state.currentLang === lang && !isInitial) return;
 

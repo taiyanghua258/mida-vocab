@@ -1,5 +1,6 @@
 /* ================= STUDY ================= */
 let coolingTimer = null; // Bug 5: 冷却界面倒计时定时器
+let isReviewSubmitting = false;
 
 // Bug 1: 中途退出保护
 function confirmLeaveStudy() {
@@ -49,6 +50,9 @@ async function initStudy() {
   state.coolingWords = [];
   state.studyHistory = []; // Bug 3: 重置撤回历史
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+
+  hideAnswerSection();
+  resetAllCardAnimations();
 
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
@@ -344,6 +348,7 @@ function addCardToDOM(index, word) {
 
 // 核心优化：懒加载渲染（且最多渲染4张）
 function renderCardStack() {
+  resetAllCardAnimations();
   const stack = document.getElementById('cardStack');
   stack.innerHTML = '';
   
@@ -430,7 +435,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function submitReview(result) {
-  if (isReviewProcessing) return;
+  if (isReviewSubmitting) return;
+  isReviewSubmitting = true;
+  
+  if (isReviewProcessing) { isReviewSubmitting = false; return; }
   isReviewProcessing = true;
   revealAllowed = false;
 
@@ -551,6 +559,11 @@ async function submitReview(result) {
       isReviewProcessing = false;
     }, 150);
   }
+  } finally {
+    setTimeout(() => {
+      isReviewSubmitting = false;
+    }, 450);
+  }
 }
 
 function updateStackDepths() {
@@ -665,6 +678,9 @@ async function reviewAgain(lang) {
   state.isCramMode = true; // 开启纯净巩固模式，不污染 FSRS 数据
   state.studyHistory = [];
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+
+  hideAnswerSection();
+  resetAllCardAnimations();
 
   // 👇 点击再练一次时，马上更新右上角文字
   const badge = document.getElementById('studyModeBadge');

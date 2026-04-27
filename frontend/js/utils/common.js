@@ -275,13 +275,66 @@ function navigate(viewId) {
   }
 }
 
+function resetCardNode(group) {
+  if (!group) return;
+
+  group.classList.remove(
+    'discarded-again',
+    'discarded-hard',
+    'discarded-good',
+    'discarded-easy'
+  );
+
+  const front = group.querySelector('.paper-card.front');
+  const back = group.querySelector('.paper-card.back');
+
+  if (front) front.classList.remove('peeled');
+  if (back) back.classList.remove('revealed');
+}
+
+function resetAllCardAnimations() {
+  document.querySelectorAll('.word-group').forEach(resetCardNode);
+
+  const answerSection = document.getElementById('answerSection');
+  if (answerSection) {
+    answerSection.classList.remove('show');
+  }
+}
+
+function hideAnswerSection() {
+  const answerSection = document.getElementById('answerSection');
+  if (!answerSection) return;
+  answerSection.classList.remove('show');
+}
+
 function openModal(id) {
-  document.getElementById(id).classList.add('active');
+  const modal = document.getElementById(id);
+  if (!modal) return;
+
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('active');
+  });
+
+  document.body.classList.add('modal-open');
+
   if (id === 'settingsModal') { loadFsrsSettings(); loadNotifySettings(); }
 }
+
 function closeModal(id) {
   const modal = document.getElementById(id);
+  if (!modal) return;
+
   modal.classList.remove('active');
+
+  setTimeout(() => {
+    if (!modal.classList.contains('active')) {
+      modal.classList.add('hidden');
+    }
+  }, 420);
+
+  document.body.classList.remove('modal-open');
+
   if (id === 'wordModal') {
     document.getElementById('wordForm').reset();
     // 同步自定义下拉框的视觉文字回到默认值（form.reset 只重置 hidden input，不会更新 UI）
