@@ -295,20 +295,37 @@ function switchWorkspace(lang, isInitial = false) {
     } else {
       // 切换语言时：等待 220ms 让旧数据带着动画沉下去并变透明
       setTimeout(async () => {
-        // 并发拉取新数据
-        await Promise.all([
-          loadStats(),
-          loadWords(1)
-        ]);
+        try {
+          // 并发拉取新数据
+          await Promise.allSettled([
+            loadStats(),
+            loadWords(1)
+          ]);
 
-        // 如果在此期间又有新的切换，则放弃当前更新，避免旧数据覆盖新请求
-        if (switchId !== currentSwitchId) return;
+          // 如果在此期间又有新的切换，则放弃当前更新，避免旧数据覆盖新请求
+          if (switchId !== currentSwitchId) return;
 
-        // 数据替换完毕后，在下一帧移除 switching 状态，触发新数据“弹上来”的动画
-        requestAnimationFrame(() => {
-          document.body.classList.remove('workspace-switching');
-        });
+          // 数据替换完毕后，在下一帧移除 switching 状态，触发新数据“弹上来”的动画
+          requestAnimationFrame(() => {
+            document.body.classList.remove('workspace-switching');
+          });
+        } catch (err) {
+          console.error('Workspace switch data load failed:', err);
+        } finally {
+          // 双保险：确保在加载结束后（无论成功失败）移除锁定状态，除非已经开始了新的请求
+          if (switchId === currentSwitchId) {
+            document.body.classList.remove('workspace-switching');
+          }
+        }
       }, 220);
+
+      // 兜底定时器：防止 API 挂起导致页面永久不可点击 (1.5s 强制解锁)
+      window.setTimeout(() => {
+        if (switchId === currentSwitchId && document.body.classList.contains('workspace-switching')) {
+          console.warn('Workspace switch safety timeout triggered.');
+          document.body.classList.remove('workspace-switching');
+        }
+      }, 1500);
     }
   }
 }
@@ -319,9 +336,15 @@ function updateWorkspaceButtons() {
   if (!jaBtn || !enBtn) return;
 
   const isJa = state.currentLang === 'ja';
+
+  // 同时同步 Legacy Class 和 New Design System Class
   jaBtn.classList.toggle('ws-btn-active', isJa);
   jaBtn.classList.toggle('ws-btn-inactive', !isJa);
+  jaBtn.classList.toggle('btn--ws-active', isJa);
+  jaBtn.classList.toggle('btn--ws-inactive', !isJa);
+
   enBtn.classList.toggle('ws-btn-active', !isJa);
   enBtn.classList.toggle('ws-btn-inactive', isJa);
+  enBtn.classList.toggle('btn--ws-active', !isJa);
+  enBtn.classList.toggle('btn--ws-inactive', isJa);
 }
-
