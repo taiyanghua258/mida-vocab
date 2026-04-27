@@ -434,6 +434,56 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function resetCardNode(group) {
+  if (!group) return;
+
+  group.classList.remove(
+    'discarded-again',
+    'discarded-hard',
+    'discarded-good',
+    'discarded-easy'
+  );
+
+  const front = group.querySelector('.paper-card.front');
+  const back = group.querySelector('.paper-card.back');
+
+  if (front) front.classList.remove('peeled');
+  if (back) back.classList.remove('revealed');
+}
+
+function resetAllCardAnimations() {
+  document.querySelectorAll('.word-group').forEach(resetCardNode);
+
+  const answerSection = document.getElementById('answerSection');
+  if (answerSection) {
+    answerSection.classList.remove('show');
+  }
+}
+
+function hideAnswerSection() {
+  const answerSection = document.getElementById('answerSection');
+  if (!answerSection) return;
+  answerSection.classList.remove('show');
+}
+
+function getDiscardClassByResult(result) {
+  const map = {
+    again: 'discarded-again',
+    hard: 'discarded-hard',
+    good: 'discarded-good',
+    easy: 'discarded-easy'
+  };
+
+  return map[result] || 'discarded-good';
+}
+
+function playReviewExitAnimation(result) {
+  const activeGroup = document.querySelector('.word-group[data-depth="0"]');
+  if (!activeGroup) return;
+
+  activeGroup.classList.add(getDiscardClassByResult(result));
+}
+
 async function submitReview(result) {
   if (isReviewSubmitting) return;
   isReviewSubmitting = true;
@@ -445,17 +495,24 @@ async function submitReview(result) {
   if (revealTimeout) { clearTimeout(revealTimeout); revealTimeout = null; }
 
   const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
-  if (!currentGroup) { isReviewProcessing = false; return; }
-  const front = currentGroup.querySelector('.front');
-  if (!front.classList.contains('peeled')) { isReviewProcessing = false; return; }
+  if (!currentGroup) { 
+    isReviewProcessing = false; 
+    isReviewSubmitting = false;
+    return; 
+  }
 
-  document.getElementById('answerSection').classList.remove('show');
-  const word = state.studyWords[state.studyIndex];
-  
-  // 【修复 1】：将 resData 提取到外层
-  let resData = null; 
-  
   try {
+    const front = currentGroup.querySelector('.front');
+    if (!front.classList.contains('peeled')) { 
+      throw new Error('Card not revealed');
+    }
+
+    hideAnswerSection();
+    playReviewExitAnimation(result);
+
+    const word = state.studyWords[state.studyIndex];
+    let resData = null; 
+
     if (!state.isCramMode) {
       resData = await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
 
@@ -476,89 +533,82 @@ async function submitReview(result) {
         }
       }
     }
+
+    state.studyStats.reviewed++;
+    state.studyStats[result]++;
+    state.sessionStats.reviewed++;
+    state.sessionStats[result]++;
+
+    // 延时清理 DOM，配合动画
+    setTimeout(() => {
+      if (currentGroup && currentGroup.parentNode) {
+        currentGroup.parentNode.removeChild(currentGroup);
+      }
+    }, 600);
+
+    // FSRS 算法产生的真实下次复习时间逻辑
+    if (result === 'again') {
+      let shouldAppend = true;
+      if (resData && resData.due) {
+        const dueTime = new Date(resData.due).getTime();
+        const diffMinutes = (dueTime - Date.now()) / 60000;
+        if (diffMinutes > 2) {
+          shouldAppend = false;
+        }
+      }
+      if (shouldAppend) {
+        const newWord = { ...word };
+        state.studyWords.push(newWord);
+        addCardToDOM(state.studyWords.length - 1, newWord);
+      }
+    }
+
+    state.studyIndex++;
+    
+    // 懒加载优化
+    const upcomingIndex = state.studyIndex + 3;
+    if (upcomingIndex < state.studyWords.length) {
+      const existing = document.getElementById(`word-group-${upcomingIndex}`);
+      if (!existing) {
+        addCardToDOM(upcomingIndex, state.studyWords[upcomingIndex]);
+      }
+    }
+
+    updateStackDepths();
+    updateStudyProgress();
+
+    if (state.studyIndex >= state.studyWords.length) {
+      setTimeout(() => {
+        showStudyComplete();
+        isReviewProcessing = false;
+      }, 400);
+    } else {
+      setTimeout(() => {
+        isReviewProcessing = false;
+      }, 150);
+    }
   } catch (err) {
-    // 👇 新增防御逻辑：拦截 404 幽灵数据错误，打破死循环
+    console.error('Submit review failed:', err);
+    
+    // 如果卡片没翻开，直接退出
+    if (err.message === 'Card not revealed') {
+      isReviewProcessing = false;
+      isReviewSubmitting = false;
+      return;
+    }
+
     if (err.message === 'Word not found') {
       showToast('检测到该单词已被删除，正在自动清理幽灵缓存并重新加载...', 'info');
-      // 清除掉产生冲突的本地进度
       localStorage.removeItem(`active_session_${state.currentLang}`);
       isReviewProcessing = false;
-      // 重新向后端发起真实请求，刷新牌堆
       initStudy();
       return; 
     }
 
-    // 👇 保留原有的常规网络错误处理
     showToast(`复习记录保存失败：${err.message || '网络异常'}`, 'error');
-    console.error('Review Error', err);
     isReviewProcessing = false;
     revealAllowed = true;
     document.getElementById('answerSection').classList.add('show');
-    return; 
-  }
-  state.studyStats.reviewed++;
-  state.studyStats[result]++;
-  // 跨轮次累计统计
-  state.sessionStats.reviewed++;
-  state.sessionStats[result]++;
-
-  // 整组卡片飞走剥离
-  if (currentGroup) {
-    currentGroup.classList.add(`discarded-${result}`);
-    setTimeout(() => {
-      if (currentGroup.parentNode) {
-        currentGroup.parentNode.removeChild(currentGroup);
-      }
-    }, 600);
-  }
-
-  // 【修复 2】：智能判断是否需要追加到当前牌堆底
-  if (result === 'again') {
-    let shouldAppend = true;
-    
-    // 如果后端返回了由于 FSRS 算法产生的真实下次复习时间
-    if (resData && resData.due) {
-      const dueTime = new Date(resData.due).getTime();
-      const diffMinutes = (dueTime - Date.now()) / 60000;
-      
-      // 如果冷却时间超过 2 分钟（即 10 分钟那次阶梯），就不追加到牌堆底了
-      // 把它留在后台，让用户完成当前牌堆后，自然进入冷却池倒计时界面
-      if (diffMinutes > 2) {
-        shouldAppend = false;
-      }
-    }
-
-    if (shouldAppend) {
-      const newWord = { ...word };
-      state.studyWords.push(newWord);
-      addCardToDOM(state.studyWords.length - 1, newWord);
-    }
-  }
-
-  state.studyIndex++;
-  
-  // 懒加载优化：甩掉当前卡片后，悄悄把后面第 4 张卡片注入 DOM 底部备用
-  const upcomingIndex = state.studyIndex + 3;
-  if (upcomingIndex < state.studyWords.length) {
-    const existing = document.getElementById(`word-group-${upcomingIndex}`);
-    if (!existing) {
-      addCardToDOM(upcomingIndex, state.studyWords[upcomingIndex]);
-    }
-  }
-
-  updateStackDepths();
-  updateStudyProgress();
-
-  if (state.studyIndex >= state.studyWords.length) {
-    setTimeout(() => {
-      showStudyComplete();
-      isReviewProcessing = false;
-    }, 400);
-  } else {
-    setTimeout(() => {
-      isReviewProcessing = false;
-    }, 150);
-  }
   } finally {
     setTimeout(() => {
       isReviewSubmitting = false;
