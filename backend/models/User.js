@@ -65,6 +65,16 @@ const userSchema = new mongoose.Schema({
   fsrsSettings: {
     type: fsrsSettingsSchema,
     default: () => ({})
+  },
+  onboarding: {
+    version: {
+      type: Number,
+      default: 0
+    },
+    completedAt: {
+      type: Date,
+      default: null
+    }
   }
 }, {
   timestamps: true

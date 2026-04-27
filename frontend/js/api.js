@@ -64,6 +64,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     startBackgroundPolling();
     loadNotifySettings();
     navigate('dashboard');
+
+    if (typeof maybeStartOnboarding === 'function') {
+      setTimeout(() => {
+        maybeStartOnboarding();
+      }, 1200);
+    }
   } catch (err) {
     showToast(err.message || '登录失败，请检查用户名和密码', 'error');
     btn.disabled = false;
@@ -107,6 +113,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     }
 
     const data = await res.json();
+    if (typeof markPendingOnboardingForUsername === 'function') {
+      markPendingOnboardingForUsername(username);
+    }
     showToast('注册成功，请登录', 'success');
     localStorage.removeItem('token');
     localStorage.removeItem('user');

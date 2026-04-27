@@ -1,19 +1,35 @@
 /* ================= DASHBOARD ================= */
 let calendarRenderCounter = 0; // 声明在函数外部
-let _onboardingChecked = false;
+
+function updateTableDueTimes() {
+  const dashboard = document.getElementById('view-dashboard');
+
+  if (!dashboard || !dashboard.classList.contains('active')) {
+    return;
+  }
+
+  const cells = document.querySelectorAll('.due-cell');
+
+  cells.forEach((cell) => {
+    const dueStr = cell.getAttribute('data-due');
+    const wordState = parseInt(cell.getAttribute('data-state'), 10);
+
+    if (dueStr && typeof formatDate === 'function') {
+      cell.innerHTML = formatDate(dueStr, wordState);
+    }
+  });
+}
 async function initDashboard() {
   hideAnswerSection();
   resetAllCardAnimations();
+
   await loadStats();
   loadWords(1);
-  // 引导只在首次加载时检查一次，避免切换工作区/返回时重复弹出
-  if (!_onboardingChecked) {
-    _onboardingChecked = true;
-    if (typeof checkAndStartOnboarding === 'function') {
-      setTimeout(() => {
-        checkAndStartOnboarding();
-      }, 800);
-    }
+
+  if (typeof maybeStartOnboarding === 'function') {
+    setTimeout(() => {
+      maybeStartOnboarding();
+    }, 500);
   }
 }
 

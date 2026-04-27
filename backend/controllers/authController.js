@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, username, email, avatar: user.avatar, signature: user.signature }
+      user: { id: user._id, username, email, avatar: user.avatar, signature: user.signature, onboarding: user.onboarding }
     });
   } catch (err) {
     console.error('Register error:', err.message, err.code);
@@ -70,7 +70,7 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, username: user.username, email: user.email, avatar: user.avatar, signature: user.signature }
+      user: { id: user._id, username: user.username, email: user.email, avatar: user.avatar, signature: user.signature, onboarding: user.onboarding }
     });
   } catch (err) {
     console.error(err);
@@ -168,6 +168,37 @@ exports.updateProfile = async (req, res) => {
       { $set: updates },
       { new: true, runValidators: true }
     ).select('-password'); // 返回除密码外的所有最新信息
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.completeOnboarding = async (req, res) => {
+  try {
+    const { version } = req.body;
+    if (!version) {
+      return res.status(400).json({ message: 'Onboarding version is required' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: {
+          onboarding: {
+            version: Number(version),
+            completedAt: new Date()
+          }
+        }
+      },
+      { new: true }
+    ).select('-password');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

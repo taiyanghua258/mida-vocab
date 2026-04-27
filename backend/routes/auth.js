@@ -10,6 +10,7 @@ router.get('/me', auth, authController.getMe);
 router.get('/settings', auth, authController.getSettings);
 router.put('/settings', auth, authController.updateSettings);
 router.put('/profile', auth, authController.updateProfile);
+router.post('/onboarding/complete', auth, authController.completeOnboarding);
 router.delete('/user/:username', auth, authController.deleteUser);
 
 module.exports = router;

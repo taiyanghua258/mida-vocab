@@ -773,157 +773,16 @@ function renderUpcomingWidget() {
 }
 
 
-/* ================= ONBOARDING (Driver.js v1.0) ================= */
-function checkAndStartOnboarding() {
-  // 1. 检查是否已经完成过引导
-  if (localStorage.getItem('mida_onboarding_v2') === 'true') return;
-
-  // 2. 确保依赖已加载 (v1.0 的调用方式是 window.driver.js.driver)
-  if (!window.driver || !window.driver.js) {
-    console.warn('Driver.js 未正确加载');
-    return;
+/* ================= ONBOARDING COMPATIBILITY ================= */
+window.checkAndStartOnboarding = function() {
+  if (typeof maybeStartOnboarding === 'function') {
+    return maybeStartOnboarding();
   }
+};
 
-  // 3. 动态注入符合“見だ”美学的自定义样式 (避免污染 main.css)
-  if (!document.getElementById('mida-driver-style')) {
-    const style = document.createElement('style');
-    style.id = 'mida-driver-style';
-    style.innerHTML = `
-      .mida-tour-popover {
-        font-family: var(--font-ui), sans-serif !important;
-        border-radius: var(--radius-card) !important;
-        border: 1px solid rgb(var(--color-borderline)) !important;
-        background-color: rgb(var(--color-surface)) !important;
-        box-shadow: 0 20px 40px rgba(26,47,43,0.12) !important;
-        padding: 20px !important;
-        max-width: 320px !important;
-      }
-      .mida-tour-popover .driver-popover-title {
-        font-family: var(--font-display), sans-serif !important;
-        color: rgb(var(--color-charcoal)) !important;
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
-        margin-bottom: 8px !important;
-        letter-spacing: 0.05em !important;
-      }
-      .mida-tour-popover .driver-popover-description {
-        color: rgb(var(--color-muted)) !important;
-        font-size: 0.85rem !important;
-        line-height: 1.6 !important;
-      }
-      .mida-tour-popover .driver-popover-footer {
-        margin-top: 16px !important;
-      }
-      .mida-tour-popover .driver-popover-footer button {
-        border-radius: 8px !important;
-        text-shadow: none !important;
-        font-weight: 600 !important;
-        font-size: 0.75rem !important;
-        padding: 8px 14px !important;
-        transition: all 0.2s !important;
-        font-family: var(--font-ui), sans-serif !important;
-        letter-spacing: 0.05em !important;
-      }
-      /* 下一步/完成按钮 */
-      .mida-tour-popover .driver-popover-next-btn {
-        background-color: rgb(var(--color-charcoal)) !important;
-        color: rgb(var(--color-surface)) !important;
-        border: none !important;
-      }
-      .mida-tour-popover .driver-popover-next-btn:hover {
-        background-color: rgba(var(--color-charcoal), 0.9) !important;
-      }
-      /* 上一步按钮 */
-      .mida-tour-popover .driver-popover-prev-btn {
-        background-color: rgb(var(--color-surface)) !important;
-        color: rgb(var(--color-charcoal)) !important;
-        border: 1px solid rgb(var(--color-borderline)) !important;
-      }
-      /* 跳过按钮 */
-      .mida-tour-popover .driver-popover-close-btn {
-        color: rgb(var(--color-muted)) !important;
-      }
-      .mida-tour-popover .driver-popover-progress-text {
-        color: rgb(var(--color-ochre)) !important;
-        font-weight: 700 !important;
-        font-size: 0.75rem !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  const driver = window.driver.js.driver;
-
-  // 4. 配置并初始化引导
-  const driverObj = driver({
-    showProgress: true,
-    animate: true,
-    allowClose: false, // 防止误触外部关闭
-    doneBtnText: '开启旅程',
-    closeBtnText: '跳过',
-    nextBtnText: '下一步',
-    prevBtnText: '上一步',
-    popoverClass: 'mida-tour-popover',
-    steps: [
-      {
-        element: '#ws-btn-ja',
-        popover: {
-          title: '🌐 全新双语工作区',
-          description: '现在您可以随时在「日语」和「英语」之间无缝切换。两个词库的数据、进度完全隔离，互不干扰。',
-          side: 'bottom', align: 'start'
-        }
-      },
-      {
-        element: '#tour-stats-area',
-        popover: {
-          title: '📊 掌握学习脉络',
-          description: '这里实时反映您的总词汇量和今日待复习数。数字会随着您的学习轨迹跳动。',
-          side: 'bottom', align: 'start'
-        }
-      },
-      {
-        element: '#tour-action-bar',
-        popover: {
-          title: '⚡ 强大的构建工具',
-          description: '支持单个添加、AI 批量智能提取，现在还支持直接拖入 Anki 的 .apkg 词书进行云端清洗与导入！',
-          side: 'top', align: 'center'
-        }
-      },
-      {
-        element: '#upcomingWidget',
-        popover: {
-          title: '⏳ 记忆冷却池',
-          description: '基于 FSRS 算法。刚刚学过的新词会在这里停留 1~10 分钟“冷却预热”，等待您趁热打铁进行二次巩固。',
-          side: 'top', align: 'start'
-        }
-      },
-      {
-        element: '#tour-study-btn',
-        popover: {
-          title: '🚀 准备好了吗？',
-          description: '点击这里，进入沉浸式的学习心流状态。保持纯粹，专注语言。',
-          side: 'left', align: 'center'
-        }
-      }
-    ],
-    onDestroyStarted: () => {
-      // 当用户点击跳过或走完最后一步时触发
-      if (!driverObj.hasNextStep() || confirm("确定要退出新手引导吗？")) {
-        localStorage.setItem('mida_onboarding_v2', 'true');
-        driverObj.destroy();
-      }
-    },
-  });
-
-  // 5. 延迟启动，确保面板数据和动画（如数字翻滚）加载完成
-  setTimeout(() => {
-    driverObj.drive();
-  }, 1000);
-}
-
-// 供设置页手动触发使用（可选）：重新观看引导
 window.replayOnboarding = function() {
-  localStorage.removeItem('mida_onboarding_v2');
-  checkAndStartOnboarding();
+  if (typeof replayOnboarding === 'function') {
+    return replayOnboarding();
+  }
 };
 
