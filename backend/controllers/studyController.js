@@ -270,7 +270,7 @@ exports.getStats = async (req, res) => {
           todayDueWords: {
             $sum: {
               $cond: [
-                { $and: [{ $ne: ["$state", 0] }, { $lte: ["$due", now] }] },
+                { $lte: ["$due", now] },
                 1,
                 0
               ]
@@ -281,7 +281,6 @@ exports.getStats = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $ne: ["$state", 0] },
                     { $gt: ["$due", now] },
                     { $lte: ["$due", shortReviewLimit] }
                   ]
@@ -296,7 +295,6 @@ exports.getStats = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $ne: ["$state", 0] },
                     { $gt: ["$due", shortReviewLimit] },
                     { $lte: ["$due", masteredLimit] }
                   ]
@@ -309,12 +307,7 @@ exports.getStats = async (req, res) => {
           masteredWords: {
             $sum: {
               $cond: [
-                {
-                  $and: [
-                    { $ne: ["$state", 0] },
-                    { $gt: ["$due", masteredLimit] }
-                  ]
-                },
+                { $gt: ["$due", masteredLimit] },
                 1,
                 0
               ]

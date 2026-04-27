@@ -113,7 +113,7 @@ function renderStatsChart(statsData) {
     },
     series: [
       {
-        name: '学习状态', 
+        name: '复习时间分布', 
         type: 'pie', 
         // 👇 2. 既然底部没有文字了，恢复完美的居中对齐，并放大圆环
         radius: ['40%', '75%'], 

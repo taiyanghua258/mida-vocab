@@ -69,16 +69,12 @@ exports.getWords = async (req, res) => {
     const masteredLimit = new Date(now.getTime() + 100 * ONE_DAY_MS);
 
     if (req.query.status === 'today') {
-      query.state = { $ne: 0 };
       query.due = { $lte: now };
     } else if (req.query.status === 'short') {
-      query.state = { $ne: 0 };
       query.due = { $gt: now, $lte: shortReviewLimit };
     } else if (req.query.status === 'long') {
-      query.state = { $ne: 0 };
       query.due = { $gt: shortReviewLimit, $lte: masteredLimit };
     } else if (req.query.status === 'mastered') {
-      query.state = { $ne: 0 };
       query.due = { $gt: masteredLimit };
     } else if (req.query.status === 'new') {
       query.state = 0;
