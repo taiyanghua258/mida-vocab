@@ -50,81 +50,88 @@ function confirmLeaveStudy() {
 }
 
 async function initStudy() {
-  state.isCramMode = false;
-  state.coolingWords = [];
-  state.studyHistory = []; // Bug 3: 重置撤回历史
-  if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+  try {
+    state.isCramMode = false;
+    state.coolingWords = [];
+    state.studyHistory = []; // Bug 3: 重置撤回历史
+    if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
 
-  hideAnswerSection();
-  resetAllCardAnimations();
+    hideAnswerSection();
+    resetAllCardAnimations();
 
-  document.getElementById('studyComplete').classList.add('hidden');
-  document.getElementById('noWords').classList.add('hidden');
-  document.getElementById('studyCardContainer').classList.remove('hidden');
-  document.getElementById('answerSection').classList.remove('show');
-  document.getElementById('undoBtn').disabled = true; // Bug 3: 重置撤回按钮
-  revealAllowed = false;
+    document.getElementById('studyComplete').classList.add('hidden');
+    document.getElementById('noWords').classList.add('hidden');
+    document.getElementById('studyCardContainer').classList.remove('hidden');
+    document.getElementById('answerSection').classList.remove('show');
+    document.getElementById('undoBtn').disabled = true; // Bug 3: 重置撤回按钮
+    revealAllowed = false;
 
-  let words = [];
-  const activeSessionStr = localStorage.getItem(`active_session_${state.currentLang}`);
+    let words = [];
+    const activeSessionStr = localStorage.getItem(`active_session_${state.currentLang}`);
 
-  if (activeSessionStr) {
-    try {
-      const activeData = JSON.parse(activeSessionStr);
-      // 只有在真的有剩余单词时，并且不是无痕模式时才恢复
-      if (activeData.studyWords && activeData.studyIndex < activeData.studyWords.length && !activeData.isCramMode) {
-        state.studyWords = activeData.studyWords;
-        state.studyIndex = activeData.studyIndex;
-        state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
-        state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-        state.sessionStats = activeData.sessionStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+    if (activeSessionStr) {
+      try {
+        const activeData = JSON.parse(activeSessionStr);
+        // 只有在真的有剩余单词时，并且不是无痕模式时才恢复
+        if (activeData.studyWords && activeData.studyIndex < activeData.studyWords.length && !activeData.isCramMode) {
+          state.studyWords = activeData.studyWords;
+          state.studyIndex = activeData.studyIndex;
+          state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
+          state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+          state.sessionStats = activeData.sessionStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
 
-        // 👇 【新增这两行】：正确恢复跨轮次总量和会话状态
-        state.sessionOriginalTotal = activeData.sessionOriginalTotal || activeData.originalTotal || activeData.studyWords.length;
-        state._sessionActive = activeData._sessionActive !== undefined ? activeData._sessionActive : true;
+          // 👇 【新增这两行】：正确恢复跨轮次总量和会话状态
+          state.sessionOriginalTotal = activeData.sessionOriginalTotal || activeData.originalTotal || activeData.studyWords.length;
+          state._sessionActive = activeData._sessionActive !== undefined ? activeData._sessionActive : true;
 
-        state.isCramMode = false;
-        words = state.studyWords;
+          state.isCramMode = false;
+          words = state.studyWords;
 
-        showToast('已恢复上次未完成的进度', 'info');
+          showToast('已恢复上次未完成的进度', 'info');
+        }
+      } catch (e) { }
+      localStorage.removeItem(`active_session_${state.currentLang}`);
+    }
+
+    // 👇 根据状态动态更新右上角文字
+    const badge = document.getElementById('studyModeBadge');
+    if (badge) {
+      badge.textContent = state.isCramMode ? '无痕练习' : 'FSRS 复习';
+    }
+
+    if (words.length === 0) {
+      words = await api(`/study/due?language=${state.currentLang}&_t=${Date.now()}`);
+      state.studyWords = words;
+      state.originalTotal = words.length;
+      state.studyIndex = 0;
+      state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+      // 只在全新开始一局时才重置跨轮次累计统计（冷却回来时不会走这里）
+      if (!state._sessionActive) {
+        state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+        state.sessionOriginalTotal = words.length; // 记录整个会话的初始总量
       }
-    } catch (e) { }
-    localStorage.removeItem(`active_session_${state.currentLang}`);
-  }
-
-  // 👇 根据状态动态更新右上角文字
-  const badge = document.getElementById('studyModeBadge');
-  if (badge) {
-    badge.textContent = state.isCramMode ? '无痕练习' : 'FSRS 复习';
-  }
-
-  if (words.length === 0) {
-    words = await api(`/study/due?language=${state.currentLang}&_t=${Date.now()}`);
-    state.studyWords = words;
-    state.originalTotal = words.length;
-    state.studyIndex = 0;
-    state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-    // 只在全新开始一局时才重置跨轮次累计统计（冷却回来时不会走这里）
-    if (!state._sessionActive) {
-      state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-      state.sessionOriginalTotal = words.length; // 记录整个会话的初始总量
+      state._sessionActive = true;
     }
-    state._sessionActive = true;
-  }
 
-  if (state.studyWords.length === 0) {
-    document.getElementById('studyCardContainer').classList.add('hidden');
+    if (state.studyWords.length === 0) {
+      document.getElementById('studyCardContainer').classList.add('hidden');
 
-    // 动态抓取真实冷却状态，而非错误展示任务达成
-    const stats = await api(`/study/stats?language=${state.currentLang}`);
-    if (stats.upcomingWords && stats.upcomingWords.length > 0) {
-      showCoolingState(stats.upcomingWords, stats);
+      // 动态抓取真实冷却状态，而非错误展示任务达成
+      const stats = await api(`/study/stats?language=${state.currentLang}`);
+      if (stats.upcomingWords && stats.upcomingWords.length > 0) {
+        showCoolingState(stats.upcomingWords, stats);
+      } else {
+        showTaskAccomplished(stats);
+      }
     } else {
-      showTaskAccomplished(stats);
+      renderCardStack();
+      updateStudyProgress();
     }
-  } else {
-    renderCardStack();
-    updateStudyProgress();
+  } catch (err) {
+    console.error('initStudy 发生致命错误:', err);
+    showToast('加载学习数据失败，请检查网络或刷新重试', 'error');
+    if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
+    navigate('dashboard'); 
   }
 }
 

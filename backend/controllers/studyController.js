@@ -27,8 +27,10 @@ async function getUserScheduler(userId) {
   
   // ts-fsrs expects StepUnit (e.g. ['1m', '10m']) rather than raw numbers.
   let formattedSteps = ['1m', '10m'];
-  if (settings.learningSteps && settings.learningSteps.length > 0) {
+  if (Array.isArray(settings.learningSteps) && settings.learningSteps.length > 0) {
     formattedSteps = settings.learningSteps.map(s => `${s}m`);
+  } else if (typeof settings.learningSteps === 'string') {
+    formattedSteps = settings.learningSteps.split(',').map(s => `${s.trim()}m`);
   }
 
   return fsrs(generatorParameters({
@@ -376,11 +378,18 @@ exports.getStats = async (req, res) => {
 
     const endOfDay = dayjs().tz(TIMEZONE).endOf('day').toDate();
     const userSettings = user?.fsrsSettings || {};
-    const configSteps = (userSettings.learningSteps?.length
-      ? userSettings.learningSteps
-      : [1, 10]); // 用户配置的学习步骤（分钟）
+    let configSteps = [1, 10];
+    if (Array.isArray(userSettings.learningSteps) && userSettings.learningSteps.length > 0) {
+      configSteps = userSettings.learningSteps;
+    } else if (typeof userSettings.learningSteps === 'string') {
+      configSteps = userSettings.learningSteps.split(',')
+        .map(s => parseInt(s.trim()))
+        .filter(n => !isNaN(n));
+      if (configSteps.length === 0) configSteps = [1, 10];
+    }
+
     const totalConfigSteps = configSteps.length;
-    const fullCascadeMinutes = configSteps.reduce((a, b) => a + b, 0); // e.g. 11 for [1,10]
+    const fullCascadeMinutes = configSteps.reduce((a, b) => a + b, 0);
 
     // 冷却中的词（带 learning_steps 用于计算剩余级联）
     const coolingWordsToday = await Word.find({
