@@ -1,4 +1,27 @@
 :root {
+
+  /* default component tokens */
+  --radius-sm: 0.5rem;
+  --radius-btn: 0.85rem;
+  --radius-panel: 1.25rem;
+  --radius-card: 1.5rem;
+  --radius-modal: 2rem;
+  --radius-pill: 100px;
+
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 10px 40px rgba(26, 47, 43, 0.04);
+  --shadow-dropdown: 0 10px 40px rgba(26, 47, 43, 0.08);
+  --shadow-modal: 0 12px 40px rgba(26, 47, 43, 0.12);
+
+  --glass-bg: rgb(var(--c-surface));
+  --glass-border: 1px solid rgb(var(--c-border));
+  --modal-overlay-bg: rgb(var(--c-text) / 0.3);
+
+  --word-font: var(--font-ui);
+  --word-size: 3rem;
+  --word-weight: 700;
+  --word-tracking: -0.02em;
+
   /* color: semantic, not material name only */
   --c-bg: 253 251 247;
   --c-surface: 255 255 255;

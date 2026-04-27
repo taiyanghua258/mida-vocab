@@ -1,9 +1,8 @@
 @import 'tokens.css';
 @import 'themes.css';
+@import 'legacy.css'; /* Moved here so new components override legacy rules */
 @import 'base.css';
 @import 'components.css';
 @import 'motion.css';
 @import 'study-card.css';
 @import 'utilities.css';
-
-@import 'legacy.css';

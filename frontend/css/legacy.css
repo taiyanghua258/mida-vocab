@@ -42,9 +42,9 @@
       --shadow-dropdown: 0 10px 40px rgba(26, 47, 43, 0.08);
       --shadow-modal: 0 12px 40px rgba(26, 47, 43, 0.12);
       
-      --ease-spring-soft: var(--ease-out-soft);
-      --ease-out-soft: var(--ease-out-soft);
-      --ease-in-out: var(--ease-out-soft);
+      --ease-spring-soft: cubic-bezier(.2, .8, .2, 1);
+      --ease-out-soft: cubic-bezier(.33, 1, .68, 1);
+      --ease-in-out: cubic-bezier(.65, 0, .35, 1);
       
       --glass-bg: rgb(var(--c-surface));
       --glass-border: 1px solid rgb(var(--c-border));
