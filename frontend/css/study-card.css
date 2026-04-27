@@ -27,24 +27,35 @@
   box-shadow: 0 4px 16px rgb(var(--c-text) / 0.06); 
 }
 
-/* Card physics */
-.study-card.is-discarding-again { 
-  transform: translateY(60px) rotate(2deg) scale(0.9) !important; 
+/* Card physics (精准匹配 studyMode.js 的类名和 DOM) */
+.word-group {
+  transition: transform var(--motion-slow) var(--ease-study-card), opacity var(--motion-fast) ease-out !important;
+}
+
+/* 向下拖拽（忘记）：沉重坠落 */
+.word-group.discarded-again { 
+  transform: translateY(80px) rotate(3deg) scale(0.9) !important; 
   opacity: 0 !important; 
   pointer-events: none; 
 }
-.study-card.is-discarding-hard { 
+
+/* 向左拖拽（困难）：甩开的物理惯性 */
+.word-group.discarded-hard { 
   transform: translate(-120%, 15%) rotate(-8deg) scale(0.95) !important; 
   opacity: 0 !important; 
   pointer-events: none; 
 }
-.study-card.is-discarding-good { 
+
+/* 向右拖拽（掌握）：轻快地上扬飞出 */
+.word-group.discarded-good { 
   transform: translate(120%, -15%) rotate(8deg) scale(0.95) !important; 
   opacity: 0 !important; 
   pointer-events: none; 
 }
-.study-card.is-discarding-easy { 
-  transform: translateY(-80px) rotate(-1deg) scale(1.05) !important; 
+
+/* 向上拖拽（简单）：气球升空感 */
+.word-group.discarded-easy { 
+  transform: translateY(-100px) rotate(-2deg) scale(1.05) !important; 
   opacity: 0 !important; 
   pointer-events: none; 
 }
