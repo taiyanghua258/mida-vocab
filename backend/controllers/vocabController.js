@@ -63,14 +63,23 @@ exports.getWords = async (req, res) => {
     if (partOfSpeech) query.partOfSpeech = partOfSpeech;
     if (tag) query.tags = tag;
 
-    if (req.query.status === 'mastered') {
-      query.state = 2;
-      query.reps = { $gte: 5 };
-    } else if (req.query.status === 'review') {
-      query.state = 2;
-      query.reps = { $lt: 5 }; // 👇 新增这行：严格排除已掌握的词
-    } else if (req.query.status === 'learning') {
-      query.state = { $in: [1, 3] };
+    const now = new Date();
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const shortReviewLimit = new Date(now.getTime() + 30 * ONE_DAY_MS);
+    const masteredLimit = new Date(now.getTime() + 100 * ONE_DAY_MS);
+
+    if (req.query.status === 'today') {
+      query.state = { $ne: 0 };
+      query.due = { $lte: now };
+    } else if (req.query.status === 'short') {
+      query.state = { $ne: 0 };
+      query.due = { $gt: now, $lte: shortReviewLimit };
+    } else if (req.query.status === 'long') {
+      query.state = { $ne: 0 };
+      query.due = { $gt: shortReviewLimit, $lte: masteredLimit };
+    } else if (req.query.status === 'mastered') {
+      query.state = { $ne: 0 };
+      query.due = { $gt: masteredLimit };
     } else if (req.query.status === 'new') {
       query.state = 0;
     }

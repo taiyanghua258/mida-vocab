@@ -251,9 +251,12 @@ exports.getStats = async (req, res) => {
   try {
     const now = new Date();
     const language = req.query.language || 'ja';
-    // 时区修复：统一日切线
     const todayStart = dayjs().tz(TIMEZONE).startOf('day').toDate();
     const tomorrowStart = dayjs(todayStart).add(1, 'day').toDate();
+
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const shortReviewLimit = new Date(now.getTime() + 30 * ONE_DAY_MS);
+    const masteredLimit = new Date(now.getTime() + 100 * ONE_DAY_MS);
 
     // 使用聚合管道，将 7 次沉重的全表扫瞄合并为 1 次极限扫描
     const [wordStats] = await Word.aggregate([
@@ -264,16 +267,66 @@ exports.getStats = async (req, res) => {
           dueReviewCount: { $sum: { $cond: [ { $and: [ { $ne: ["$state", 0] }, { $lte: ["$due", now] } ] }, 1, 0 ] } },
           totalNewWords: { $sum: { $cond: [ { $eq: ["$state", 0] }, 1, 0 ] } },
           dueNewWordsBase: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 0] }, { $lte: ["$due", now] } ] }, 1, 0 ] } },
-          learningWords: { $sum: { $cond: [ { $in: ["$state", [1, 3]] }, 1, 0 ] } },
-          reviewWords: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 2] }, { $lt: ["$reps", 5] } ] }, 1, 0 ] } },
-          masteredWords: { $sum: { $cond: [ { $and: [ { $eq: ["$state", 2] }, { $gte: ["$reps", 5] } ] }, 1, 0 ] } }
+          todayDueWords: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ["$state", 0] }, { $lte: ["$due", now] }] },
+                1,
+                0
+              ]
+            }
+          },
+          shortReviewWords: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$state", 0] },
+                    { $gt: ["$due", now] },
+                    { $lte: ["$due", shortReviewLimit] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          longReviewWords: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$state", 0] },
+                    { $gt: ["$due", shortReviewLimit] },
+                    { $lte: ["$due", masteredLimit] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          masteredWords: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$state", 0] },
+                    { $gt: ["$due", masteredLimit] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
       }}
     ]);
 
     // 如果该语言下完全没有单词，提供兜底 0 值
     const stats = wordStats || {
       totalWords: 0, dueReviewCount: 0, dueNewWordsBase: 0,
-      learningWords: 0, reviewWords: 0, masteredWords: 0
+      todayDueWords: 0, shortReviewWords: 0, longReviewWords: 0, masteredWords: 0
     };
 
     // ReviewLog 的查询保持原样即可，因为数据量相对较小且有明确时间范围
@@ -285,9 +338,10 @@ exports.getStats = async (req, res) => {
     const totalWords = stats.totalWords;
     const dueReviewCount = stats.dueReviewCount;
     const dueNewWordsBase = stats.dueNewWordsBase;
-    const learningWords = stats.learningWords;
-    const reviewWords = stats.reviewWords;
-    const masteredWords = stats.masteredWords;
+    const todayDueWords = stats.todayDueWords || 0;
+    const shortReviewWords = stats.shortReviewWords || 0;
+    const longReviewWords = stats.longReviewWords || 0;
+    const masteredWords = stats.masteredWords || 0;
 
     let dueNewWords = dueNewWordsBase;
 
@@ -422,8 +476,9 @@ exports.getStats = async (req, res) => {
       totalNewWords: stats.totalNewWords || 0,
       dueWords,
       newWords: dueNewWords,
-      learningWords,
-      reviewWords,
+      todayDueWords,
+      shortReviewWords,
+      longReviewWords,
       masteredWords,
       todayReviews,
       upcomingWords,

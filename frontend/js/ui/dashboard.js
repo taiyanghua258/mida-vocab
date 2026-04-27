@@ -94,10 +94,10 @@ function renderStatsChart(statsData) {
   const fontUi = rootStyle.getPropertyValue('--font-ui') || 'sans-serif';
 
   const dataArray = [
-    { value: statsData.totalNewWords || 0, name: '新词 (New)', itemStyle: { color: cTerracotta } },
-    { value: statsData.learningWords || 0, name: '学习中 (Learning)', itemStyle: { color: cOchre } },
-    { value: statsData.reviewWords || 0, name: '待复习 (Review)', itemStyle: { color: cMuted } },
-    { value: statsData.masteredWords || 0, name: '已掌握 (Mastered)', itemStyle: { color: cSuccess } }
+    { value: statsData.todayDueWords || 0, name: '今天待复习 (Today)', itemStyle: { color: cTerracotta } },
+    { value: statsData.shortReviewWords || 0, name: '短期复习 (≤30天)', itemStyle: { color: cOchre } },
+    { value: statsData.longReviewWords || 0, name: '长期复习 (31-100天)', itemStyle: { color: cMuted } },
+    { value: statsData.masteredWords || 0, name: '已掌握 (>100天)', itemStyle: { color: cSuccess } }
   ].filter(item => item.value > 0);
 
   const option = {
@@ -409,10 +409,10 @@ async function showDetailedReviewList(categoryName) {
   if (categoryName === '无数据') return;
 
   let statusFilter = '';
-  if (categoryName.includes('New')) statusFilter = 'new';
-  else if (categoryName.includes('Learning')) statusFilter = 'learning';
-  else if (categoryName.includes('Review')) statusFilter = 'review';
-  else if (categoryName.includes('Mastered')) statusFilter = 'mastered';
+  if (categoryName.includes('Today')) statusFilter = 'today';
+  else if (categoryName.includes('≤30天')) statusFilter = 'short';
+  else if (categoryName.includes('31-100天')) statusFilter = 'long';
+  else if (categoryName.includes('>100天')) statusFilter = 'mastered';
 
   if (!statusFilter) return;
 
