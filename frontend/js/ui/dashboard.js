@@ -138,112 +138,229 @@ function renderStatsChart(statsData) {
   setTimeout(() => myStatsChart.resize(), 350);
 }
 
-async function renderCalendarChart() {
-  const currentRenderId = ++calendarRenderCounter;
-  const wrapper = document.getElementById('calendarChartWrapper');
-  if (!wrapper) return;
-  wrapper.classList.remove('hidden');
+let calendarRenderCounter = 0;
 
-  // 初始化容器
+function getCalendarViewMonth() {
+  if (!window.calendarViewMonth) {
+    const now = new Date();
+    window.calendarViewMonth = {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1
+    };
+  }
+
+  return window.calendarViewMonth;
+}
+
+function ensureCalendarShell(wrapper) {
   let container = document.getElementById('nativeCalendarContainer');
-  if (!container) {
-    // 这里的模板移除了多余的 group，并增加了容器的宽度自适应
-    wrapper.innerHTML = `
-      <div class="flex items-start justify-between mb-6 w-full px-2">
-        <div class="flex flex-col">
-          <div class="text-[0.55rem] text-muted font-bold tracking-[0.3em] uppercase font-ui">Review Trajectory</div>
-          <div class="text-lg font-display font-bold text-charcoal mt-1 tracking-tight">记忆刻痕热力图</div>
+  if (container) return container;
+
+  wrapper.innerHTML = `
+    <section class="calendar-shell" aria-label="复习日历">
+      <div class="calendar-header">
+        <div>
+          <div class="calendar-kicker">Review Trajectory</div>
+          <div class="calendar-title">记忆刻痕热力图</div>
         </div>
-        <div class="flex items-center gap-1.5 bg-surface/50 backdrop-blur-md border border-borderline rounded-full p-1 shadow-sm">
-          <button onclick="navigateCalendarMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+
+        <div class="calendar-nav" aria-label="切换月份">
+          <button type="button" class="calendar-nav-button" onclick="navigateCalendarMonth(-1)" aria-label="上个月">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256">
+              <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+            </svg>
           </button>
-          <span id="calendarMonthLabel" class="text-[0.7rem] text-charcoal font-bold font-ui min-w-[75px] text-center tracking-widest-plus"></span>
-          <button onclick="navigateCalendarMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+
+          <span id="calendarMonthLabel" class="calendar-month-label"></span>
+
+          <button type="button" class="calendar-nav-button" onclick="navigateCalendarMonth(1)" aria-label="下个月">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256">
+              <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+            </svg>
           </button>
         </div>
       </div>
-      <div id="nativeCalendarContainer" class="w-full flex flex-col gap-3 px-2"></div>
-    `;
-    container = document.getElementById('nativeCalendarContainer');
+
+      <div id="nativeCalendarContainer" class="calendar-container"></div>
+      <div id="calendarTooltip" class="calendar-tooltip" role="tooltip"></div>
+    </section>
+  `;
+
+  return document.getElementById('nativeCalendarContainer');
+}
+
+function updateCalendarMonthLabel(vm) {
+  const monthLabel = document.getElementById('calendarMonthLabel');
+  if (monthLabel) {
+    monthLabel.textContent = `${vm.year}年${vm.month}月`;
+  }
+}
+
+function getCalendarLevelClass(count) {
+  if (count >= 40) return 'level-4';
+  if (count >= 20) return 'level-3';
+  if (count >= 5) return 'level-2';
+  if (count >= 1) return 'level-1';
+  return 'level-0';
+}
+
+function isSameLocalDate(dateStr, date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return dateStr === `${y}-${m}-${d}`;
+}
+
+function renderCalendarGrid(container, vm, dataMap, direction = 'none') {
+  const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
+  const daysInMonth = new Date(vm.year, vm.month, 0).getDate();
+  const firstDayIndex = new Date(vm.year, vm.month - 1, 1).getDay();
+  const padDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+
+  let html = `
+    <div class="calendar-grid calendar-grid-enter calendar-dir-${direction}">
+      ${['一', '二', '三', '四', '五', '六', '日'].map(day => `
+        <div class="calendar-weekday">${day}</div>
+      `).join('')}
+  `;
+
+  for (let i = 0; i < padDays; i++) {
+    html += `<div class="calendar-day calendar-day-empty" aria-hidden="true"></div>`;
   }
 
-  const vm = window.calendarViewMonth || { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
-  const monthLabel = document.getElementById('calendarMonthLabel');
-  if (monthLabel) monthLabel.textContent = `${vm.year}年${vm.month}月`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
+    const count = dataMap.get(dateStr) || 0;
+    const levelClass = getCalendarLevelClass(count);
+    const isToday = isSameLocalDate(dateStr, new Date());
+
+    html += `
+      <button
+        type="button"
+        class="calendar-day ${levelClass} ${isToday ? 'is-today' : ''}"
+        data-date="${dateStr}"
+        data-count="${count}"
+        onclick="showDetailedReviewListForDate('${dateStr}')"
+        onmouseenter="showCalendarTooltip(this)"
+        onmouseleave="hideCalendarTooltip()"
+        onfocus="showCalendarTooltip(this)"
+        onblur="hideCalendarTooltip()"
+        aria-label="${dateStr}，复习 ${count} 个词"
+      >
+        <span class="calendar-day-number">${d}</span>
+        ${count > 0 ? `<span class="calendar-day-dot"></span>` : ''}
+      </button>
+    `;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+async function renderCalendarChart(options = {}) {
+  const currentRenderId = ++calendarRenderCounter;
+  const direction = options.direction || 'none';
+
+  const wrapper = document.getElementById('calendarChartWrapper');
+  if (!wrapper) return;
+
+  wrapper.classList.remove('hidden');
+
+  const container = ensureCalendarShell(wrapper);
+  const vm = getCalendarViewMonth();
+
+  updateCalendarMonthLabel(vm);
 
   try {
     if (!window.currentCalendarData) {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const data = await api(`/study/calendar?language=${state.currentLang}&tz=${encodeURIComponent(tz)}`);
-      if (currentRenderId !== calendarRenderCounter) return; 
-      window.currentCalendarData = data || [];
-    }
-    
-    const dataMap = new Map(window.currentCalendarData.map(d => [d[0], d[1]]));
-    const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
-    const daysInMonth = new Date(vm.year, vm.month, 0).getDate();
-    let firstDayIndex = new Date(vm.year, vm.month - 1, 1).getDay();
-    const padDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
-    // 采用更稳定的 Flex 布局，解决“挤在左边”的问题
-    let html = `
-      <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
-        <div style="display: flex; width: 100%; gap: 8px; margin-bottom: 4px;">
-          ${['一','二','三','四','五','六','日'].map(d => `<div style="flex: 1; text-align: center; font-size: 10px; font-weight: bold; color: var(--color-muted); opacity: 0.6;">${d}</div>`).join('')}
-        </div>
-        
-        <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 8px;">
-    `;
+      if (currentRenderId !== calendarRenderCounter) return;
 
-    // 填充月初空白格
-    for (let i = 0; i < padDays; i++) {
-      html += `<div style="flex: 1 0 calc(14.28% - 8px); height: 36px; opacity: 0;"></div>`;
+      window.currentCalendarData = Array.isArray(data) ? data : [];
     }
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
-      const count = dataMap.get(dateStr) || 0;
-      
-      let colorClass = "bg-borderline/20 border-borderline/40 text-charcoal/30"; 
-      if (count >= 40) colorClass = "bg-charcoal border-charcoal text-surface";
-      else if (count >= 20) colorClass = "bg-terracotta border-terracotta text-surface";
-      else if (count >= 5) colorClass = "bg-ochre/80 border-ochre/90 text-surface";
-      else if (count >= 1) colorClass = "bg-ochre/20 border-ochre/40 text-charcoal/70";
+    const dataMap = new Map(
+      window.currentCalendarData.map(item => [item[0], item[1]])
+    );
 
-      // 核心修复：将 group 移到最小单位的 div 上，并使用 hover 伪类确保只触发当前格子
-      html += `
-        <div class="cal-cell group" 
-             style="flex: 1 0 calc(14.28% - 8px); height: 36px; position: relative; cursor: crosshair;"
-             onclick="showDetailedReviewListForDate('${dateStr}')"
-             onmouseenter="showGlobalCalTooltip(this, '${dateStr}', ${count})"
-             onmouseleave="hideGlobalCalTooltip()">
-          
-          <div class="w-full h-full rounded-[6px] transition-all duration-300 border ${colorClass} flex items-center justify-center 
-                      hover:scale-110 hover:shadow-lg hover:border-charcoal hover:bg-charcoal hover:text-surface hover:z-50">
-            <span style="font-size: 11px; font-weight: bold; font-family: monospace;">${d}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    html += `</div></div>`;
-    container.innerHTML = html;
-
+    renderCalendarGrid(container, vm, dataMap, direction);
   } catch (err) {
-    container.innerHTML = `<div class="py-10 text-center text-xs text-terracotta">数据同步中断，请检查网络</div>`;
+    if (currentRenderId !== calendarRenderCounter) return;
+
+    container.innerHTML = `
+      <div class="py-10 text-center text-xs text-terracotta">
+        数据同步中断，请检查网络
+      </div>
+    `;
   }
 }
 
 function navigateCalendarMonth(offset) {
-  if (!window.calendarViewMonth) return;
-  let { year, month } = window.calendarViewMonth;
+  const vm = getCalendarViewMonth();
+
+  let { year, month } = vm;
   month += offset;
-  if (month < 1) { month = 12; year--; }
-  if (month > 12) { month = 1; year++; }
+
+  if (month < 1) {
+    month = 12;
+    year--;
+  }
+
+  if (month > 12) {
+    month = 1;
+    year++;
+  }
+
   window.calendarViewMonth = { year, month };
-  renderCalendarChart();
+  renderCalendarChart({ direction: offset > 0 ? 'next' : 'prev' });
+}
+
+function showCalendarTooltip(el) {
+  const tooltip = document.getElementById('calendarTooltip');
+  if (!tooltip || !el) return;
+
+  const dateStr = el.dataset.date;
+  const count = Number(el.dataset.count || 0);
+
+  tooltip.textContent = `${dateStr} · 复习 ${count} 个词`;
+  tooltip.classList.add('is-visible');
+
+  const rect = el.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+
+  let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+  let top = rect.top - tooltipRect.height - 8;
+
+  const margin = 8;
+  left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
+
+  if (top < margin) {
+    top = rect.bottom + 8;
+  }
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+function hideCalendarTooltip() {
+  const tooltip = document.getElementById('calendarTooltip');
+  if (!tooltip) return;
+
+  tooltip.classList.remove('is-visible');
+}
+
+/* 兼容旧调用，可在确认没有旧引用后删除 */
+function showGlobalCalTooltip(el, dateStr, count) {
+  if (!el) return;
+  el.dataset.date = dateStr;
+  el.dataset.count = String(count || 0);
+  showCalendarTooltip(el);
+}
+
+function hideGlobalCalTooltip() {
+  hideCalendarTooltip();
 }
 
 async function showDetailedReviewListForDate(dateStr) {
@@ -1229,63 +1346,19 @@ async function batchExportSelected() {
 }
 
 /* ================= CALENDAR TOOLTIP (单例管理器) ================= */
-let calTooltipTimer = null;
-
+/* ================= CALENDAR TOOLTIP (兼容保留) ================= */
+// 提示：新日历已自带局部 Tooltip 实现，以下仅为兼容旧调用。
 window.showGlobalCalTooltip = function(el, dateStr, count) {
-  let tooltip = document.getElementById('globalCalTooltip');
-  
-  // 懒加载创建全局唯一的提示框 DOM
-  if (!tooltip) {
-    tooltip = document.createElement('div');
-    tooltip.id = 'globalCalTooltip';
-    // 使用 fixed 彻底脱离正常的文档流束缚，z-index 设为极高
-    tooltip.className = 'fixed z-[9999] pointer-events-none px-3 py-2 bg-charcoal text-surface text-[10px] rounded-[4px] shadow-lg font-ui text-center leading-tight transition-opacity duration-150 opacity-0 hidden';
-    document.body.appendChild(tooltip);
+  if (typeof showCalendarTooltip === 'function') {
+    if (!el.dataset.date) el.dataset.date = dateStr;
+    if (!el.dataset.count) el.dataset.count = String(count || 0);
+    showCalendarTooltip(el);
   }
-
-  // 注入数据
-  tooltip.innerHTML = `
-    <div class="font-bold tracking-widest text-[0.65rem] text-muted/80 mb-1 border-b border-surface/20 pb-1">${dateStr}</div>
-    复习了 <span class="font-bold text-ochre text-[12px] mx-0.5">${count}</span> 项
-    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-charcoal"></div>
-  `;
-
-  // 获取当前 Hover 方块在屏幕上的精确绝对坐标
-  const rect = el.getBoundingClientRect();
-  
-  // 显示一下以获取真实宽高（计算位置需要）
-  tooltip.classList.remove('hidden');
-  
-  const top = rect.top - tooltip.offsetHeight - 8; // 向上偏移 8px
-  const left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2); // 水平居中对齐方块
-
-  tooltip.style.top = `${top}px`;
-  tooltip.style.left = `${left}px`;
-
-  // 清除可能存在的淡出定时器
-  if (calTooltipTimer) clearTimeout(calTooltipTimer);
-
-  // 强制浏览器重排，触发淡入动画
-  void tooltip.offsetWidth; 
-  tooltip.classList.remove('opacity-0');
-  tooltip.classList.add('opacity-100');
 };
 
 window.hideGlobalCalTooltip = function() {
-  const tooltip = document.getElementById('globalCalTooltip');
-  if (!tooltip) return;
-
-  tooltip.classList.remove('opacity-100');
-  tooltip.classList.add('opacity-0');
-
-  // 等待动画结束后彻底隐藏，防止遮挡鼠标交互
-  calTooltipTimer = setTimeout(() => {
-    if (tooltip.classList.contains('opacity-0')) {
-        tooltip.classList.add('hidden');
-    }
-  }, 150);
+  if (typeof hideCalendarTooltip === 'function') {
+    hideCalendarTooltip();
+  }
 };
-
-// （可选）移动端兼容：当用户滑动页面时，主动清除提示框防止其残留在屏幕上
-window.addEventListener('scroll', window.hideGlobalCalTooltip, { passive: true });
 
