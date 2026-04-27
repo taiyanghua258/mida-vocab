@@ -1160,3 +1160,8 @@ html[data-theme="editorial"],
 .custom-scrollbar::-webkit-scrollbar { height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--color-borderline)); border-radius: 4px; }
+
+/* 防止 Modal 开启时背景滚动 */
+body.modal-open {
+  overflow: hidden;
+}
