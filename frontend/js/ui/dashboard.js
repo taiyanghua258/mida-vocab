@@ -121,114 +121,90 @@ function renderStatsChart(statsData) {
 }
 
 async function renderCalendarChart() {
-  const currentRenderId = ++calendarRenderCounter; // 捕获当前调用的 ID
+  const currentRenderId = ++calendarRenderCounter;
   const wrapper = document.getElementById('calendarChartWrapper');
   if (!wrapper) return;
   wrapper.classList.remove('hidden');
 
-  // 【DOM 自愈机制】
+  // 初始化容器
   let container = document.getElementById('nativeCalendarContainer');
   if (!container) {
-      wrapper.innerHTML = `
-        <div class="flex items-start justify-between mb-6 z-10 w-full">
-          <div class="flex flex-col">
-            <div class="text-[0.55rem] text-muted font-bold tracking-[0.3em] uppercase font-ui">Review Trajectory</div>
-            <div class="text-lg font-display font-bold text-charcoal mt-1 tracking-tight">记忆刻痕热力图</div>
-          </div>
-          <div class="flex items-center gap-1.5 bg-surface/50 backdrop-blur-md border border-borderline rounded-full p-1 shadow-[var(--shadow-sm)]">
-            <button onclick="navigateCalendarMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90" title="上个月">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
-            </button>
-            <span id="calendarMonthLabel" class="text-[0.7rem] text-charcoal font-bold font-ui min-w-[75px] text-center tracking-widest-plus"></span>
-            <button onclick="navigateCalendarMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90" title="下个月">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
-            </button>
-          </div>
+    // 这里的模板移除了多余的 group，并增加了容器的宽度自适应
+    wrapper.innerHTML = `
+      <div class="flex items-start justify-between mb-6 w-full px-2">
+        <div class="flex flex-col">
+          <div class="text-[0.55rem] text-muted font-bold tracking-[0.3em] uppercase font-ui">Review Trajectory</div>
+          <div class="text-lg font-display font-bold text-charcoal mt-1 tracking-tight">记忆刻痕热力图</div>
         </div>
-        <div id="nativeCalendarContainer" class="flex-1 w-full flex items-center justify-center sm:justify-start overflow-x-auto z-10 custom-scrollbar pb-4 pt-10 px-2"></div>
-      `;
+        <div class="flex items-center gap-1.5 bg-surface/50 backdrop-blur-md border border-borderline rounded-full p-1 shadow-sm">
+          <button onclick="navigateCalendarMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+          </button>
+          <span id="calendarMonthLabel" class="text-[0.7rem] text-charcoal font-bold font-ui min-w-[75px] text-center tracking-widest-plus"></span>
+          <button onclick="navigateCalendarMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-charcoal hover:text-surface text-muted transition-all active:scale-90">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L159.31,128,90.34,58.34a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+          </button>
+        </div>
+      </div>
+      <div id="nativeCalendarContainer" class="w-full flex flex-col gap-3 px-2"></div>
+    `;
     container = document.getElementById('nativeCalendarContainer');
   }
 
-  if (!window.calendarViewMonth) {
-    const now = new Date();
-    window.calendarViewMonth = { year: now.getFullYear(), month: now.getMonth() + 1 };
-  }
-
-  const vm = window.calendarViewMonth;
+  const vm = window.calendarViewMonth || { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
   const monthLabel = document.getElementById('calendarMonthLabel');
   if (monthLabel) monthLabel.textContent = `${vm.year}年${vm.month}月`;
 
-  // 【加载状态】
-  container.innerHTML = `
-    <div class="w-full h-full flex flex-col items-center justify-center text-muted/60 text-xs animate-pulse min-h-[120px]">
-      <svg class="animate-spin mb-2 h-5 w-5 text-ochre/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      编织记忆轨迹中...
-    </div>
-  `;
-
   try {
     if (!window.currentCalendarData) {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // 获取用户当前时区
-      const calendarData = await api(`/study/calendar?language=${state.currentLang}&tz=${encodeURIComponent(tz)}`);
-      // ⚠️ 关键拦截：如果请求期间用户又切了月份/语种，直接丢弃这份过期数据
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const data = await api(`/study/calendar?language=${state.currentLang}&tz=${encodeURIComponent(tz)}`);
       if (currentRenderId !== calendarRenderCounter) return; 
-      window.currentCalendarData = calendarData || [];
+      window.currentCalendarData = data || [];
     }
     
-    if (currentRenderId !== calendarRenderCounter) return; // 拦截同步穿透
-
-    const allData = window.currentCalendarData;
-    const dataMap = new Map(allData.map(d => [d[0], d[1]]));
-
+    const dataMap = new Map(window.currentCalendarData.map(d => [d[0], d[1]]));
     const monthStr = `${vm.year}-${String(vm.month).padStart(2, '0')}`;
     const daysInMonth = new Date(vm.year, vm.month, 0).getDate();
     let firstDayIndex = new Date(vm.year, vm.month - 1, 1).getDay();
     const padDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
-    // ---------------- 👇 替换开始 👇 ----------------
-    // 放弃 GitHub 纵轴风格，改为横向 7 列传统日历布局，填满界面宽度
-    let html = `<div class="w-full flex flex-col gap-2 sm:gap-3 max-w-4xl mx-auto px-1 sm:px-4">`;
-    
-    // 1. 顶部星期栏 (一到日全显)
-    const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
-    html += `<div class="grid grid-cols-7 gap-1 sm:gap-2 w-full text-center mb-1">`;
-    weekDays.forEach(day => {
-      html += `<div class="text-[10px] sm:text-xs text-muted font-bold font-ui opacity-70">${day}</div>`;
-    });
-    html += `</div>`;
+    // 采用更稳定的 Flex 布局，解决“挤在左边”的问题
+    let html = `
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+        <div style="display: flex; width: 100%; gap: 8px; margin-bottom: 4px;">
+          ${['一','二','三','四','五','六','日'].map(d => `<div style="flex: 1; text-align: center; font-size: 10px; font-weight: bold; color: var(--color-muted); opacity: 0.6;">${d}</div>`).join('')}
+        </div>
+        
+        <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 8px;">
+    `;
 
-    // 2. 日历核心网格
-    html += `<div class="grid grid-cols-7 gap-1 sm:gap-2 w-full">`;
-
-    // 填充月初空白
+    // 填充月初空白格
     for (let i = 0; i < padDays; i++) {
-      html += `<div class="h-8 sm:h-10 opacity-0 pointer-events-none"></div>`;
+      html += `<div style="flex: 1 0 calc(14.28% - 8px); height: 36px; opacity: 0;"></div>`;
     }
 
-    // 渲染每一天
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`;
       const count = dataMap.get(dateStr) || 0;
       
-      let level = 0;
-      // 优化了文字颜色，使其在不同背景深浅下都能看清
-      let colorClass = "bg-borderline/20 border-borderline/40 text-charcoal/40"; 
-      if (count >= 40) { level = 4; colorClass = "bg-charcoal border-charcoal text-surface"; }
-      else if (count >= 20) { level = 3; colorClass = "bg-terracotta border-terracotta text-surface"; }
-      else if (count >= 5) { level = 2; colorClass = "bg-ochre/80 border-ochre/90 text-surface"; }
-      else if (count >= 1) { level = 1; colorClass = "bg-ochre/20 border-ochre/30 text-charcoal/80"; }
+      let colorClass = "bg-borderline/20 border-borderline/40 text-charcoal/30"; 
+      if (count >= 40) colorClass = "bg-charcoal border-charcoal text-surface";
+      else if (count >= 20) colorClass = "bg-terracotta border-terracotta text-surface";
+      else if (count >= 5) colorClass = "bg-ochre/80 border-ochre/90 text-surface";
+      else if (count >= 1) colorClass = "bg-ochre/20 border-ochre/40 text-charcoal/70";
 
-      // 宽自适应 (w-full)，高度固定 (h-8/h-10)，完美填充外层 7 列网格
-      // 修复核心：保持 Singleton Tooltip 机制，确保在滚动容器中不被裁剪且无重叠
+      // 核心修复：将 group 移到最小单位的 div 上，并使用 hover 伪类确保只触发当前格子
       html += `
-        <div class="cal-cell relative cursor-crosshair group z-10 w-full h-8 sm:h-10" 
+        <div class="cal-cell group" 
+             style="flex: 1 0 calc(14.28% - 8px); height: 36px; position: relative; cursor: crosshair;"
              onclick="showDetailedReviewListForDate('${dateStr}')"
              onmouseenter="showGlobalCalTooltip(this, '${dateStr}', ${count})"
              onmouseleave="hideGlobalCalTooltip()">
           
-          <div class="absolute inset-0 rounded-[4px] sm:rounded-[6px] transition-all duration-200 border ${colorClass} group-hover:scale-[1.15] group-hover:shadow-[0_8px_20px_rgba(26,47,43,0.15)] group-hover:border-charcoal group-hover:bg-charcoal group-hover:text-surface flex items-center justify-center z-20">
-            <span class="text-[10px] sm:text-[11px] font-bold font-mono transition-colors">${d}</span>
+          <div class="w-full h-full rounded-[6px] transition-all duration-300 border ${colorClass} flex items-center justify-center 
+                      hover:scale-110 hover:shadow-lg hover:border-charcoal hover:bg-charcoal hover:text-surface hover:z-50">
+            <span style="font-size: 11px; font-weight: bold; font-family: monospace;">${d}</span>
           </div>
         </div>
       `;
@@ -236,15 +212,9 @@ async function renderCalendarChart() {
 
     html += `</div></div>`;
     container.innerHTML = html;
-    // ---------------- 👆 替换结束 👆 ----------------
 
   } catch (err) {
-    console.error("Failed to load calendar data:", err);
-    container.innerHTML = `
-      <div class="w-full h-full flex items-center justify-center text-terracotta text-xs opacity-70 min-h-[120px]">
-        获取记忆轨迹失败，请刷新重试
-      </div>
-    `;
+    container.innerHTML = `<div class="py-10 text-center text-xs text-terracotta">数据同步中断，请检查网络</div>`;
   }
 }
 
