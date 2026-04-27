@@ -28,12 +28,14 @@ function showToast(msg, type = 'info') {
 function toggleUserMenu() {
   const menu = document.getElementById('userDropdown');
   const arrow = document.getElementById('userMenuArrow');
-  
+
+  if (!menu) return;
+
   if (menu.classList.contains('opacity-0')) {
     // 展开
     menu.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
     menu.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
-    arrow.classList.add('rotate-180');
+    if (arrow) arrow.classList.add('rotate-180');
   } else {
     closeUserMenu();
   }
@@ -42,12 +44,12 @@ function toggleUserMenu() {
 function closeUserMenu() {
   const menu = document.getElementById('userDropdown');
   const arrow = document.getElementById('userMenuArrow');
-  
+
   if (menu && !menu.classList.contains('opacity-0')) {
     // 收起
     menu.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
     menu.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-    arrow.classList.remove('rotate-180');
+    if (arrow) arrow.classList.remove('rotate-180');
   }
 }
 
@@ -62,17 +64,17 @@ document.addEventListener('click', (e) => {
 // 切换显示/隐藏特定分钟的冷却池单词列表 (全局单例 Tooltip，防止被 overflow-hidden 裁剪)
 let _coolingTooltipListenersAdded = false;
 
-window.toggleCoolingDropdown = function(event, min) {
+window.toggleCoolingDropdown = function (event, min) {
   event.stopPropagation();
   let tooltip = document.getElementById('global-cooling-tooltip');
-  
+
   // 关闭 tooltip 的通用函数
   function hideCoolingTooltip() {
     if (!tooltip) return;
     tooltip.classList.add('opacity-0', 'invisible', '-translate-y-2', 'scale-95');
     tooltip.classList.remove('opacity-100', 'visible', 'translate-y-0', 'scale-100');
   }
-  
+
   if (!tooltip) {
     tooltip = document.createElement('div');
     tooltip.id = 'global-cooling-tooltip';
@@ -94,7 +96,7 @@ window.toggleCoolingDropdown = function(event, min) {
       if (e.target.closest('.cooling-item-btn')) return;
       hideCoolingTooltip();
     });
-    
+
     // 滚动时隐藏，防止悬浮位置错乱
     window.addEventListener('scroll', () => {
       const tooltipEl = document.getElementById('global-cooling-tooltip');
@@ -149,21 +151,21 @@ window.toggleCoolingDropdown = function(event, min) {
   const rect = btn.getBoundingClientRect();
   const scrollY = window.scrollY || document.documentElement.scrollTop;
   const scrollX = window.scrollX || document.documentElement.scrollLeft;
-  
+
   // 先设为可见但透明，以便获取高度（用 visibility: hidden 避免闪现）
   tooltip.style.display = 'block';
   tooltip.style.visibility = 'hidden';
   tooltip.classList.remove('invisible');
-  
+
   const tooltipRect = tooltip.getBoundingClientRect();
-  
+
   let top = rect.top + scrollY - tooltipRect.height - 12;
   let left = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2);
-  
+
   // 防止左侧或右侧超出屏幕
   if (left < 10) left = 10;
   if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
-  
+
   // 若上方空间不足，显示在下方
   const arrow = tooltip.querySelector('.tooltip-arrow');
   if (top < scrollY + 10) {
@@ -184,11 +186,11 @@ window.toggleCoolingDropdown = function(event, min) {
     tooltip.classList.add('origin-bottom');
     tooltip.classList.remove('origin-top');
   }
-  
+
   tooltip.style.top = `${top}px`;
   tooltip.style.left = `${left}px`;
   tooltip.style.visibility = ''; // 恢复 visibility
-  
+
   // 触发动画显示
   // 延迟一帧确保 translate 位置先生效
   requestAnimationFrame(() => {
@@ -208,7 +210,7 @@ function showQuickGuide() {
 }
 
 // 冷却池说明 tooltip：click 切换 + 桌面 hover 显示/隐藏（修复 touch 设备 hover 卡死问题）
-(function() {
+(function () {
   let _infoTooltipTimer = null;
 
   function showInfoTooltip() {
@@ -442,23 +444,23 @@ function resetFsrsSettings() {
   document.getElementById('notifyVibrateToggle').checked = true;
 }
 
-document.getElementById('settingsRetention').addEventListener('input', function() {
+document.getElementById('settingsRetention')?.addEventListener('input', function () {
   document.getElementById('retentionValue').textContent = this.value + '%';
 });
 
-document.getElementById('fsrsSettingsForm').addEventListener('submit', async (e) => {
+document.getElementById('fsrsSettingsForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('saveSettingsBtn');
   const orgText = btn.textContent;
   btn.textContent = '保存中...';
-  
+
   const stepsStr = document.getElementById('settingsSteps').value;
   const steps = stepsStr.split(',').map(s => parseInt(s.trim())).filter(s => !isNaN(s));
-  
+
   // 修复1: 严格对齐后端 User.js 的白名单字段
   const settings = {
-    dailyNewLimitJa: parseInt(document.getElementById('settingsNewCardsJa').value) || 20, 
-    dailyNewLimitEn: parseInt(document.getElementById('settingsNewCardsEn').value) || 20, 
+    dailyNewLimitJa: parseInt(document.getElementById('settingsNewCardsJa').value) || 20,
+    dailyNewLimitEn: parseInt(document.getElementById('settingsNewCardsEn').value) || 20,
     requestRetention: (parseFloat(document.getElementById('settingsRetention').value) || 90) / 100,
     maximumInterval: parseInt(document.getElementById('maximumInterval').value) || 365,
     enableFuzz: document.getElementById('enableFuzz').checked,
@@ -515,7 +517,7 @@ function formatDate(dateStr, state) {
   else if (diffDays === 1) timeStr = '明天';
   else if (diffDays === 2) timeStr = '后天';
   else if (diffDays <= 7) timeStr = `${diffDays}天后`;
-  else timeStr = target.toLocaleDateString('zh-CN', {month:'short', day:'numeric'});
+  else timeStr = target.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
   return `<span class="text-xs text-muted">${timeStr}</span><span class="text-xs text-charcoal/30 ml-1">复习</span>`;
 }
 
@@ -562,7 +564,7 @@ function playGentleDing() {
     gainNode2.connect(audioCtx.destination);
     osc2.start(audioCtx.currentTime + 0.1);
     osc2.stop(audioCtx.currentTime + 1.5);
-  } catch(e) { console.log('浏览器阻止了音频播放', e); }
+  } catch (e) { console.log('浏览器阻止了音频播放', e); }
 }
 
 function toggleNotifications() {
@@ -571,7 +573,7 @@ function toggleNotifications() {
   // 如果已经获取了系统通知权限，则进行自由开关切换
   if (Notification.permission === 'granted') {
     state.notificationsEnabled = !state.notificationsEnabled; // 反转当前状态
-    
+
     const btn = document.getElementById('notifyBtn');
     if (state.notificationsEnabled) {
       btn.classList.add('text-ochre');
@@ -580,7 +582,7 @@ function toggleNotifications() {
       btn.classList.remove('text-ochre');
       showToast('桌面复习提醒已关闭', 'info');
     }
-  } 
+  }
   // 如果还未请求过权限，则向用户发起请求
   else if (Notification.permission !== 'denied') {
     Notification.requestPermission().then(perm => {
@@ -592,7 +594,7 @@ function toggleNotifications() {
         showToast('通知权限被拒绝，将仅使用声音提醒', 'info');
       }
     });
-  } 
+  }
   // 如果用户之前在浏览器设置里彻底禁用了通知
   else {
     showToast('请在浏览器设置中手动允许通知', 'error');
@@ -647,20 +649,20 @@ function tickLocalTimer() {
   state.upcomingWords = state.upcomingWords.filter(w => {
     const dueTime = new Date(w.due).getTime();
     if (dueTime <= now) {
-       if (!state.notifiedWordIds.has(w._id)) {
-           state.notifiedWordIds.add(w._id);
-           justDueCount++;
-       }
-       return false;
+      if (!state.notifiedWordIds.has(w._id)) {
+        state.notifiedWordIds.add(w._id);
+        justDueCount++;
+      }
+      return false;
     }
     return true;
   });
 
   if (justDueCount > 0) {
-     state.lastDueCount += justDueCount;
-     document.getElementById('dueWords').textContent = state.lastDueCount;
-     triggerDueNotification(justDueCount);
-     updateTableDueTimes();
+    state.lastDueCount += justDueCount;
+    document.getElementById('dueWords').textContent = state.lastDueCount;
+    triggerDueNotification(justDueCount);
+    updateTableDueTimes();
   }
 
   renderUpcomingWidget();
@@ -731,13 +733,13 @@ function loadNotifySettings() {
     if (s) s.checked = state.notifySound;
     if (d) d.checked = state.notifyDesktop;
     if (v) v.checked = state.notifyVibrate;
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function renderUpcomingWidget() {
   const widget = document.getElementById('upcomingWidget');
   const timeline = document.getElementById('upcomingTimeline');
-  
+
   // 首次渲染时，将 HTML 中写死的 Tailwind hidden 类剥离，换成我们的平滑折叠类
   if (widget.classList.contains('hidden')) {
     widget.classList.remove('hidden');
@@ -760,7 +762,7 @@ function renderUpcomingWidget() {
     groups[key] = (groups[key] || 0) + 1;
   });
 
-  const sortedKeys = Object.keys(groups).map(Number).sort((a,b)=>a-b);
+  const sortedKeys = Object.keys(groups).map(Number).sort((a, b) => a - b);
   timeline.innerHTML = sortedKeys.map((min, i) => `
     <button type="button" onclick="toggleCoolingDropdown(event, ${min})" class="cooling-item-btn px-3 py-1.5 bg-ochre/10 border border-ochre/20 rounded-lg text-xs font-medium text-ochre flex items-center gap-1.5 transition-all hover:bg-ochre/15 active:scale-95 ${i === 0 ? 'pulse-ochre' : ''}">
        <span class="font-mono font-bold">${min}</span> 分钟后
@@ -774,13 +776,13 @@ function renderUpcomingWidget() {
 
 
 /* ================= ONBOARDING COMPATIBILITY ================= */
-window.checkAndStartOnboarding = function() {
+window.checkAndStartOnboarding = function () {
   if (typeof maybeStartOnboarding === 'function') {
     return maybeStartOnboarding();
   }
 };
 
-window.replayOnboarding = function() {
+window.replayOnboarding = function () {
   if (typeof replayOnboarding === 'function') {
     return replayOnboarding();
   }

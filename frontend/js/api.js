@@ -1,31 +1,47 @@
+async function parseJsonSafely(res) {
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // If it's not JSON, return as message if it looks like plain text
+    return { message: text.substring(0, 200) };
+  }
+}
+
 /* ================= API ================= */
 const api = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const config = {
     method: options.method || 'GET',
-    cache: 'no-store', // 全局禁用 API 缓存，防止出现已删幽灵数据
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(token && { 'x-auth-token': token })
     }
   };
   if (options.body) config.body = options.body;
+  
   const res = await fetch(`${CONFIG.API_BASE}${endpoint}`, config);
+  
   if (res.status === 401) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = 'index.html';
     throw new Error('Unauthorized');
   }
+
+  const data = await parseJsonSafely(res);
+
   if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'API error');
+    throw new Error(data?.message || `API error: ${res.status}`);
   }
-  return res.json();
+  
+  return data;
 };
 
 /* ================= AUTH ================= */
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
@@ -46,20 +62,18 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       body: JSON.stringify({ username, password })
     });
 
+    const data = await parseJsonSafely(res);
+
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || '登录失败');
+      throw new Error(data?.message || '登录失败');
     }
 
-    const data = await res.json();
     state.token = data.token;
     state.user = data.user;
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    
-    // 使用新的渲染函数
+
     renderUserInfo();
-    
     showToast('登录成功', 'success');
     startBackgroundPolling();
     loadNotifySettings();
@@ -72,12 +86,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
   } catch (err) {
     showToast(err.message || '登录失败，请检查用户名和密码', 'error');
+  } finally {
     btn.disabled = false;
     btn.innerHTML = '登录系统';
   }
 });
 
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('regUsername').value;
   const password = document.getElementById('regPassword').value;
@@ -107,23 +122,22 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
       body: JSON.stringify({ username, email: username, password })
     });
 
+    const data = await parseJsonSafely(res);
+
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || '注册失败');
+      throw new Error(data?.message || '注册失败');
     }
 
-    const data = await res.json();
     if (typeof markPendingOnboardingForUsername === 'function') {
       markPendingOnboardingForUsername(username);
     }
     showToast('注册成功，请登录', 'success');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    btn.disabled = false;
-    btn.innerHTML = '注册账号';
     showLogin();
   } catch (err) {
     showToast(err.message || '注册失败，该邮箱或用户名可能已被使用', 'error');
+  } finally {
     btn.disabled = false;
     btn.innerHTML = '注册账号';
   }
@@ -144,23 +158,23 @@ function handleLogout() {
 
 async function handleDeleteAccount() {
   closeUserMenu(); // 先关闭菜单
-  
+
   const isConfirmed = confirm('⚠️ 危险操作：\n\n您确定要彻底注销账户吗？此操作将永久删除您的账户、所有配置以及背诵过的数据（无法恢复）！');
   if (!isConfirmed) return;
-  
+
   const username = state.user.username;
-  
+
   try {
     // 调用后端 authController.js 里的 deleteUser 方法
     await api(`/auth/user/${username}`, { method: 'DELETE' });
-    
+
     showToast(`用户 ${username} 已彻底注销。江湖再见！`, 'success');
-    
+
     // 借用登出逻辑清理本地状态并返回登录页
     setTimeout(() => {
       handleLogout();
     }, 1500);
-    
+
   } catch (err) {
     showToast(err.message || '注销失败，请重试', 'error');
   }
@@ -204,7 +218,7 @@ function switchWorkspace(lang, isInitial = false) {
 
   state.currentLang = lang;
   localStorage.setItem('appLang', lang);
-  window.currentCalendarData = null; 
+  window.currentCalendarData = null;
   window.calendarViewMonth = null;
 
   // ========== Logo 丝滑滚动切换动效 (保持原有逻辑) ==========
@@ -239,10 +253,10 @@ function switchWorkspace(lang, isInitial = false) {
 
   const tableHeader = document.getElementById('tableHeaderWord');
   if (tableHeader) tableHeader.textContent = lang === 'ja' ? '日语单词' : '英语单词';
-  
+
   const addWordLabel = document.getElementById('addWordLabel');
-  if (addWordLabel) addWordLabel.innerHTML = lang === 'ja' ? '日语 <span class="text-terracotta">*</span>' : '英语 <span class="text-terracotta">*</span>';
-  
+  if (addWordLabel) addWordLabel.innerHTML = lang === 'ja' ? '日语 <span class="text-danger">*</span>' : '英语 <span class="text-danger">*</span>';
+
   const inputEl = document.getElementById('japanese');
   if (inputEl) {
     inputEl.placeholder = lang === 'ja' ? '桜' : 'apple';
@@ -254,7 +268,7 @@ function switchWorkspace(lang, isInitial = false) {
       inputEl.classList.remove('font-jp');
     }
   }
-  
+
   const readingLabel = document.getElementById('readingLabel');
   if (readingLabel) readingLabel.textContent = lang === 'ja' ? '读音' : '音标 (IPA)';
 
@@ -286,7 +300,10 @@ function switchWorkspace(lang, isInitial = false) {
           loadStats(),
           loadWords(1)
         ]);
-        
+
+        // 如果在此期间又有新的切换，则放弃当前更新，避免旧数据覆盖新请求
+        if (switchId !== currentSwitchId) return;
+
         // 数据替换完毕后，在下一帧移除 switching 状态，触发新数据“弹上来”的动画
         requestAnimationFrame(() => {
           document.body.classList.remove('workspace-switching');

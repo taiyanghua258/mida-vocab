@@ -6,8 +6,12 @@ let isReviewSubmitting = false;
 function confirmLeaveStudy() {
   // 如果已经是完成/冷却/无词状态，直接返回
   const cardContainer = document.getElementById('studyCardContainer');
+  if (!cardContainer) {
+    navigate('dashboard');
+    return;
+  }
   const isStudying = !cardContainer.classList.contains('hidden') && state.studyIndex < state.studyWords.length;
-  
+
   if (!isStudying) {
     if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
     navigate('dashboard');
@@ -63,7 +67,7 @@ async function initStudy() {
 
   let words = [];
   const activeSessionStr = localStorage.getItem(`active_session_${state.currentLang}`);
-  
+
   if (activeSessionStr) {
     try {
       const activeData = JSON.parse(activeSessionStr);
@@ -74,17 +78,17 @@ async function initStudy() {
         state.originalTotal = activeData.originalTotal || activeData.studyWords.length;
         state.studyStats = activeData.studyStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
         state.sessionStats = activeData.sessionStats || { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
-        
+
         // 👇 【新增这两行】：正确恢复跨轮次总量和会话状态
         state.sessionOriginalTotal = activeData.sessionOriginalTotal || activeData.originalTotal || activeData.studyWords.length;
         state._sessionActive = activeData._sessionActive !== undefined ? activeData._sessionActive : true;
-        
+
         state.isCramMode = false;
         words = state.studyWords;
-        
+
         showToast('已恢复上次未完成的进度', 'info');
       }
-    } catch (e) {}
+    } catch (e) { }
     localStorage.removeItem(`active_session_${state.currentLang}`);
   }
 
@@ -114,9 +118,9 @@ async function initStudy() {
     // 动态抓取真实冷却状态，而非错误展示任务达成
     const stats = await api(`/study/stats?language=${state.currentLang}`);
     if (stats.upcomingWords && stats.upcomingWords.length > 0) {
-       showCoolingState(stats.upcomingWords, stats);
+      showCoolingState(stats.upcomingWords, stats);
     } else {
-       showTaskAccomplished(stats);
+      showTaskAccomplished(stats);
     }
   } else {
     renderCardStack();
@@ -126,9 +130,9 @@ async function initStudy() {
 
 function showCoolingState(upcomingWords, stats) {
   if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
-  
+
   // 1. 【新增】防抖锁，防止倒计时触发无限循环请求
-  let isRefreshing = false; 
+  let isRefreshing = false;
 
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
@@ -151,18 +155,18 @@ function showCoolingState(upcomingWords, stats) {
 
     const now = Date.now();
     const remaining = upcomingWords.filter(w => new Date(w.due).getTime() > now);
-    
+
     // 👇 2. 【修改判断条件】：不仅判断 length === 0，还要判断有没有单词刚刚到期（数量变少了）
     if (remaining.length === 0 || remaining.length < initialCoolingCount) {
       isRefreshing = true; // 立即上锁
       if (coolingTimer) { clearInterval(coolingTimer); coolingTimer = null; }
-      
+
       // 2. 【核心】不要立刻隐藏界面，给用户视觉反馈，并强制延迟 1.5 秒抹平时差！
       countdownEl.innerHTML = `
         <div class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-ochre/10 border border-ochre/20 rounded-xl text-sm animate-pulse mb-3">
           <span class="font-bold text-ochre">正在召唤记忆...</span>
         </div>`;
-      
+
       setTimeout(() => {
         initStudy();
       }, 1500);
@@ -179,12 +183,12 @@ function showCoolingState(upcomingWords, stats) {
     el.querySelector('p').textContent = `还有 ${remaining.length} 个单词正在冷却中，最近一个将在 ${nearestStr} 后到期。`;
 
     // 倒计时卡片
-    let html = remaining.sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0, 8).map(w => {
+    let html = remaining.sort((a, b) => new Date(a.due) - new Date(b.due)).slice(0, 8).map(w => {
       const d = Math.ceil((new Date(w.due).getTime() - now) / 1000);
       const m = Math.floor(d / 60);
       const s = d % 60;
       return `<div class="flex items-center gap-2 px-3 py-1.5 bg-ochre/8 border border-ochre/15 rounded-lg text-xs mb-1.5">
-        <span class="font-mono font-bold text-ochre">${m > 0 ? m + ':' + s.toString().padStart(2,'0') : s + 's'}</span>
+        <span class="font-mono font-bold text-ochre">${m > 0 ? m + ':' + s.toString().padStart(2, '0') : s + 's'}</span>
         <span class="text-muted">后复习</span>
       </div>`;
     }).join('');
@@ -233,13 +237,13 @@ function showTaskAccomplished(stats) {
   const el = document.getElementById('noWords');
   el.classList.remove('hidden');
   el.classList.add('pop-in');
-  
+
   // Bug 1 Fix: 必须重置标题和描述，否则会残留之前的 "记忆冷却中"
   const h2 = el.querySelector('h2');
   if (h2) h2.textContent = '空白';
   const p = el.querySelector('p');
   if (p) p.textContent = '当前没有任何需要复习的卡片。精神已达澄澈。';
-  
+
   const countdownEl = document.getElementById('coolingCountdown');
   const rightBtn = document.getElementById('coolingRefreshBtn');
   if (rightBtn) {
@@ -273,7 +277,7 @@ function showTaskAccomplished(stats) {
 function getCardHTML(index, word) {
   const zIndex = 1000 - index;
   const relativeIndex = index - state.studyIndex;
-  
+
   // 1. 判定当前是否为学术模式
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const isEditorial = currentTheme === 'editorial';
@@ -351,7 +355,7 @@ function renderCardStack() {
   resetAllCardAnimations();
   const stack = document.getElementById('cardStack');
   stack.innerHTML = '';
-  
+
   let html = '';
   // 最多只预渲染当前索引开始的 4 张卡片，彻底避免 DOM 爆炸
   const limit = Math.min(state.studyWords.length, state.studyIndex + 4);
@@ -378,17 +382,20 @@ function revealAnswer() {
 
   const front = currentGroup.querySelector('.front');
   const back = currentGroup.querySelector('.back');
-  
+
   if (!front.classList.contains('peeled')) {
     revealAllowed = false;
     front.classList.add('peeled');
     back.classList.add('revealed');
-    
+
     // 定位到专门显示预测时间的 span 类
     const intervalSpans = document.querySelectorAll('#answerSection .interval-text');
-    
+    const requestWordId = word._id;
+    const requestIndex = state.studyIndex;
+
     if (!state.isCramMode) {
       api(`/study/scheduling?wordId=${word._id}`).then(info => {
+        if (state.studyIndex !== requestIndex || state.studyWords[state.studyIndex]?._id !== requestWordId) return;
         if (intervalSpans.length === 4) {
           intervalSpans[0].textContent = info.again ? info.again.interval : '-';
           intervalSpans[1].textContent = info.hard ? info.hard.interval : '-';
@@ -434,37 +441,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-function resetCardNode(group) {
-  if (!group) return;
 
-  group.classList.remove(
-    'discarded-again',
-    'discarded-hard',
-    'discarded-good',
-    'discarded-easy'
-  );
-
-  const front = group.querySelector('.paper-card.front');
-  const back = group.querySelector('.paper-card.back');
-
-  if (front) front.classList.remove('peeled');
-  if (back) back.classList.remove('revealed');
-}
-
-function resetAllCardAnimations() {
-  document.querySelectorAll('.word-group').forEach(resetCardNode);
-
-  const answerSection = document.getElementById('answerSection');
-  if (answerSection) {
-    answerSection.classList.remove('show');
-  }
-}
-
-function hideAnswerSection() {
-  const answerSection = document.getElementById('answerSection');
-  if (!answerSection) return;
-  answerSection.classList.remove('show');
-}
 
 function getDiscardClassByResult(result) {
   const map = {
@@ -487,7 +464,7 @@ function playReviewExitAnimation(result) {
 async function submitReview(result) {
   if (isReviewSubmitting) return;
   isReviewSubmitting = true;
-  
+
   if (isReviewProcessing) { isReviewSubmitting = false; return; }
   isReviewProcessing = true;
   revealAllowed = false;
@@ -495,15 +472,15 @@ async function submitReview(result) {
   if (revealTimeout) { clearTimeout(revealTimeout); revealTimeout = null; }
 
   const currentGroup = document.getElementById(`word-group-${state.studyIndex}`);
-  if (!currentGroup) { 
-    isReviewProcessing = false; 
+  if (!currentGroup) {
+    isReviewProcessing = false;
     isReviewSubmitting = false;
-    return; 
+    return;
   }
 
   try {
     const front = currentGroup.querySelector('.front');
-    if (!front.classList.contains('peeled')) { 
+    if (!front.classList.contains('peeled')) {
       throw new Error('Card not revealed');
     }
 
@@ -511,7 +488,7 @@ async function submitReview(result) {
     playReviewExitAnimation(result);
 
     const word = state.studyWords[state.studyIndex];
-    let resData = null; 
+    let resData = null;
 
     if (!state.isCramMode) {
       resData = await api('/study/review', { method: 'POST', body: JSON.stringify({ wordId: word._id, result }) });
@@ -529,7 +506,7 @@ async function submitReview(result) {
       if (resData.scheduled_days < 1) {
         const dueTime = new Date(resData.due).getTime();
         if (dueTime > Date.now()) {
-          state.coolingWords.push(resData); 
+          state.coolingWords.push(resData);
         }
       }
     }
@@ -564,7 +541,7 @@ async function submitReview(result) {
     }
 
     state.studyIndex++;
-    
+
     // 懒加载优化
     const upcomingIndex = state.studyIndex + 3;
     if (upcomingIndex < state.studyWords.length) {
@@ -589,7 +566,7 @@ async function submitReview(result) {
     }
   } catch (err) {
     console.error('Submit review failed:', err);
-    
+
     // 如果卡片没翻开，直接退出
     if (err.message === 'Card not revealed') {
       isReviewProcessing = false;
@@ -602,7 +579,7 @@ async function submitReview(result) {
       localStorage.removeItem(`active_session_${state.currentLang}`);
       isReviewProcessing = false;
       initStudy();
-      return; 
+      return;
     }
 
     showToast(`复习记录保存失败：${err.message || '网络异常'}`, 'error');
@@ -656,18 +633,18 @@ function showStudyComplete() {
 
   // 每次学完不靠旧状态，直接找后端要最新倒计时
   api(`/study/stats?language=${state.currentLang}`).then(stats => {
-      if (stats.upcomingWords && stats.upcomingWords.length > 0) {
-          showCoolingState(stats.upcomingWords, stats);
-      } else {
-          // 彻底没有待复习单词了
-          const el = document.getElementById('studyComplete');
-          el.classList.remove('hidden');
-          el.classList.add('pop-in');
-          // 使用跨轮次累计统计，而非仅当前轮次的 studyStats
-          const s = state.sessionStats;
-          // 会话结束，重置标记
-          state._sessionActive = false;
-          document.getElementById('completeStats').innerHTML = `
+    if (stats.upcomingWords && stats.upcomingWords.length > 0) {
+      showCoolingState(stats.upcomingWords, stats);
+    } else {
+      // 彻底没有待复习单词了
+      const el = document.getElementById('studyComplete');
+      el.classList.remove('hidden');
+      el.classList.add('pop-in');
+      // 使用跨轮次累计统计，而非仅当前轮次的 studyStats
+      const s = state.sessionStats;
+      // 会话结束，重置标记
+      state._sessionActive = false;
+      document.getElementById('completeStats').innerHTML = `
           <div class="border-y border-borderline/40 py-5 mb-5 flex flex-col gap-3">
             <div class="flex justify-between items-baseline">
               <span class="font-ui text-[0.65rem] tracking-widest text-muted uppercase">Reviewed Items <span class="font-sans text-[10px] ml-1 opacity-60">复习总数</span></span>
@@ -697,21 +674,21 @@ function showStudyComplete() {
               <span class="font-mono text-sm text-success">${s.easy}</span>
             </div>
           </div>`;
-          if (typeof confetti === 'function') {
-            const getRGB = (varName) => {
-              const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-              const parts = val.split(/\s+/);
-              return parts.length === 3 ? `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})` : `rgb(${val})`;
-            };
-            const themeColors = [
-              getRGB('--color-ochre'),
-              getRGB('--color-terracotta'),
-              getRGB('--color-charcoal'),
-              getRGB('--color-success')
-            ];
-            confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: themeColors });
-          }
+      if (typeof confetti === 'function') {
+        const getRGB = (varName) => {
+          const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+          const parts = val.split(/\s+/);
+          return parts.length === 3 ? `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})` : `rgb(${val})`;
+        };
+        const themeColors = [
+          getRGB('--color-ochre'),
+          getRGB('--color-terracotta'),
+          getRGB('--color-charcoal'),
+          getRGB('--color-success')
+        ];
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: themeColors });
       }
+    }
   });
 }
 
@@ -750,12 +727,12 @@ async function reviewAgain(lang) {
   if (wordsToUse.length === 0) {
     const langName = state.currentLang === 'ja' ? '日语' : '英语';
     showToast(`今日没有可复习的 ${langName} 记录`, 'error');
-    
+
     // 如果跨语种拉取失败，将语种回退到点击前，防止用户卡在幽灵状态
     if (lang && originalLang !== lang) {
       switchWorkspace(originalLang, true);
     }
-    
+
     isLoadingSession = false;
     return;
   }
@@ -766,12 +743,12 @@ async function reviewAgain(lang) {
   state.studyStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   state.sessionStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
   state._sessionActive = true;
-  
+
   // 👇 【新增这一行】：确保无痕模式下的原始词汇量也能覆盖掉之前残留的冷却数量
-  state.sessionOriginalTotal = wordsToUse.length; 
-  
+  state.sessionOriginalTotal = wordsToUse.length;
+
   revealAllowed = false;
-  
+
   document.getElementById('studyComplete').classList.add('hidden');
   document.getElementById('noWords').classList.add('hidden');
   document.getElementById('studyCardContainer').classList.remove('hidden');
@@ -779,7 +756,7 @@ async function reviewAgain(lang) {
 
   renderCardStack();
   updateStudyProgress();
-  
+
   isLoadingSession = false;
 }
 
@@ -833,7 +810,7 @@ async function undoLastReview() {
 
     // 重新创建卡片 DOM（干净的未翻开状态）
     addCardToDOM(last.index, last.word);
-    
+
     // Bug 5: 核心修复 - 撤回后清除新卡片的已翻面残余状态
     const nextGroup = document.getElementById(`word-group-${state.studyIndex + 1}`);
     if (nextGroup) {
@@ -1025,11 +1002,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token'), user = localStorage.getItem('user');
   if (token && user) {
     state.token = token; state.user = JSON.parse(user);
-    
+
     // 👇 替换掉原本的手动渲染逻辑
     renderUserInfo();
     // 👆 替换结束
-    
+
     if ('Notification' in window && Notification.permission === 'granted') {
       state.notificationsEnabled = true;
       const btn = document.getElementById('notifyBtn');
@@ -1055,7 +1032,7 @@ function initCustomSelects() {
     // 点击框体：展开或收起
     trigger.addEventListener('click', (e) => {
       e.stopPropagation(); // 阻止冒泡
-      
+
       // 关闭其他可能已经打开的下拉框
       document.querySelectorAll('.select-options.is-open').forEach(list => {
         if (list !== optionsList) {
@@ -1079,24 +1056,24 @@ function initCustomSelects() {
     optionsList.querySelectorAll('li').forEach(item => {
       item.addEventListener('click', (e) => {
         e.stopPropagation();
-        
+
         const value = item.getAttribute('data-value');
         const text = item.textContent;
-        
+
         // 更新显示文字和隐藏的 input 值
         textDisplay.textContent = text;
         if (value === "") {
-            textDisplay.classList.add('text-muted');
+          textDisplay.classList.add('text-muted');
         } else {
-            textDisplay.classList.remove('text-muted');
+          textDisplay.classList.remove('text-muted');
         }
-        
+
         hiddenInput.value = value;
 
         // 如果是控制台的筛选框，点击后直接触发查询（替代原本的 onchange）
         if (hiddenInput.id === 'partOfSpeechFilter') {
           // 这里调用你原本用于筛选的函数，由于我没有完整的函数名，假设你直接在重新加载
-          loadWords(1); 
+          loadWords(1);
         }
 
         // 收起列表
@@ -1117,5 +1094,28 @@ function initCustomSelects() {
       }
     });
   });
+}
+
+loadWords(1); 
+        }
+
+// 收起列表
+optionsList.classList.remove('is-open');
+arrow.style.transform = 'rotate(0deg)';
+      });
+    });
+  });
+
+// 点击页面空白处：收起所有已展开的下拉框
+document.addEventListener('click', () => {
+  document.querySelectorAll('.select-options.is-open').forEach(list => {
+    list.classList.remove('is-open');
+    const wrapper = list.closest('.custom-select');
+    if (wrapper) {
+      const arrow = wrapper.querySelector('.select-arrow');
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+  });
+});
 }
 

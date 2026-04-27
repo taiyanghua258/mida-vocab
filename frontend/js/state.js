@@ -25,7 +25,8 @@ const state = {
   batchAbortController: null, // Bug 2: AI 批量请求中断控制器
   studyHistory: [], // Bug 3: 复习撤回历史栈
   sessionStats: { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 }, // 跨轮次累计统计
-  sessionOriginalTotal: 0 // 整个会话（含冷却轮次）的初始总词量
+  sessionOriginalTotal: 0, // 整个会话（含冷却轮次）的初始总词量
+  _sessionActive: false // 新增：标记复习会话是否处于活跃状态
 };
 
 /* ================= JAPANESE FUZZY SEARCH ================= */

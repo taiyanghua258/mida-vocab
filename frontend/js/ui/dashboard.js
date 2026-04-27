@@ -23,8 +23,19 @@ async function initDashboard() {
   hideAnswerSection();
   resetAllCardAnimations();
 
-  await loadStats();
-  loadWords(1);
+  try {
+    await loadStats();
+  } catch (err) {
+    console.error('loadStats failed:', err);
+    showToast('统计数据加载失败', 'error');
+  }
+
+  try {
+    await loadWords(1);
+  } catch (err) {
+    console.error('loadWords failed:', err);
+    showToast('单词列表加载失败', 'error');
+  }
 
   if (typeof maybeStartOnboarding === 'function') {
     setTimeout(() => {
@@ -43,7 +54,7 @@ async function loadStats() {
   // 👇 新增以下两行：在切换语种或回到主页时，立刻同步并渲染冷却池
   state.upcomingWords = data.upcomingWords || [];
   renderUpcomingWidget();
-  
+
   if (typeof renderStatsChart === 'function') {
     renderStatsChart(data);
   }
@@ -71,7 +82,7 @@ function renderStatsChart(statsData) {
     window.addEventListener('resize', () => {
       if (myStatsChart) myStatsChart.resize();
     });
-    
+
     myStatsChart.on('click', async (params) => {
       await showDetailedReviewList(params.name);
     });
@@ -105,16 +116,16 @@ function renderStatsChart(statsData) {
       show: false
     },
     // 👇 1. 直接隐藏图例，彻底告别遮挡
-    legend: { 
-      show: false 
+    legend: {
+      show: false
     },
     series: [
       {
-        name: '复习时间分布', 
-        type: 'pie', 
+        name: '复习时间分布',
+        type: 'pie',
         // 👇 2. 既然底部没有文字了，恢复完美的居中对齐，并放大圆环
-        radius: ['40%', '75%'], 
-        center: ['50%', '50%'], 
+        radius: ['40%', '75%'],
+        center: ['50%', '50%'],
         // 👇 3. 依然保留 minAngle，防止只有几个词时扇形太小点不到
         minAngle: 15,
         avoidLabelOverlap: false,
@@ -130,7 +141,7 @@ function renderStatsChart(statsData) {
   };
 
   myStatsChart.setOption(option);
-  
+
   // 延迟调整尺寸，完美避开 CSS entrance 动画导致的计算错误
   setTimeout(() => myStatsChart.resize(), 350);
 }
@@ -416,7 +427,7 @@ async function showDetailedReviewList(categoryName) {
   document.getElementById('reviewListModalTitle').textContent = `详情：${categoryName}`;
   const listContainer = document.getElementById('reviewListContent');
   listContainer.innerHTML = '<div class="text-center py-6 text-muted">加载中...</div>';
-  
+
   openModal('reviewListModal');
 
   try {
@@ -522,9 +533,9 @@ function renderWordList(words) {
 function renderPagination() {
   const nav = document.getElementById('pagination'), { page, totalPages } = state.pagination;
   if (totalPages <= 1) return nav.innerHTML = '';
-  
+
   let html = '';
-  
+
   if (page > 1) {
     html += `<button onclick="loadWords(${page - 1})" class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-charcoal hover:bg-parchment/50 transition-all cursor-pointer" title="上一页"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></button>`;
   }
@@ -559,20 +570,23 @@ function renderPagination() {
 }
 
 let searchTimer;
-document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadWords(1), 250); });
+document.getElementById('searchInput')?.addEventListener('input', () => { 
+  clearTimeout(searchTimer); 
+  searchTimer = setTimeout(() => loadWords(1), 250); 
+});
 // 注：partOfSpeechFilter 的筛选触发已在 initCustomSelects() 中直接调用 loadWords(1) 实现
 
 /* ================= CRUD ================= */
-document.getElementById('wordForm').addEventListener('submit', async (e) => {
+document.getElementById('wordForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('wordId').value;
-  const data = { 
+  const data = {
     language: state.currentLang,
-    japanese: document.getElementById('japanese').value, 
-    reading: document.getElementById('reading').value, 
-    meaning: document.getElementById('meaning').value, 
-    partOfSpeech: document.getElementById('partOfSpeech').value, 
-    tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean) 
+    japanese: document.getElementById('japanese').value,
+    reading: document.getElementById('reading').value,
+    meaning: document.getElementById('meaning').value,
+    partOfSpeech: document.getElementById('partOfSpeech').value,
+    tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean)
   };
   try {
     if (id) await api(`/words/${id}`, { method: 'PUT', body: JSON.stringify(data) });
@@ -692,7 +706,7 @@ function handleDictFileSelect(event) {
       dictBatchWords.forEach(w => {
         if (/^[a-zA-Z\s\-']+$/.test(w.japanese)) engCount++;
       });
-      
+
       if (state.currentLang === 'ja' && engCount > dictBatchWords.length * 0.8) {
         if (!confirm('⚠️ 语言异常警告\n\n检测到您导入的似乎是【英语】词书，但当前处于【日语】工作区。\n\n这可能导致发音和学习算法异常，确定要强行导入吗？')) {
           return; // 用户取消导入
@@ -707,7 +721,7 @@ function handleDictFileSelect(event) {
       document.getElementById('dictStep1').classList.add('hidden');
       document.getElementById('dictStep2').classList.remove('hidden');
       document.getElementById('dictBatchCount').textContent = dictBatchWords.length;
-      
+
       const list = document.getElementById('dictBatchPreviewList');
       const isEn = state.currentLang === 'en';
       list.innerHTML = dictBatchWords.map((w, i) => `
@@ -739,7 +753,7 @@ async function handleDictBatchImport() {
 
   btn.disabled = true;
   pb.classList.remove('hidden');
-  
+
   const total = dictBatchWords.length;
   const chunkSize = 50;
   let processed = 0;
@@ -755,7 +769,7 @@ async function handleDictBatchImport() {
 
     for (let i = 0; i < total; i += chunkSize) {
       let chunk = dictBatchWords.slice(i, i + chunkSize);
-      
+
       // AI 词性修复逻辑
       if (useAiFix) {
         try {
@@ -821,7 +835,7 @@ async function handleApkgConvert(event) {
   // 模拟平滑进度 (渐进式靠近 95%)
   let progress = 0;
   const interval = setInterval(() => {
-    progress += (95 - progress) * 0.08; 
+    progress += (95 - progress) * 0.08;
     fill.style.width = `${progress}%`;
     pctText.textContent = `${Math.floor(progress)}%`;
   }, 500);
@@ -851,7 +865,7 @@ async function handleApkgConvert(event) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      
+
       showToast('转换成功！文件已开始下载，完成后拖入上方主区域即可导入', 'success');
     } else {
       const result = await response.json();
@@ -913,7 +927,7 @@ function updateBatchWord(index, field, value) {
 function renderBatchPreviewList() {
   const list = document.getElementById('batchPreviewList');
   const fontClass = state.currentLang === 'en' ? 'font-sans tracking-tight' : 'font-jp';
-  
+
   // 简单的转义防止引号破坏 HTML
   const esc = (str) => (str || '').toString().replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
@@ -942,7 +956,7 @@ function renderBatchPreviewList() {
 
 async function handleBatchGenerate() {
   const text = document.getElementById('importWordsText').value.trim();
-  const language = state.currentLang; 
+  const language = state.currentLang;
   if (!text) return showToast('请输入单词内容', 'error');
 
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -977,13 +991,13 @@ async function handleBatchGenerate() {
   // ========== 前端轻量级“垃圾阻击”（优化速度与 API 成本） ==========
   const validLines = [];
   const kanaRegexForFilter = /[\u3040-\u309F\u30A0-\u30FF]/;
-  
+
   lines.forEach(line => {
     if (state.currentLang === 'ja') {
       // 1. 如果是纯英文/数字/符号，直接剔除（不发给后端）
-      if (/^[a-zA-Z0-9\s\-\.,'!]+$/.test(line)) return; 
+      if (/^[a-zA-Z0-9\s\-\.,'!]+$/.test(line)) return;
       // 2. 如果超过 10 个字，且完全没有假名，大概率是长篇中文笔记，直接剔除
-      if (line.length > 10 && !kanaRegexForFilter.test(line)) return; 
+      if (line.length > 10 && !kanaRegexForFilter.test(line)) return;
     }
     // 留下来的加入有效数组
     validLines.push(line);
@@ -1011,7 +1025,7 @@ async function handleBatchGenerate() {
 
   batchGeneratedWords = [];
   const total = validLines.length;
-  const chunkSize = 10; 
+  const chunkSize = 10;
   let processed = 0;
 
   pCount.textContent = `0/${total}`;
@@ -1058,7 +1072,7 @@ async function handleBatchGenerate() {
     state.batchAbortController = null;
     btn.disabled = false;
     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M197.67,186.37a8,8,0,0,1,0,11.29C196.58,198.73,170.82,224,128,224c-37.39,0-64.53-22.4-80-39.85V208a8,8,0,0,1-16,0V160a8,8,0,0,1,8-8H88a8,8,0,0,1,0,16H55.44C67.76,183.35,93,208,128,208c36,0,58.14-21.46,58.36-21.68A8,8,0,0,1,197.67,186.37ZM216,40a8,8,0,0,0-8,8V71.85C192.53,54.4,165.39,32,128,32,85.18,32,59.42,57.27,58.34,58.34a8,8,0,0,0,11.3,11.34C69.86,69.46,92,48,128,48c35,0,60.24,24.65,72.56,40H168a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V48A8,8,0,0,0,216,40Z"></path></svg> AI 补全`;
-    pb.classList.add('hidden'); 
+    pb.classList.add('hidden');
   }
 }
 
@@ -1081,10 +1095,10 @@ async function handleBatchImport() {
   previewList.classList.add('opacity-50');
   progressBar.classList.remove('hidden');
   progressBar.style.display = 'block';
-  
+
   const total = batchGeneratedWords.length;
   // 数据库保存速度极快，每次发 50 个
-  const chunkSize = 50; 
+  const chunkSize = 50;
   let processed = 0;
   let successCount = 0;
 
@@ -1094,15 +1108,15 @@ async function handleBatchImport() {
   try {
     for (let i = 0; i < total; i += chunkSize) {
       const chunk = batchGeneratedWords.slice(i, i + chunkSize);
-      
+
       const result = await api('/words/import', {
         method: 'POST',
         body: JSON.stringify({ words: chunk })
       });
-      
+
       successCount += (result.count || 0);
       processed += chunk.length;
-      
+
       // 真实进度更新
       progressCount.textContent = `${processed}/${total}`;
       progressFill.style.width = `${(processed / total) * 100}%`;
@@ -1115,9 +1129,9 @@ async function handleBatchImport() {
       ? (userSettings.dailyNewLimitEn || 20)
       : (userSettings.dailyNewLimitJa || 20);
     if (successCount > limit) {
-        showToast(`导入 ${successCount} 词。超出今日上限的部分已自动加入明日计划`, 'info');
+      showToast(`导入 ${successCount} 词。超出今日上限的部分已自动加入明日计划`, 'info');
     } else {
-        showToast(`成功导入 ${successCount} 个新单词`, 'success');
+      showToast(`成功导入 ${successCount} 个新单词`, 'success');
     }
     resetImport();
     closeModal('importModal');
@@ -1143,11 +1157,11 @@ function resetImport() {
   document.getElementById('importStep1').classList.remove('hidden');
   document.getElementById('importStep2').classList.add('hidden');
   document.getElementById('importWordsText').value = '';
-  
+
   const pb = document.getElementById('importProgressBar');
   if (pb) { pb.classList.add('hidden'); pb.style.display = ''; }
   document.getElementById('importProgressFill').style.width = '0%';
-  
+
   // 重置 AI 进度条
   const aiPb = document.getElementById('aiProgressBar');
   if (aiPb) { aiPb.classList.add('hidden'); }
@@ -1249,16 +1263,16 @@ async function batchDeleteSelected() {
 
   const batchBar = document.getElementById('batchActionBar');
   const ids = Array.from(state.selectedWordIds);
-  
+
   batchBar.classList.add('hidden'); // 隐藏操作栏
 
   try {
     // 发送单次批量删除请求
-    await api(`/words/batch-delete`, { 
-      method: 'POST', 
-      body: JSON.stringify({ ids }) 
+    await api(`/words/batch-delete`, {
+      method: 'POST',
+      body: JSON.stringify({ ids })
     });
-    
+
     state.selectedWordIds.clear();
     localStorage.removeItem(`active_session_${state.currentLang}`); // 清除背诵缓存
     showToast('批量删除成功', 'success');
@@ -1272,16 +1286,16 @@ async function batchDeleteSelected() {
 async function clearWorkspace() {
   const langName = state.currentLang === 'en' ? '英语' : '日语';
   const targetText = state.currentLang === 'en' ? 'CLEAR EN' : 'CLEAR JA';
-  
+
   const userInput = prompt(`⚠️ 危险操作警告 ⚠️\n\n您即将清空当前【${langName}】工作区下的所有单词（包括已掌握的进度）！\n此操作不可恢复。\n\n请输入 "${targetText}" 以确认清空：`);
-  
+
   if (userInput !== targetText) {
     if (userInput !== null) showToast('输入不匹配，已取消清空操作', 'info');
     return;
   }
 
   try {
-    const res = await api('/words/clear-all', { 
+    const res = await api('/words/clear-all', {
       method: 'POST',
       body: JSON.stringify({ language: state.currentLang })
     });
@@ -1321,19 +1335,19 @@ async function batchExportSelected() {
     // 生成文件下载
     const blob = new Blob([JSON.stringify(wordsToExport, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); 
-    a.href = url; 
-    a.download = `my-vocab-selected-${Date.now()}.json`; 
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `my-vocab-selected-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     showToast(`成功导出 ${wordsToExport.length} 个单词`, 'success');
 
     // 恢复按钮状态
     btn.innerHTML = oldHtml;
     btn.disabled = false;
-  } catch (e) { 
-    showToast('导出失败，请重试', 'error'); 
+  } catch (e) {
+    showToast('导出失败，请重试', 'error');
     // 恢复按钮状态
     const btn = document.querySelector('button[onclick="batchExportSelected()"]');
     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0ZM93.66,133.66a8,8,0,0,1,11.32-11.32L120,137.38V40a8,8,0,0,1,16,0v97.38l15-15a8,8,0,0,1,11.32,11.32l-28.69,28.68a8,8,0,0,1-11.32,0Z"></path></svg> 导出`;
