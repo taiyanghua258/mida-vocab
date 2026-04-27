@@ -138,7 +138,6 @@ function renderStatsChart(statsData) {
   setTimeout(() => myStatsChart.resize(), 350);
 }
 
-let calendarRenderCounter = 0;
 
 function getCalendarViewMonth() {
   if (!window.calendarViewMonth) {
@@ -1345,20 +1344,4 @@ async function batchExportSelected() {
   }
 }
 
-/* ================= CALENDAR TOOLTIP (单例管理器) ================= */
-/* ================= CALENDAR TOOLTIP (兼容保留) ================= */
-// 提示：新日历已自带局部 Tooltip 实现，以下仅为兼容旧调用。
-window.showGlobalCalTooltip = function(el, dateStr, count) {
-  if (typeof showCalendarTooltip === 'function') {
-    if (!el.dataset.date) el.dataset.date = dateStr;
-    if (!el.dataset.count) el.dataset.count = String(count || 0);
-    showCalendarTooltip(el);
-  }
-};
-
-window.hideGlobalCalTooltip = function() {
-  if (typeof hideCalendarTooltip === 'function') {
-    hideCalendarTooltip();
-  }
-};
 
