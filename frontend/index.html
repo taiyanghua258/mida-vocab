@@ -50,7 +50,7 @@
       },
       safelist: [
         'w-[14px]', 'h-[14px]', 'sm:w-[20px]', 'sm:h-[20px]',
-        'grid-airy-row rows-7', 'grid-flow-col', 'gap-1', 'sm:gap-1.5',
+        'grid-rows-7', 'grid-flow-col', 'gap-1', 'sm:gap-1.5',
         'bg-border/30', 'border-border/50',
         'bg-text', 'border-text',
         'bg-danger', 'border-danger',
@@ -356,7 +356,7 @@
 
     <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-1 flex flex-col">
       <div id="workspaceTransitionRoot">
-        <div class="flex flex-col lg:flex-airy-row row justify-between items-start lg:items-center gap-6 mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
           <div id="tour-stats-area" class="grid grid-cols-2 sm:flex gap-3 sm:gap-4 w-full lg:w-auto">
             <div
               class="glass-card card card--glass p-4 sm:p-6 rounded-[var(--radius-card)] flex-1 sm:min-w-[140px] flex flex-col relative overflow-hidden group hover:bg-surface/80 transition-colors animate-soft-in stagger-1">
@@ -517,7 +517,7 @@
             <div id="upcomingTimeline" class="flex flex-wrap gap-2"></div>
           </div>
         </div>
-        <div class="mb-5 flex flex-col sm:flex-airy-row row gap-4">
+        <div class="mb-5 flex flex-col sm:flex-row gap-4">
           <div class="relative flex-1">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
@@ -526,16 +526,16 @@
                 </path>
               </svg>
             </div>
-            <aesthetic-input input type="text" id="searchInput" placeholder="搜索词库..."
+            <input type="text" id="searchInput" placeholder="搜索词库..."
               class="aesthetic-input input w-full pl-8 pr-4 py-3 text-text placeholder-muted/60 text-[0.95rem] font-ui">
           </div>
           <div class="custom-select relative w-full sm:w-40 flex-shrink-0 font-ui" id="filterSelectWrapper">
-            <aesthetic-input input type="hidden" id="partOfSpeechFilter" value="">
+            <input type="hidden" id="partOfSpeechFilter" value="">
 
               <div
                 class="select-trigger aesthetic-input input w-full px-4 py-3 text-text cursor-pointer text-[0.95rem] flex justify-between items-center bg-surface">
                 <span class="select-text text-muted">全部词性</span>
-                <svg class="select-arairy-row row text-muted transition-transform duration-300"
+                <svg class="select-arrow text-muted transition-transform duration-300"
                   xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                   <path d="M6 9l6 6 6-6"></path>
@@ -586,7 +586,7 @@
 
         <!-- 批量操作栏 -->
         <div id="batchActionBar"
-          class="hidden bg-accent/8 border border-accent/20 rounded-[var(--radius-panel)] px-4 sm:px-5 py-3 mb-4 flex flex-col sm:flex-airy-row row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          class="hidden bg-accent/8 border border-accent/20 rounded-[var(--radius-panel)] px-4 sm:px-5 py-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div class="flex items-center gap-3">
             <span class="text-sm text-text font-medium"><span id="selectedCount">0</span> 项已选择</span>
             <button onclick="clearWordSelection()"
@@ -630,7 +630,7 @@
               <thead class="bg-surface">
                 <tr>
                   <th class="px-5 py-5 w-10 border-b border-border/40">
-                    <aesthetic-input input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"
                       class="w-4 h-4 rounded-sm border-border text-accent focus:ring-1 focus:ring-accent/30 cursor-pointer motion-state">
                   </th>
                   <th id="tableHeaderWord"
@@ -650,12 +650,12 @@
                     操作</th>
                 </tr>
               </thead>
-              <!-- 摒弃原始的 divide-y 强制分割线，让 airy-row row 自身管理呼吸态 -->
+              <!-- 摒弃原始的 divide-y 强制分割线，让 row 自身管理呼吸态 -->
               <tbody id="wordTableBody" class="bg-surface"></tbody>
             </table>
           </div>
           <div
-            class="bg-surface px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-airy-row row items-center justify-between gap-4 sm:gap-0">
+            class="bg-surface px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
             <p class="text-[0.7rem] font-medium tracking-wide text-muted">共展现 <span class="font-bold text-text"
                 id="pageTotalItems">0</span> 项条目</p>
             <nav id="pagination" class="flex flex-wrap justify-center gap-1.5"></nav>
@@ -766,7 +766,7 @@
           <div id="extraStudySection" class="mt-8 pt-6 border-t border-border/40 text-left">
             <p class="font-ui text-[0.65rem] tracking-widest font-bold text-muted mb-3">加量学习 (Force Retrieve)</p>
             <div class="flex items-center gap-0 border border-border rounded-[2px] overflow-hidden">
-              <aesthetic-input input type="number" id="extraCountInput" min="1" max="50" value="5"
+              <input type="number" id="extraCountInput" min="1" max="50" value="5"
                 class="w-14 pl-2 pr-0 py-2.5 bg-transparent text-text text-center font-mono text-xs outline-none focus:bg-surface transition-colors border-r border-border">
                 <button onclick="handleExtraStudy()" id="extraStudyBtn"
                   class="flex-1 py-2.5 bg-accent/5 hover:bg-accent/15 text-accent motion-state text-[0.75rem] tracking-[0.1em] uppercase font-bold text-center">抽取新卡片</button>
@@ -862,7 +862,7 @@
         </button>
       </div>
       <form id="wordForm" class="p-6 sm:p-8 space-y-5">
-        <aesthetic-input input type="hidden" id="wordId">
+        <input type="hidden" id="wordId">
 
 
 
@@ -871,7 +871,7 @@
               <label id="addWordLabel"
                 class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">日语 <span
                   class="text-danger">*</span></label>
-              <aesthetic-input input type="text" id="japanese" lang="ja" required
+              <input type="text" id="japanese" lang="ja" required
                 class="aesthetic-input input w-full px-2 py-2 text-text" placeholder="单词">
             </div>
             <div class="flex items-end">
@@ -891,13 +891,13 @@
             <div>
               <label id="readingLabel"
                 class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">读音</label>
-              <aesthetic-input input type="text" id="reading"
+              <input type="text" id="reading"
                 class="aesthetic-input input w-full px-2 py-2 text-text font-jp" placeholder="さくら">
             </div>
             <div>
               <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">中文含义 <span
                   class="text-danger">*</span></label>
-              <aesthetic-input input type="text" id="meaning" required
+              <input type="text" id="meaning" required
                 class="aesthetic-input input w-full px-2 py-2 text-text">
             </div>
           </div>
@@ -905,12 +905,12 @@
             <div>
               <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">词性</label>
               <div class="custom-select relative w-full" id="addWordSelectWrapper">
-                <aesthetic-input input type="hidden" id="partOfSpeech" value="名词">
+                <input type="hidden" id="partOfSpeech" value="名词">
 
                   <div
                     class="select-trigger aesthetic-input input w-full px-3 py-2 text-text cursor-pointer flex justify-between items-center bg-surface">
                     <span class="select-text">名词</span>
-                    <svg class="select-arairy-row row text-muted transition-transform duration-300"
+                    <svg class="select-arrow text-muted transition-transform duration-300"
                       xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor"
                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                       <path d="M6 9l6 6 6-6"></path>
@@ -942,7 +942,7 @@
             </div>
             <div>
               <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">标签</label>
-              <aesthetic-input input type="text" id="tags" class="aesthetic-input input w-full px-2 py-2 text-text"
+              <input type="text" id="tags" class="aesthetic-input input w-full px-2 py-2 text-text"
                 placeholder="N5, 日常">
             </div>
           </div>
@@ -976,7 +976,7 @@
         <div id="importStep1">
 
           <p class="text-[0.7rem] font-bold tracking-wider text-muted mb-3">每行输入一个单词，AI 自动识别并生成信息：</p>
-          <textarea id="importWordsText" airy-row rows="6"
+          <textarea id="importWordsText" rows="6"
             class="aesthetic-input input w-full px-2 py-3 text-text font-sans text-[0.8rem]"
             placeholder="每行一个单词：&#10;桜 / apple&#10;花 / library&#10;&#10;AI 自动提取..."></textarea>
 
@@ -1088,7 +1088,7 @@
           </div>
 
           <div class="relative group">
-            <aesthetic-input input type="file" id="dictFileInput" accept=".json,.csv" class="hidden"
+            <input type="file" id="dictFileInput" accept=".json,.csv" class="hidden"
               onchange="handleDictFileSelect(event)">
               <div onclick="document.getElementById('dictFileInput').click()"
                 class="border-2 border-dashed border-border rounded-[var(--radius-card)] p-10 flex flex-col items-center justify-center cursor-pointer group-hover:bg-bg/40 group-hover:border-accent/30 motion-state">
@@ -1106,7 +1106,7 @@
               </div>
 
               <div class="relative group mt-8 border-t border-border/40 pt-6">
-                <aesthetic-input input type="file" id="apkgFileInput" accept=".apkg" class="hidden"
+                <input type="file" id="apkgFileInput" accept=".apkg" class="hidden"
                   onchange="handleApkgConvert(event)">
                   <div onclick="document.getElementById('apkgFileInput').click()" id="apkgDropZone"
                     class="bg-bg/50 border border-border border-dashed rounded-[var(--radius-panel)] p-5 flex items-center gap-4 cursor-pointer hover:bg-bg hover:border-accent/30 motion-state">
@@ -1174,7 +1174,7 @@
           <div id="dictBatchPreviewList" class="space-y-2 max-h-60 overflow-y-auto mb-6 pr-2"></div>
 
           <div class="flex items-center gap-3 mb-6 bg-bg/50 p-3.5 rounded-xl border border-border">
-            <aesthetic-input input type="checkbox" id="aiDictPosToggle"
+            <input type="checkbox" id="aiDictPosToggle"
               class="w-4 h-4 text-accent rounded border-border focus:ring-accent accent-ochre">
               <label for="aiDictPosToggle"
                 class="text-[0.8rem] text-text flex-1 font-medium cursor-pointer tracking-wide">
@@ -1218,7 +1218,7 @@
             <label class="text-sm font-medium text-text">🎯 目标记忆率</label>
             <span id="retentionValue" class="text-sm font-semibold text-accent">90%</span>
           </div>
-          <aesthetic-input input type="range" id="settingsRetention" min="70" max="99" value="90"
+          <input type="range" id="settingsRetention" min="70" max="99" value="90"
             class="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-ochre">
             <p class="text-xs text-muted mt-1.5 leading-relaxed">控制你希望记住单词的概率。设值越高，单词记得越牢，但复习频率会显著增加。建议保持在 85% ~ 95% 之间。
             </p>
@@ -1227,7 +1227,7 @@
         <!-- 最大复习间隔 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-text mb-1">📅 最大复习间隔（天）</label>
-          <aesthetic-input input type="number" id="maximumInterval" min="7" max="36500" value="365"
+          <input type="number" id="maximumInterval" min="7" max="36500" value="365"
             class="aesthetic-input input w-full px-2 py-3 text-text font-mono">
             <p class="text-xs text-muted mt-2 leading-relaxed">设定单词两次复习之间的最长等待时间。即使记忆非常牢固，也会在此期限内强制复习一次，防止极长期的意外遗忘。</p>
         </div>
@@ -1239,13 +1239,13 @@
             <div>
               <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">🇯🇵
                 日语配额</label>
-              <aesthetic-input input type="number" id="settingsNewCardsJa" min="1" max="200" value="20"
+              <input type="number" id="settingsNewCardsJa" min="1" max="200" value="20"
                 class="aesthetic-input input w-full px-3 py-3 text-text font-mono">
             </div>
             <div>
               <label class="block text-[0.65rem] font-bold text-muted uppercase tracking-widest-plus mb-1">🇬🇧
                 英语配额</label>
-              <aesthetic-input input type="number" id="settingsNewCardsEn" min="1" max="200" value="20"
+              <input type="number" id="settingsNewCardsEn" min="1" max="200" value="20"
                 class="aesthetic-input input w-full px-3 py-3 text-text font-mono">
             </div>
           </div>
@@ -1259,7 +1259,7 @@
             <p class="text-xs text-muted mt-0.5 leading-relaxed">为复习时间增加微小波动。这能有效打破大量单词在同一天扎堆出现的情况，让你的每日复习量更加平稳。</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <aesthetic-input input type="checkbox" id="enableFuzz" class="sr-only peer" checked>
+            <input type="checkbox" id="enableFuzz" class="sr-only peer" checked>
               <div
                 class="w-11 h-6 bg-border peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:bg-accent transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:motion-state peer-checked:after:translate-x-full">
               </div>
@@ -1277,7 +1277,7 @@
               <p class="text-xs text-muted mt-0.5">单词到期时播放风铃音效</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <aesthetic-input input type="checkbox" id="notifySoundToggle" class="sr-only peer" checked>
+              <input type="checkbox" id="notifySoundToggle" class="sr-only peer" checked>
                 <div
                   class="w-11 h-6 bg-border peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:bg-accent transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:motion-state peer-checked:after:translate-x-full">
                 </div>
@@ -1291,7 +1291,7 @@
               <p class="text-xs text-muted mt-0.5">浏览器弹窗提醒（需点击铃铛授权）</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <aesthetic-input input type="checkbox" id="notifyDesktopToggle" class="sr-only peer" checked>
+              <input type="checkbox" id="notifyDesktopToggle" class="sr-only peer" checked>
                 <div
                   class="w-11 h-6 bg-border peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:bg-accent transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:motion-state peer-checked:after:translate-x-full">
                 </div>
@@ -1305,7 +1305,7 @@
               <p class="text-xs text-muted mt-0.5">手机端振动反馈</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
-              <aesthetic-input input type="checkbox" id="notifyVibrateToggle" class="sr-only peer" checked>
+              <input type="checkbox" id="notifyVibrateToggle" class="sr-only peer" checked>
                 <div
                   class="w-11 h-6 bg-border peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:bg-accent transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:motion-state peer-checked:after:translate-x-full">
                 </div>
@@ -1316,7 +1316,7 @@
         <!-- 学习步骤 -->
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-text mb-1">🪜 学习预热步骤（分钟）</label>
-          <aesthetic-input input type="text" id="settingsSteps" value="1, 10" placeholder="1, 10"
+          <input type="text" id="settingsSteps" value="1, 10" placeholder="1, 10"
             class="aesthetic-input input w-full px-2 py-3 text-text font-mono">
             <p class="text-xs text-muted mt-2 leading-relaxed">新单词初次学习时的复习频率。例如 "1, 10" 表示在你点过“认识”后，会在 1 分钟和 10
               分钟后再次出现，加深第一印象。</p>
@@ -1369,14 +1369,14 @@
               </svg>
             </div>
           </div>
-          <aesthetic-input input type="file" id="avatarUpload" accept="image/*" class="hidden"
+          <input type="file" id="avatarUpload" accept="image/*" class="hidden"
             onchange="handleAvatarSelect(event)">
             <span class="text-[0.65rem] text-muted tracking-widest uppercase font-bold">点击更换头像 (Max 2MB)</span>
         </div>
 
         <div>
           <label class="block text-[0.75rem] font-bold tracking-widest text-text mb-2">✍️ 个性签名</label>
-          <aesthetic-input input type="text" id="signatureInput" placeholder="保持纯粹，专注语言。" maxlength="50"
+          <input type="text" id="signatureInput" placeholder="保持纯粹，专注语言。" maxlength="50"
             class="aesthetic-input input w-full px-2 py-3 text-text">
         </div>
 
@@ -1401,7 +1401,7 @@
 
 
   <!-- Confetti (按需加载) -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.bairy-row rowser.min.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
 </body>
 
 </html>
