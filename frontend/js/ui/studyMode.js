@@ -1102,27 +1102,3 @@ function initCustomSelects() {
     });
   });
 }
-
-loadWords(1); 
-        }
-
-// 收起列表
-optionsList.classList.remove('is-open');
-arrow.style.transform = 'rotate(0deg)';
-      });
-    });
-  });
-
-// 点击页面空白处：收起所有已展开的下拉框
-document.addEventListener('click', () => {
-  document.querySelectorAll('.select-options.is-open').forEach(list => {
-    list.classList.remove('is-open');
-    const wrapper = list.closest('.custom-select');
-    if (wrapper) {
-      const arrow = wrapper.querySelector('.select-arrow');
-      if (arrow) arrow.style.transform = 'rotate(0deg)';
-    }
-  });
-});
-}
-
